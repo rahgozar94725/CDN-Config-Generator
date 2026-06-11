@@ -72,7 +72,15 @@
     "hash": "59e13c6c6bc017095a59a7bf1ad89df4"
   },
   "G:\\github.com\\CDN-Config-Generator\\.graphify\\GRAPH_REPORT.md": {
-    "mtime": 1781138976029.0823,
-    "hash": "b3b3a5e1fec54c9cf0c8699619146680"
+    "mtime": 1781142850338.8037,
+    "hash": "846ffa7ce6b77a45f44e5b86e377e1e1"
+  },
+  "G:\\github.com\\CDN-Config-Generator\\src\\components\\ThemeSwitcher.vue": {
+    "mtime": 1781142813227.6921,
+    "hash": "5bfa775c4307ffda66b69e417bbbe130"
+  },
+  "G:\\github.com\\CDN-Config-Generator\\src\\theme\\index.js": {
+    "mtime": 1781142807830.9429,
+    "hash": "aea5325673f23c5ca907fbfc590fc889"
   }
 }
