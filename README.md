@@ -6,6 +6,8 @@
 
 A browser-based SPA that takes raw Xray configs (VLESS / VMESS / Trojan), multiplies them across CDN IPs, ports, and TLS settings — producing an expanded list of ready-to-use links.
 
+**Live:** [https://rahgozar94725.github.io/CDN-Config-Generator/](https://rahgozar94725.github.io/CDN-Config-Generator/)
+
 ## Features
 
 - **Input:** Paste raw configs and CDN IP/domain list
