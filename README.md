@@ -19,6 +19,69 @@ A browser-based SPA that takes raw Xray configs (VLESS / VMESS / Trojan), multip
 - **i18n:** English, فارسی (Persian), Русский (Russian), 中文 (Chinese) — RTL support for Persian
 - **Non-blocking:** Progress bar during generation, no browser freeze
 
+## How to Use
+
+### 1. Input Raw Configs
+
+Paste Xray config links in the **Raw Configs** field, one per line. Supported formats:
+
+```
+vless://uuid@example.com:443?type=ws&security=tls&path=%2F#my-server
+trojan://password@example.com:443?type=ws&security=tls&sni=sni.example.com#trojan-box
+vmess://eyJ2IjoiMiIsInBzIjoibSIsImFkZCI6...
+```
+
+**Note:** Only configs with transport type `ws`, `xhttp`, `httpupgrade`, or `grpc` are processed. Other transports pass through unchanged.
+
+### 2. Input CDN List
+
+Enter CDN IP addresses or domain names in the **CDN List** field, one per line:
+
+```
+1.1.1.1
+2.2.2.2
+cdn.example.com
+```
+
+### 3. Configure Settings
+
+- **TLS / No-TLS:** Toggle each mode on/off. At least one must be active.
+- **Ports:** Select ports for each active mode (No-TLS defaults: 80; TLS defaults: 443). At least one port required per active mode.
+- **TLS Advanced (when TLS is on):**
+  - **ALPN:** Select one or more protocols (h3, h2, http/1.1, or combos). At least one required.
+  - **Fingerprint:** Select one or more fingerprints (chrome, firefox, safari, edge, android, random, randomized). At least one required.
+  - **Random SNI:** Toggle to replace SNI with 8-12 random chars + root domain + trailing dot (FQDN bypass).
+
+### 4. Generate
+
+Click **Generate**. A progress bar shows processing per config. No browser freeze.
+
+### 5. Output
+
+- **Copy All:** Copies all generated links to clipboard.
+- **Download .txt:** Saves all links as a `.txt` file.
+
+### Example
+
+**Input (raw config):**
+```
+vless://a1b2c3d4@shop.ir:443?type=ws&security=tls&path=%2Fconnect#cdn-node
+```
+
+**CDN List:**
+```
+1.1.1.1
+2.2.2.2
+```
+
+**Settings:** TLS on, port 443, ALPN: h2, Fingerprint: chrome, Random SNI: off
+
+**Generated output (2 links):**
+```
+vless://a1b2c3d4@1.1.1.1:443?type=ws&security=tls&path=%2Fconnect&host=shop.ir&sni=shop.ir&alpn=h2&fp=chrome&insecure=0&allowInsecure=0#cdn-node-001
+vless://a1b2c3d4@2.2.2.2:443?type=ws&security=tls&path=%2Fconnect&host=shop.ir&sni=shop.ir&alpn=h2&fp=chrome&insecure=0&allowInsecure=0#cdn-node-002
+```
+
 ## Stack
 
 - Vue 3 + Vite + Tailwind CSS + vue-i18n
