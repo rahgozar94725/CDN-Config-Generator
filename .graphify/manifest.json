@@ -72,8 +72,8 @@
     "hash": "59e13c6c6bc017095a59a7bf1ad89df4"
   },
   "G:\\github.com\\CDN-Config-Generator\\.graphify\\GRAPH_REPORT.md": {
-    "mtime": 1781143102217.874,
-    "hash": "61a0cddfed084c77513ab153b45ccdf8"
+    "mtime": 1781143485463.3643,
+    "hash": "bdc489fdb9a2d22ffde2c7a63baeb672"
   },
   "G:\\github.com\\CDN-Config-Generator\\src\\components\\ThemeSwitcher.vue": {
     "mtime": 1781142813227.6921,
@@ -82,5 +82,21 @@
   "G:\\github.com\\CDN-Config-Generator\\src\\theme\\index.js": {
     "mtime": 1781142807830.9429,
     "hash": "aea5325673f23c5ca907fbfc590fc889"
+  },
+  "G:\\github.com\\CDN-Config-Generator\\README.fa.md": {
+    "mtime": 1781143664748.7458,
+    "hash": "e67a89b1f133eaaa43eb084e016cea38"
+  },
+  "G:\\github.com\\CDN-Config-Generator\\README.md": {
+    "mtime": 1781143658574.5825,
+    "hash": "ad48c4b15834e97c1c728cc7b4d62d3a"
+  },
+  "G:\\github.com\\CDN-Config-Generator\\README.ru.md": {
+    "mtime": 1781143670067.779,
+    "hash": "3303609881a3da4dd914853ae774ed62"
+  },
+  "G:\\github.com\\CDN-Config-Generator\\README.zh.md": {
+    "mtime": 1781143674983.72,
+    "hash": "6bab6eb3430a79118e79b89e654aab5f"
   }
 }

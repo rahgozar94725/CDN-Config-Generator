@@ -19,6 +19,69 @@
 - **多语言：** 英语、فارسی（波斯语）、Русский（俄语）、中文 — 支持波斯语 RTL
 - **非阻塞：** 生成时显示进度条，浏览器不卡顿
 
+## 使用方法
+
+### 1. 输入原始配置
+
+在 **Raw Configs** 字段中粘贴 Xray 配置链接，每行一个。支持的格式：
+
+```
+vless://uuid@example.com:443?type=ws&security=tls&path=%2F#my-server
+trojan://password@example.com:443?type=ws&security=tls&sni=sni.example.com#trojan-box
+vmess://eyJ2IjoiMiIsInBzIjoibSIsImFkZCI6...
+```
+
+**注意：** 仅处理传输类型为 `ws`、`xhttp`、`httpupgrade` 或 `grpc` 的配置。其他传输类型保持原样。
+
+### 2. 输入 CDN 列表
+
+在 **CDN List** 字段中输入 CDN IP 地址或域名，每行一个：
+
+```
+1.1.1.1
+2.2.2.2
+cdn.example.com
+```
+
+### 3. 配置设置
+
+- **TLS / 非 TLS：** 分别开关每种模式。至少一种模式必须启用。
+- **端口：** 为每种启用的模式选择端口（非 TLS 默认：80；TLS 默认：443）。每种模式至少选择一个端口。
+- **TLS 高级设置（TLS 启用时）：**
+  - **ALPN：** 选择一个或多个协议（h3、h2、http/1.1 或组合）。至少选择一个。
+  - **指纹：** 选择一个或多个指纹（chrome、firefox、safari、edge、android、random、randomized）。至少选择一个。
+  - **随机 SNI：** 启用后，SNI 将被替换为 8-12 个随机字符 + 根域名 + 尾随点（FQDN 绕过）。
+
+### 4. 生成
+
+点击 **Generate**。进度条显示处理进度。浏览器不会卡顿。
+
+### 5. 输出
+
+- **Copy All：** 将所有生成的链接复制到剪贴板。
+- **Download .txt：** 将所有链接保存为 `.txt` 文件。
+
+### 示例
+
+**输入（原始配置）：**
+```
+vless://a1b2c3d4@shop.ir:443?type=ws&security=tls&path=%2Fconnect#cdn-node
+```
+
+**CDN 列表：**
+```
+1.1.1.1
+2.2.2.2
+```
+
+**设置：** TLS 开启，端口 443，ALPN: h2，指纹: chrome，随机 SNI: 关闭
+
+**生成的输出（2 个链接）：**
+```
+vless://a1b2c3d4@1.1.1.1:443?type=ws&security=tls&path=%2Fconnect&host=shop.ir&sni=shop.ir&alpn=h2&fp=chrome&insecure=0&allowInsecure=0#cdn-node-001
+vless://a1b2c3d4@2.2.2.2:443?type=ws&security=tls&path=%2Fconnect&host=shop.ir&sni=shop.ir&alpn=h2&fp=chrome&insecure=0&allowInsecure=0#cdn-node-002
+```
+
 ## 技术栈
 
 - Vue 3 + Vite + Tailwind CSS + vue-i18n
