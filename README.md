@@ -88,11 +88,7 @@ vless://a1b2c3d4@2.2.2.2:443?type=ws&security=tls&path=%2Fconnect&host=shop.ir&s
 
 Choose one:
 
-### A. Quick (no install — use online)
-
-Open the app directly in your browser via GitHub Pages (if deployed) or use the hosted version at your CDN provider.
-
-### B. Run locally
+### A. Run locally
 
 ```bash
 git clone https://github.com/rahgozar94725/CDN-Config-Generator.git
@@ -103,7 +99,7 @@ npm run dev
 
 Then open `http://localhost:5173` in your browser.
 
-### C. Build for production
+### B. Build for production
 
 ```bash
 npm run build
