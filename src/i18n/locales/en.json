@@ -29,6 +29,11 @@
   "output.empty": "No configs generated yet",
   "output.progress": "Processing {current} of {total}",
 
+  "theme.label": "Theme",
+  "theme.light": "Light",
+  "theme.dark": "Dark",
+  "theme.system": "System",
+
   "lang.label": "Language",
   "lang.en": "English",
   "lang.fa": "Persian",

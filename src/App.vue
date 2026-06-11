@@ -6,7 +6,10 @@
           <h1 class="text-2xl md:text-3xl font-bold">{{ $t('app.title') }}</h1>
           <p class="text-sm md:text-base text-gray-600 dark:text-gray-400 mt-1">{{ $t('app.subtitle') }}</p>
         </div>
-        <LangSwitcher />
+        <div class="flex items-center gap-4">
+          <ThemeSwitcher />
+          <LangSwitcher />
+        </div>
       </div>
     </header>
     <main class="max-w-7xl mx-auto px-4 py-4 md:py-6 space-y-4 md:space-y-6">
@@ -61,6 +64,7 @@
 <script setup>
 import { ref, computed } from 'vue'
 import LangSwitcher from './components/LangSwitcher.vue'
+import ThemeSwitcher from './components/ThemeSwitcher.vue'
 import InputPanel from './components/InputPanel.vue'
 import ConfigPanel from './components/ConfigPanel.vue'
 import OutputPanel from './components/OutputPanel.vue'

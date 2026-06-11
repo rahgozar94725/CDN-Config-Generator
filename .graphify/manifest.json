@@ -4,8 +4,8 @@
     "hash": "ef3ba2a81ba19f8ea5ddf625521e96f0"
   },
   "G:\\github.com\\CDN-Config-Generator\\src\\App.vue": {
-    "mtime": 1781138925995.633,
-    "hash": "7bd0db504b31470f7a914726bf63598d"
+    "mtime": 1781142825700.684,
+    "hash": "cc925fe38572bee4946abc6cd375e375"
   },
   "G:\\github.com\\CDN-Config-Generator\\src\\components\\ConfigPanel.vue": {
     "mtime": 1781138922139.4258,
@@ -48,8 +48,8 @@
     "hash": "f99dcba988dbd13c62d6573677e5c6b3"
   },
   "G:\\github.com\\CDN-Config-Generator\\tailwind.config.js": {
-    "mtime": 1781124365557.214,
-    "hash": "78d553634ec03a63957805b99f0fa443"
+    "mtime": 1781142802548.489,
+    "hash": "5d9bed3cdf752dd3faf21e092e3773ba"
   },
   "G:\\github.com\\CDN-Config-Generator\\vite.config.js": {
     "mtime": 1781124363719.0227,
@@ -64,7 +64,15 @@
     "hash": "9c34c526f28e4883a70e2ab6b72fbb97"
   },
   "G:\\github.com\\CDN-Config-Generator\\SPEC.md": {
-    "mtime": 1781138911264.4563,
-    "hash": "65d9f723c19b0459d83f5c92e8cecd35"
+    "mtime": 1781142835245.477,
+    "hash": "c323c66ff1c386dfaa45b98049d2be38"
+  },
+  "G:\\github.com\\CDN-Config-Generator\\.opencode\\plugins\\graphify.js": {
+    "mtime": 1781138297347.2087,
+    "hash": "59e13c6c6bc017095a59a7bf1ad89df4"
+  },
+  "G:\\github.com\\CDN-Config-Generator\\.graphify\\GRAPH_REPORT.md": {
+    "mtime": 1781138976029.0823,
+    "hash": "b3b3a5e1fec54c9cf0c8699619146680"
   }
 }

@@ -29,6 +29,11 @@
   "output.empty": "هنوز کانفیگی تولید نشده",
   "output.progress": "پردازش {current} از {total}",
 
+  "theme.label": "Theme",
+  "theme.light": "روشن",
+  "theme.dark": "تاریک",
+  "theme.system": "سیستم",
+
   "lang.label": "زبان",
   "lang.en": "انگلیسی",
   "lang.fa": "فارسی",

@@ -1,20 +1,25 @@
 # Graph Report - .  (2026-06-11)
 
 ## Corpus Check
-- Corpus is ~3,998 words - fits in a single context window. You may not need a graph.
+- Corpus is ~4,577 words - fits in a single context window. You may not need a graph.
 
 ## Summary
-- 58 nodes · 64 edges · 5 communities detected
+- 60 nodes · 65 edges · 5 communities detected
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS
 - Token cost: 0 input · 0 output
-- Edge kinds: contains: 44 · calls: 13 · imports: 6 · imports_from: 1
+- Edge kinds: contains: 45 · calls: 13 · imports: 6 · imports_from: 1
 
 
 ## Input Scope
 - Requested: auto
-- Resolved: all (source: default-auto)
-- Included files: 17 · Candidates: recursive
-- Excluded: 0 untracked · 0 ignored · 0 sensitive · 0 missing committed
+- Resolved: committed (source: default-auto)
+- Included files: 19 · Candidates: 32
+- Excluded: 3 untracked · 7345 ignored · 0 sensitive · 0 missing committed
+- Recommendation: Use --scope all or graphify.yaml inputs.corpus for a knowledge-base folder.
+
+## Graph Freshness
+- Built from Git commit: `af4dae5`
+- Compare this hash to `git rev-parse HEAD` before trusting freshness-sensitive graph output.
 ## God Nodes (most connected - your core abstractions)
 1. `buildLink()` - 6 edges
 2. `parseConfig()` - 6 edges
@@ -62,8 +67,8 @@ Nodes (1): app
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `parseConfig()` connect `Community 0` to `Community 1`?**
-  _High betweenness centrality (0.120) - this node is a cross-community bridge._
+  _High betweenness centrality (0.112) - this node is a cross-community bridge._
 - **Why does `generateConfigs()` connect `Community 2` to `Community 1`?**
-  _High betweenness centrality (0.105) - this node is a cross-community bridge._
+  _High betweenness centrality (0.098) - this node is a cross-community bridge._
 - **What connects `rtlLocales`, `i18n`, `app` to the rest of the system?**
   _15 weakly-connected nodes found - possible documentation gaps or missing edges._
