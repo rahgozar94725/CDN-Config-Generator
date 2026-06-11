@@ -1,0 +1,41 @@
+{
+  "app.title": "CDN 配置生成器",
+  "app.subtitle": "Xray 配置倍增器和 CDN 链接生成器",
+
+  "input.rawConfigs.label": "原始配置",
+  "input.rawConfigs.placeholder": "粘贴 VLESS://、VMESS://、TROJAN:// 链接，每行一个",
+  "input.cdnList.label": "CDN IP/域名列表",
+  "input.cdnList.placeholder": "输入 CDN IP 或域名，每行一个",
+
+  "config.tlsMode": "TLS 模式",
+  "config.noTlsMode": "非 TLS 模式",
+  "config.ports": "端口",
+  "config.tlsAdvanced": "TLS 高级设置",
+  "config.alpn": "ALPN",
+  "config.fingerprint": "指纹",
+  "config.randomSni": "随机 SNI",
+  "config.randomSniHint": "8-12 随机字符 + 主机 + 尾随点 (FQDN 绕过)",
+  "config.portRequired": "请为活动模式选择至少一个端口",
+  "config.alpnRequired": "请选择至少一个 ALPN 选项",
+  "config.fingerprintRequired": "请选择至少一个指纹选项",
+  "config.noTlsPorts": "非 TLS 端口",
+  "config.tlsPorts": "TLS 端口",
+
+  "output.title": "生成的配置",
+  "output.copyAll": "全部复制",
+  "output.download": "下载 .txt",
+  "output.generating": "生成中...",
+  "output.count": "已生成 {count} 个配置",
+  "output.empty": "尚未生成配置",
+  "output.progress": "处理中 {current}/{total}",
+
+  "lang.label": "语言",
+  "lang.en": "英语",
+  "lang.fa": "波斯语",
+  "lang.ru": "俄语",
+  "lang.zh": "中文",
+
+  "common.generate": "生成",
+  "common.clear": "清除",
+  "common.ready": "就绪"
+}

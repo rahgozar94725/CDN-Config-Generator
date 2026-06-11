@@ -1,0 +1,41 @@
+{
+  "app.title": "تولید کننده کانفیگ CDN",
+  "app.subtitle": "تولید کننده لینک Xray و CDN",
+
+  "input.rawConfigs.label": "کانفیگ‌های خام",
+  "input.rawConfigs.placeholder": "لینک‌های VLESS://، VMESS://، TROJAN:// را وارد کنید (هر خط یک لینک)",
+  "input.cdnList.label": "لیست IP/دامنه CDN",
+  "input.cdnList.placeholder": "IP یا دامنه CDN را وارد کنید (هر خط یک مورد)",
+
+  "config.tlsMode": "حالت TLS",
+  "config.noTlsMode": "حالت بدون TLS",
+  "config.ports": "پورت‌ها",
+  "config.tlsAdvanced": "تنظیمات پیشرفته TLS",
+  "config.alpn": "ALPN",
+  "config.fingerprint": "Fingerprint",
+  "config.randomSni": "SNI تصادفی",
+  "config.randomSniHint": "8-12 کاراکتر تصادفی + هاست + نقطه پایان (عبور FQDN)",
+  "config.portRequired": "حداقل یک پورت را برای حالت فعال انتخاب کنید",
+  "config.alpnRequired": "حداقل یک گزینه ALPN را انتخاب کنید",
+  "config.fingerprintRequired": "حداقل یک گزینه Fingerprint را انتخاب کنید",
+  "config.noTlsPorts": "پورت‌های بدون TLS",
+  "config.tlsPorts": "پورت‌های TLS",
+
+  "output.title": "کانفیگ‌های تولید شده",
+  "output.copyAll": "کپی همه",
+  "output.download": "دانلود .txt",
+  "output.generating": "در حال تولید...",
+  "output.count": "{count} کانفیگ تولید شد",
+  "output.empty": "هنوز کانفیگی تولید نشده",
+  "output.progress": "پردازش {current} از {total}",
+
+  "lang.label": "زبان",
+  "lang.en": "انگلیسی",
+  "lang.fa": "فارسی",
+  "lang.ru": "روسی",
+  "lang.zh": "چینی",
+
+  "common.generate": "تولید",
+  "common.clear": "پاک کردن",
+  "common.ready": "آماده"
+}
