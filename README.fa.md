@@ -103,6 +103,16 @@ npm test        # اجرای تست‌ها
 
 مرورگر را در `http://localhost:5173` باز کنید. برای استقرار، پوشه `dist/` را با هر سرور فایل استاتیک سرو کنید.
 
+## حمایت
+
+اگر این ابزار برای شما مفید است و می‌خواهید از توسعه آن حمایت کنید، می‌توانید کمک مالی کنید. کمک‌های شما به ادامه حیات و بهبود پروژه کمک می‌کند.
+
+**کمک مالی با ارز دیجیتال:**
+
+<a href="https://nowpayments.io/donation?api_key=d824db3b-fcf7-4ebb-8e3d-297c23cfeee2" target="_blank" rel="noreferrer noopener">
+  <img src="https://nowpayments.io/images/embeds/donation-button-black.svg" alt="کمک مالی با ارز دیجیتال">
+</a>
+
 ## مجوز
 
 MIT

@@ -124,6 +124,16 @@ npm run build   # production build
 npm test        # run tests
 ```
 
+## Support
+
+If you find this tool useful and want to support its development, consider making a donation. Your contributions help keep the project alive and improving.
+
+**Donate with crypto:**
+
+<a href="https://nowpayments.io/donation?api_key=d824db3b-fcf7-4ebb-8e3d-297c23cfeee2" target="_blank" rel="noreferrer noopener">
+  <img src="https://nowpayments.io/images/embeds/donation-button-black.svg" alt="Crypto donation button by NOWPayments">
+</a>
+
 ## License
 
 MIT
