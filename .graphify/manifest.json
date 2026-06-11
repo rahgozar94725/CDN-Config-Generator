@@ -1,0 +1,70 @@
+{
+  "G:\\github.com\\CDN-Config-Generator\\postcss.config.js": {
+    "mtime": 1781124364968.934,
+    "hash": "ef3ba2a81ba19f8ea5ddf625521e96f0"
+  },
+  "G:\\github.com\\CDN-Config-Generator\\src\\App.vue": {
+    "mtime": 1781138925995.633,
+    "hash": "7bd0db504b31470f7a914726bf63598d"
+  },
+  "G:\\github.com\\CDN-Config-Generator\\src\\components\\ConfigPanel.vue": {
+    "mtime": 1781138922139.4258,
+    "hash": "c5cbcce572239493ab35eb2f50bae231"
+  },
+  "G:\\github.com\\CDN-Config-Generator\\src\\components\\InputPanel.vue": {
+    "mtime": 1781124486786.0693,
+    "hash": "390888dba733f13c65b54627fbcd5236"
+  },
+  "G:\\github.com\\CDN-Config-Generator\\src\\components\\LangSwitcher.vue": {
+    "mtime": 1781124464458.9756,
+    "hash": "d3964bb16162ecd6ac811f10dee79f09"
+  },
+  "G:\\github.com\\CDN-Config-Generator\\src\\components\\OutputPanel.vue": {
+    "mtime": 1781124679076.615,
+    "hash": "4f71862008825ab128cfac845cdc3f58"
+  },
+  "G:\\github.com\\CDN-Config-Generator\\src\\i18n\\index.js": {
+    "mtime": 1781124462784.6316,
+    "hash": "7c7b1550ce9464fba5594d468cde1cb7"
+  },
+  "G:\\github.com\\CDN-Config-Generator\\src\\main.js": {
+    "mtime": 1781124369662.8372,
+    "hash": "9fe522cd829715dc9a67c5f694b72aee"
+  },
+  "G:\\github.com\\CDN-Config-Generator\\src\\utils\\multiplier.js": {
+    "mtime": 1781125646028.032,
+    "hash": "cba732b47cb9e292f4085388eecc9ca3"
+  },
+  "G:\\github.com\\CDN-Config-Generator\\src\\utils\\multiplier.test.js": {
+    "mtime": 1781138955874.6365,
+    "hash": "8cf8d24ca3daf80e4aaa1dcb4b8bd87b"
+  },
+  "G:\\github.com\\CDN-Config-Generator\\src\\utils\\parser.js": {
+    "mtime": 1781124600531.5122,
+    "hash": "64a28c99a321bf6ccf8e0dbb1d06b136"
+  },
+  "G:\\github.com\\CDN-Config-Generator\\src\\utils\\parser.test.js": {
+    "mtime": 1781124582181.9456,
+    "hash": "f99dcba988dbd13c62d6573677e5c6b3"
+  },
+  "G:\\github.com\\CDN-Config-Generator\\tailwind.config.js": {
+    "mtime": 1781124365557.214,
+    "hash": "78d553634ec03a63957805b99f0fa443"
+  },
+  "G:\\github.com\\CDN-Config-Generator\\vite.config.js": {
+    "mtime": 1781124363719.0227,
+    "hash": "d337a06f729fdd9513d33882f7727678"
+  },
+  "G:\\github.com\\CDN-Config-Generator\\AGENTS.md": {
+    "mtime": 1781138297020.8855,
+    "hash": "1992740c904e1dff538818b3c9fedf66"
+  },
+  "G:\\github.com\\CDN-Config-Generator\\index.html": {
+    "mtime": 1781124364710.0537,
+    "hash": "9c34c526f28e4883a70e2ab6b72fbb97"
+  },
+  "G:\\github.com\\CDN-Config-Generator\\SPEC.md": {
+    "mtime": 1781138911264.4563,
+    "hash": "65d9f723c19b0459d83f5c92e8cecd35"
+  }
+}

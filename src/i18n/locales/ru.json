@@ -1,0 +1,41 @@
+{
+  "app.title": "Генератор конфигов CDN",
+  "app.subtitle": "Мультипликатор конфигов Xray и генератор ссылок CDN",
+
+  "input.rawConfigs.label": "Исходные конфиги",
+  "input.rawConfigs.placeholder": "Вставьте ссылки VLESS://, VMESS://, TROJAN:// (по одной на строку)",
+  "input.cdnList.label": "Список IP/доменов CDN",
+  "input.cdnList.placeholder": "Введите IP или домены CDN (по одному на строку)",
+
+  "config.tlsMode": "Режим TLS",
+  "config.noTlsMode": "Режим без TLS",
+  "config.ports": "Порты",
+  "config.tlsAdvanced": "Расширенные настройки TLS",
+  "config.alpn": "ALPN",
+  "config.fingerprint": "Отпечаток",
+  "config.randomSni": "Случайный SNI",
+  "config.randomSniHint": "8-12 случайных символов + хост + точка в конце (обход FQDN)",
+  "config.portRequired": "Выберите хотя бы один порт для активного режима",
+  "config.alpnRequired": "Выберите хотя бы один ALPN",
+  "config.fingerprintRequired": "Выберите хотя бы один отпечаток",
+  "config.noTlsPorts": "Порты без TLS",
+  "config.tlsPorts": "Порты TLS",
+
+  "output.title": "Сгенерированные конфиги",
+  "output.copyAll": "Копировать все",
+  "output.download": "Скачать .txt",
+  "output.generating": "Генерация...",
+  "output.count": "Сгенерировано {count} конфигов",
+  "output.empty": "Конфиги еще не сгенерированы",
+  "output.progress": "Обработка {current} из {total}",
+
+  "lang.label": "Язык",
+  "lang.en": "Английский",
+  "lang.fa": "Персидский",
+  "lang.ru": "Русский",
+  "lang.zh": "Китайский",
+
+  "common.generate": "Сгенерировать",
+  "common.clear": "Очистить",
+  "common.ready": "Готово"
+}

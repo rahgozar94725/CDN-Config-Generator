@@ -1,0 +1,41 @@
+{
+  "app.title": "CDN Config Generator",
+  "app.subtitle": "Xray Config Multiplier & CDN Link Generator",
+
+  "input.rawConfigs.label": "Raw Configs",
+  "input.rawConfigs.placeholder": "Paste VLESS://, VMESS://, TROJAN:// links, one per line",
+  "input.cdnList.label": "CDN IP / Domain List",
+  "input.cdnList.placeholder": "Enter CDN IPs or domains, one per line",
+
+  "config.tlsMode": "TLS Mode",
+  "config.noTlsMode": "No-TLS Mode",
+  "config.ports": "Ports",
+  "config.tlsAdvanced": "TLS Advanced",
+  "config.alpn": "ALPN",
+  "config.fingerprint": "Fingerprint",
+  "config.randomSni": "Random SNI",
+  "config.randomSniHint": "8-12 random chars + host + trailing dot (FQDN bypass)",
+  "config.portRequired": "Select at least one port for active mode",
+  "config.alpnRequired": "Select at least one ALPN option",
+  "config.fingerprintRequired": "Select at least one fingerprint option",
+  "config.noTlsPorts": "No-TLS Ports",
+  "config.tlsPorts": "TLS Ports",
+
+  "output.title": "Generated Configs",
+  "output.copyAll": "Copy All",
+  "output.download": "Download .txt",
+  "output.generating": "Generating...",
+  "output.count": "{count} configs generated",
+  "output.empty": "No configs generated yet",
+  "output.progress": "Processing {current} of {total}",
+
+  "lang.label": "Language",
+  "lang.en": "English",
+  "lang.fa": "Persian",
+  "lang.ru": "Russian",
+  "lang.zh": "Chinese",
+
+  "common.generate": "Generate",
+  "common.clear": "Clear",
+  "common.ready": "Ready"
+}
