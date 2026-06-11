@@ -43,6 +43,8 @@ Enter CDN IP addresses or domain names in the **CDN List** field, one per line:
 cdn.example.com
 ```
 
+**Important:** The CDN hosts you enter must be capable of proxying traffic for the domain in your original config address. The generated links replace the original address with the CDN host while preserving your original domain in the `host` and `sni` parameters — so the CDN must be configured to route requests for your domain to your origin server.
+
 ### 3. Configure Settings
 
 - **TLS / No-TLS:** Toggle each mode on/off. At least one must be active.
@@ -81,6 +83,33 @@ vless://a1b2c3d4@shop.ir:443?type=ws&security=tls&path=%2Fconnect#cdn-node
 vless://a1b2c3d4@1.1.1.1:443?type=ws&security=tls&path=%2Fconnect&host=shop.ir&sni=shop.ir&alpn=h2&fp=chrome&insecure=0&allowInsecure=0#cdn-node-001
 vless://a1b2c3d4@2.2.2.2:443?type=ws&security=tls&path=%2Fconnect&host=shop.ir&sni=shop.ir&alpn=h2&fp=chrome&insecure=0&allowInsecure=0#cdn-node-002
 ```
+
+## Local Setup
+
+Choose one:
+
+### A. Quick (no install — use online)
+
+Open the app directly in your browser via GitHub Pages (if deployed) or use the hosted version at your CDN provider.
+
+### B. Run locally
+
+```bash
+git clone https://github.com/rahgozar94725/CDN-Config-Generator.git
+cd CDN-Config-Generator
+npm install
+npm run dev
+```
+
+Then open `http://localhost:5173` in your browser.
+
+### C. Build for production
+
+```bash
+npm run build
+```
+
+Serve the `dist/` folder with any static file server (Nginx, Caddy, Vercel, Netlify, etc.).
 
 ## Stack
 

@@ -43,6 +43,8 @@ vmess://eyJ2IjoiMiIsInBzIjoibSIsImFkZCI6...
 cdn.example.com
 ```
 
+**重要提示：** 您输入的 CDN 主机必须能够代理原始配置中域名的流量。生成的链接将原始地址替换为 CDN 主机，同时保留原始域名在 `host` 和 `sni` 参数中——因此 CDN 必须配置为将您域名的请求路由到您的源服务器。
+
 ### 3. 配置设置
 
 - **TLS / 非 TLS：** 分别开关每种模式。至少一种模式必须启用。
@@ -91,11 +93,15 @@ vless://a1b2c3d4@2.2.2.2:443?type=ws&security=tls&path=%2Fconnect&host=shop.ir&s
 ## 开发
 
 ```bash
+git clone https://github.com/rahgozar94725/CDN-Config-Generator.git
+cd CDN-Config-Generator
 npm install
 npm run dev     # 开发服务器
 npm run build   # 生产构建
 npm test        # 运行测试
 ```
+
+在浏览器中打开 `http://localhost:5173`。部署时使用任意静态文件服务器托管 `dist/` 文件夹。
 
 ## 许可
 

@@ -43,6 +43,8 @@ vmess://eyJ2IjoiMiIsInBzIjoibSIsImFkZCI6...
 cdn.example.com
 ```
 
+**مهم:** هاست‌های CDN که وارد می‌کنید باید بتوانند ترافیک دامنه موجود در آدرس کانفیگ اصلی شما را پروکسی کنند. لینک‌های تولید شده آدرس اصلی را با هاست CDN جایگزین می‌کنند در حالی که دامنه اصلی شما در پارامترهای `host` و `sni` حفظ می‌شود — بنابراین CDN باید برای هدایت درخواست‌های دامنه شما به سرور مبدأ پیکربندی شده باشد.
+
 ### 3. تنظیمات
 
 - **TLS / بدون TLS:** هر کدام را روشن/خاموش کنید. حداقل یکی باید فعال باشد.
@@ -91,11 +93,15 @@ vless://a1b2c3d4@2.2.2.2:443?type=ws&security=tls&path=%2Fconnect&host=shop.ir&s
 ## توسعه
 
 ```bash
+git clone https://github.com/rahgozar94725/CDN-Config-Generator.git
+cd CDN-Config-Generator
 npm install
 npm run dev     # سرور توسعه
 npm run build   # ساخت نسخه نهایی
 npm test        # اجرای تست‌ها
 ```
+
+مرورگر را در `http://localhost:5173` باز کنید. برای استقرار، پوشه `dist/` را با هر سرور فایل استاتیک سرو کنید.
 
 ## مجوز
 
