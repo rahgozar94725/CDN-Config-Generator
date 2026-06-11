@@ -103,6 +103,16 @@ npm test        # 运行测试
 
 在浏览器中打开 `http://localhost:5173`。部署时使用任意静态文件服务器托管 `dist/` 文件夹。
 
+## 支持
+
+如果您觉得这个工具有用并希望支持它的开发，请考虑进行捐赠。您的贡献有助于项目持续存在和改进。
+
+**加密货币捐赠：**
+
+<a href="https://nowpayments.io/donation?api_key=d824db3b-fcf7-4ebb-8e3d-297c23cfeee2" target="_blank" rel="noreferrer noopener">
+  <img src="https://nowpayments.io/images/embeds/donation-button-black.svg" alt="加密货币捐赠按钮">
+</a>
+
 ## 许可
 
 MIT
