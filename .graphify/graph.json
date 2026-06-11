@@ -14,19 +14,39 @@
       "8": "Community 8",
       "9": "Community 9",
       "10": "Community 10",
-      "11": "Community 11"
-    }
+      "11": "Community 11",
+      "12": "Community 12"
+    },
+    "built_from_commit": "af4dae5c4ab93cf9152128540b480f07e0c6a066"
   },
-  "topology_signature": "n=58;e=64;components_configpanel_chipclass,components_configpanel_toggle,components_configpanel_togglealpn,components_configpanel_togglefingerprint,components_configpanel_togglenotlsport,components_configpanel_toggletlsport,components_langswitcher_onchange,components_outputpanel_copyall,components_outputpanel_download,i18n_index_applydirection,i18n_index_i18n,i18n_index_loadlocale,i18n_index_rtllocales,i18n_index_savelocale,i18n_index_setlocale,postcss_config_js,src_app_generate,src_app_tick,src_app_vue,src_components_configpanel_vue,src_components_inputpanel_vue,src_components_langswitcher_vue,src_components_outputpanel_vue,src_i18n_index_js,src_main_app,src_main_js,src_utils_multiplier_js,src_utils_multiplier_test_js,src_utils_parser_js,src_utils_parser_test_js,tailwind_config_js,utils_multiplier_allowed_transports,utils_multiplier_buildlink,utils_multiplier_buildtrojan,utils_multiplier_buildvless,utils_multiplier_buildvmess,utils_multiplier_extractrootdomain,utils_multiplier_generateconfigs,utils_multiplier_genrandomsni,utils_multiplier_test_cdnlist,utils_multiplier_test_configs,utils_multiplier_test_opts,utils_multiplier_test_optstlsnoalpn,utils_multiplier_test_optstlsnofp,utils_multiplier_test_out,utils_multiplier_test_outnoalpn,utils_multiplier_test_outnofp,utils_multiplier_test_parseall,utils_parser_decodebase64,utils_parser_normalizevmesssecurity,utils_parser_parseconfig,utils_parser_parsetrojan,utils_parser_parsevless,utils_parser_parsevmess,utils_parser_test_b64,utils_parser_test_obj,utils_parser_test_r,vite_config_js|components_configpanel_chipclass\tsrc_components_configpanel_vue\tcontains;components_configpanel_toggle\tsrc_components_configpanel_vue\tcontains;components_configpanel_togglealpn\tsrc_components_configpanel_vue\tcontains;components_configpanel_togglefingerprint\tsrc_components_configpanel_vue\tcontains;components_configpanel_togglenotlsport\tsrc_components_configpanel_vue\tcontains;components_configpanel_toggletlsport\tsrc_components_configpanel_vue\tcontains;components_langswitcher_onchange\tsrc_components_langswitcher_vue\tcontains;components_outputpanel_copyall\tsrc_components_outputpanel_vue\tcontains;components_outputpanel_download\tsrc_components_outputpanel_vue\tcontains;i18n_index_applydirection\ti18n_index_setlocale\tcalls;i18n_index_applydirection\tsrc_i18n_index_js\tcontains;i18n_index_i18n\tsrc_i18n_index_js\tcontains;i18n_index_loadlocale\tsrc_i18n_index_js\tcontains;i18n_index_rtllocales\tsrc_i18n_index_js\tcontains;i18n_index_savelocale\ti18n_index_setlocale\tcalls;i18n_index_savelocale\tsrc_i18n_index_js\tcontains;i18n_index_setlocale\tsrc_i18n_index_js\tcontains;src_app_generate\tsrc_app_vue\tcontains;src_app_tick\tsrc_app_vue\tcontains;src_app_vue\tsrc_main_js\timports_from;src_main_app\tsrc_main_js\tcontains;src_utils_multiplier_js\tutils_multiplier_allowed_transports\tcontains;src_utils_multiplier_js\tutils_multiplier_buildlink\tcontains;src_utils_multiplier_js\tutils_multiplier_buildtrojan\tcontains;src_utils_multiplier_js\tutils_multiplier_buildvless\tcontains;src_utils_multiplier_js\tutils_multiplier_buildvmess\tcontains;src_utils_multiplier_js\tutils_multiplier_extractrootdomain\tcontains;src_utils_multiplier_js\tutils_multiplier_generateconfigs\tcontains;src_utils_multiplier_js\tutils_multiplier_genrandomsni\tcontains;src_utils_multiplier_test_js\tutils_multiplier_generateconfigs\timports;src_utils_multiplier_test_js\tutils_multiplier_test_cdnlist\tcontains;src_utils_multiplier_test_js\tutils_multiplier_test_configs\tcontains;src_utils_multiplier_test_js\tutils_multiplier_test_opts\tcontains;src_utils_multiplier_test_js\tutils_multiplier_test_optstlsnoalpn\tcontains;src_utils_multiplier_test_js\tutils_multiplier_test_optstlsnofp\tcontains;src_utils_multiplier_test_js\tutils_multiplier_test_out\tcontains;src_utils_multiplier_test_js\tutils_multiplier_test_outnoalpn\tcontains;src_utils_multiplier_test_js\tutils_multiplier_test_outnofp\tcontains;src_utils_multiplier_test_js\tutils_multiplier_test_parseall\tcontains;src_utils_multiplier_test_js\tutils_parser_parseconfig\timports;src_utils_parser_js\tutils_parser_decodebase64\tcontains;src_utils_parser_js\tutils_parser_normalizevmesssecurity\tcontains;src_utils_parser_js\tutils_parser_parseconfig\tcontains;src_utils_parser_js\tutils_parser_parsetrojan\tcontains;src_utils_parser_js\tutils_parser_parsevless\tcontains;src_utils_parser_js\tutils_parser_parsevmess\tcontains;src_utils_parser_test_js\tutils_parser_parseconfig\timports;src_utils_parser_test_js\tutils_parser_parsetrojan\timports;src_utils_parser_test_js\tutils_parser_parsevless\timports;src_utils_parser_test_js\tutils_parser_parsevmess\timports;src_utils_parser_test_js\tutils_parser_test_b64\tcontains;src_utils_parser_test_js\tutils_parser_test_obj\tcontains;src_utils_parser_test_js\tutils_parser_test_r\tcontains;utils_multiplier_buildlink\tutils_multiplier_buildtrojan\tcalls;utils_multiplier_buildlink\tutils_multiplier_buildvless\tcalls;utils_multiplier_buildlink\tutils_multiplier_buildvmess\tcalls;utils_multiplier_buildlink\tutils_multiplier_generateconfigs\tcalls;utils_multiplier_buildlink\tutils_multiplier_genrandomsni\tcalls;utils_multiplier_extractrootdomain\tutils_multiplier_genrandomsni\tcalls;utils_parser_decodebase64\tutils_parser_parsevmess\tcalls;utils_parser_normalizevmesssecurity\tutils_parser_parsevmess\tcalls;utils_parser_parseconfig\tutils_parser_parsetrojan\tcalls;utils_parser_parseconfig\tutils_parser_parsevless\tcalls;utils_parser_parseconfig\tutils_parser_parsevmess\tcalls",
+  "topology_signature": "n=60;e=65;components_configpanel_chipclass,components_configpanel_toggle,components_configpanel_togglealpn,components_configpanel_togglefingerprint,components_configpanel_togglenotlsport,components_configpanel_toggletlsport,components_langswitcher_onchange,components_outputpanel_copyall,components_outputpanel_download,i18n_index_applydirection,i18n_index_i18n,i18n_index_loadlocale,i18n_index_rtllocales,i18n_index_savelocale,i18n_index_setlocale,opencode_plugins_graphify_js,plugins_graphify_graphifyplugin,postcss_config_js,src_app_generate,src_app_tick,src_app_vue,src_components_configpanel_vue,src_components_inputpanel_vue,src_components_langswitcher_vue,src_components_outputpanel_vue,src_i18n_index_js,src_main_app,src_main_js,src_utils_multiplier_js,src_utils_multiplier_test_js,src_utils_parser_js,src_utils_parser_test_js,tailwind_config_js,utils_multiplier_allowed_transports,utils_multiplier_buildlink,utils_multiplier_buildtrojan,utils_multiplier_buildvless,utils_multiplier_buildvmess,utils_multiplier_extractrootdomain,utils_multiplier_generateconfigs,utils_multiplier_genrandomsni,utils_multiplier_test_cdnlist,utils_multiplier_test_configs,utils_multiplier_test_opts,utils_multiplier_test_optstlsnoalpn,utils_multiplier_test_optstlsnofp,utils_multiplier_test_out,utils_multiplier_test_outnoalpn,utils_multiplier_test_outnofp,utils_multiplier_test_parseall,utils_parser_decodebase64,utils_parser_normalizevmesssecurity,utils_parser_parseconfig,utils_parser_parsetrojan,utils_parser_parsevless,utils_parser_parsevmess,utils_parser_test_b64,utils_parser_test_obj,utils_parser_test_r,vite_config_js|components_configpanel_chipclass\tsrc_components_configpanel_vue\tcontains;components_configpanel_toggle\tsrc_components_configpanel_vue\tcontains;components_configpanel_togglealpn\tsrc_components_configpanel_vue\tcontains;components_configpanel_togglefingerprint\tsrc_components_configpanel_vue\tcontains;components_configpanel_togglenotlsport\tsrc_components_configpanel_vue\tcontains;components_configpanel_toggletlsport\tsrc_components_configpanel_vue\tcontains;components_langswitcher_onchange\tsrc_components_langswitcher_vue\tcontains;components_outputpanel_copyall\tsrc_components_outputpanel_vue\tcontains;components_outputpanel_download\tsrc_components_outputpanel_vue\tcontains;i18n_index_applydirection\ti18n_index_setlocale\tcalls;i18n_index_applydirection\tsrc_i18n_index_js\tcontains;i18n_index_i18n\tsrc_i18n_index_js\tcontains;i18n_index_loadlocale\tsrc_i18n_index_js\tcontains;i18n_index_rtllocales\tsrc_i18n_index_js\tcontains;i18n_index_savelocale\ti18n_index_setlocale\tcalls;i18n_index_savelocale\tsrc_i18n_index_js\tcontains;i18n_index_setlocale\tsrc_i18n_index_js\tcontains;opencode_plugins_graphify_js\tplugins_graphify_graphifyplugin\tcontains;src_app_generate\tsrc_app_vue\tcontains;src_app_tick\tsrc_app_vue\tcontains;src_app_vue\tsrc_main_js\timports_from;src_main_app\tsrc_main_js\tcontains;src_utils_multiplier_js\tutils_multiplier_allowed_transports\tcontains;src_utils_multiplier_js\tutils_multiplier_buildlink\tcontains;src_utils_multiplier_js\tutils_multiplier_buildtrojan\tcontains;src_utils_multiplier_js\tutils_multiplier_buildvless\tcontains;src_utils_multiplier_js\tutils_multiplier_buildvmess\tcontains;src_utils_multiplier_js\tutils_multiplier_extractrootdomain\tcontains;src_utils_multiplier_js\tutils_multiplier_generateconfigs\tcontains;src_utils_multiplier_js\tutils_multiplier_genrandomsni\tcontains;src_utils_multiplier_test_js\tutils_multiplier_generateconfigs\timports;src_utils_multiplier_test_js\tutils_multiplier_test_cdnlist\tcontains;src_utils_multiplier_test_js\tutils_multiplier_test_configs\tcontains;src_utils_multiplier_test_js\tutils_multiplier_test_opts\tcontains;src_utils_multiplier_test_js\tutils_multiplier_test_optstlsnoalpn\tcontains;src_utils_multiplier_test_js\tutils_multiplier_test_optstlsnofp\tcontains;src_utils_multiplier_test_js\tutils_multiplier_test_out\tcontains;src_utils_multiplier_test_js\tutils_multiplier_test_outnoalpn\tcontains;src_utils_multiplier_test_js\tutils_multiplier_test_outnofp\tcontains;src_utils_multiplier_test_js\tutils_multiplier_test_parseall\tcontains;src_utils_multiplier_test_js\tutils_parser_parseconfig\timports;src_utils_parser_js\tutils_parser_decodebase64\tcontains;src_utils_parser_js\tutils_parser_normalizevmesssecurity\tcontains;src_utils_parser_js\tutils_parser_parseconfig\tcontains;src_utils_parser_js\tutils_parser_parsetrojan\tcontains;src_utils_parser_js\tutils_parser_parsevless\tcontains;src_utils_parser_js\tutils_parser_parsevmess\tcontains;src_utils_parser_test_js\tutils_parser_parseconfig\timports;src_utils_parser_test_js\tutils_parser_parsetrojan\timports;src_utils_parser_test_js\tutils_parser_parsevless\timports;src_utils_parser_test_js\tutils_parser_parsevmess\timports;src_utils_parser_test_js\tutils_parser_test_b64\tcontains;src_utils_parser_test_js\tutils_parser_test_obj\tcontains;src_utils_parser_test_js\tutils_parser_test_r\tcontains;utils_multiplier_buildlink\tutils_multiplier_buildtrojan\tcalls;utils_multiplier_buildlink\tutils_multiplier_buildvless\tcalls;utils_multiplier_buildlink\tutils_multiplier_buildvmess\tcalls;utils_multiplier_buildlink\tutils_multiplier_generateconfigs\tcalls;utils_multiplier_buildlink\tutils_multiplier_genrandomsni\tcalls;utils_multiplier_extractrootdomain\tutils_multiplier_genrandomsni\tcalls;utils_parser_decodebase64\tutils_parser_parsevmess\tcalls;utils_parser_normalizevmesssecurity\tutils_parser_parsevmess\tcalls;utils_parser_parseconfig\tutils_parser_parsetrojan\tcalls;utils_parser_parseconfig\tutils_parser_parsevless\tcalls;utils_parser_parseconfig\tutils_parser_parsevmess\tcalls",
   "nodes": [
+    {
+      "id": "opencode_plugins_graphify_js",
+      "label": "graphify.js",
+      "file_type": "code",
+      "source_file": ".opencode/plugins/graphify.js",
+      "source_location": "L1",
+      "community": 8,
+      "community_name": "Community 8"
+    },
+    {
+      "id": "plugins_graphify_graphifyplugin",
+      "label": "GraphifyPlugin()",
+      "file_type": "code",
+      "source_file": ".opencode/plugins/graphify.js",
+      "source_location": "L6",
+      "community": 8,
+      "community_name": "Community 8"
+    },
     {
       "id": "postcss_config_js",
       "label": "postcss.config.js",
       "file_type": "code",
       "source_file": "postcss.config.js",
       "source_location": "L1",
-      "community": 8,
-      "community_name": "Community 8"
+      "community": 9,
+      "community_name": "Community 9"
     },
     {
       "id": "src_app_vue",
@@ -42,7 +62,7 @@
       "label": "generate()",
       "file_type": "code",
       "source_file": "src/App.vue",
-      "source_location": "L92",
+      "source_location": "L96",
       "community": 5,
       "community_name": "Community 5"
     },
@@ -51,7 +71,7 @@
       "label": "tick()",
       "file_type": "code",
       "source_file": "src/App.vue",
-      "source_location": "L130",
+      "source_location": "L134",
       "community": 5,
       "community_name": "Community 5"
     },
@@ -124,8 +144,8 @@
       "file_type": "code",
       "source_file": "src/components/InputPanel.vue",
       "source_location": "L1",
-      "community": 9,
-      "community_name": "Community 9"
+      "community": 10,
+      "community_name": "Community 10"
     },
     {
       "id": "src_components_langswitcher_vue",
@@ -529,8 +549,8 @@
       "file_type": "code",
       "source_file": "tailwind.config.js",
       "source_location": "L1",
-      "community": 10,
-      "community_name": "Community 10"
+      "community": 11,
+      "community_name": "Community 11"
     },
     {
       "id": "vite_config_js",
@@ -538,11 +558,23 @@
       "file_type": "code",
       "source_file": "vite.config.js",
       "source_location": "L1",
-      "community": 11,
-      "community_name": "Community 11"
+      "community": 12,
+      "community_name": "Community 12"
     }
   ],
   "links": [
+    {
+      "source": "opencode_plugins_graphify_js",
+      "target": "plugins_graphify_graphifyplugin",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".opencode/plugins/graphify.js",
+      "source_location": "L6",
+      "weight": 1,
+      "_src": "opencode_plugins_graphify_js",
+      "_tgt": "plugins_graphify_graphifyplugin",
+      "confidence_score": 1
+    },
     {
       "source": "src_app_vue",
       "target": "src_app_generate",

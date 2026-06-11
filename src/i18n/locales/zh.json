@@ -29,6 +29,11 @@
   "output.empty": "尚未生成配置",
   "output.progress": "处理中 {current}/{total}",
 
+  "theme.label": "主题",
+  "theme.light": "浅色",
+  "theme.dark": "深色",
+  "theme.system": "系统",
+
   "lang.label": "语言",
   "lang.en": "英语",
   "lang.fa": "波斯语",

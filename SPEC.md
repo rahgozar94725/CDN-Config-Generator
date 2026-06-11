@@ -19,6 +19,7 @@ Xray raw config (VLESS/VMESS/Trojan) × CDN IP list × port/TLS combo = expanded
 11. Progress bar. Copy All + Download .txt.
 12. Responsive mobile+desktop.
 13. No browser freeze. Computation non-blocking.
+14. Theme: dark mode selectable via toggle (light / dark / system). Persisted in localStorage.
 
 ## §I
 
@@ -27,6 +28,7 @@ Xray raw config (VLESS/VMESS/Trojan) × CDN IP list × port/TLS combo = expanded
 - **I.clip** — navigator.clipboard API
 - **I.dl** — Blob + URL.createObjectURL for .txt download
 - **I.parse** — URL pattern matching for vless:// vmess:// trojan://
+- **I.theme** — localStorage key `cdn-cfg-theme` (light|dark|system). Tailwind `darkMode: class`
 
 ## §V
 
@@ -40,6 +42,7 @@ Xray raw config (VLESS/VMESS/Trojan) × CDN IP list × port/TLS combo = expanded
 | V6 | Active TLS/No-TLS mode must have ≥1 port selected | form validation before compute |
 | V7 | ∀ random SNI → root domain extracted (last 2 labels), subdomain prefix stripped | random SNI output test |
 | V8 | ∀ TLS mode → alpn.length ≥ 1 ∧ fingerprint.length ≥ 1 | form validation + multiplier test |
+| V9 | Theme choice persisted to localStorage and restored on load. `dark` class on `<html>` matches choice | DOM check + reload test |
 
 ## §T
 
@@ -55,6 +58,7 @@ Xray raw config (VLESS/VMESS/Trojan) × CDN IP list × port/TLS combo = expanded
 | T8 | x | Copy All (clipboard) + Download .txt | C11,I.clip,I.dl,V4 |
 | T9 | x | responsive UI polish mobile+desktop | C12 |
 | T10 | x | edge case handling: malformed URL, empty input, large list (non-blocking) | C13 |
+| T11 | x | theme switcher UI: light/dark/system toggle, localStorage persist | C14,I.theme,V9 |
 
 ## §B
 

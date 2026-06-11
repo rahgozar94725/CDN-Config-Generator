@@ -29,6 +29,11 @@
   "output.empty": "Конфиги еще не сгенерированы",
   "output.progress": "Обработка {current} из {total}",
 
+  "theme.label": "Тема",
+  "theme.light": "Светлая",
+  "theme.dark": "Тёмная",
+  "theme.system": "Системная",
+
   "lang.label": "Язык",
   "lang.en": "Английский",
   "lang.fa": "Персидский",
