@@ -12,6 +12,7 @@
   "rows.applyAllButton": "应用到全部",
   "rows.applyAllPlaceholder": "用于所有行的值",
   "rows.note": "自动从配置的 host 参数填充，若连接地址是域名则使用该地址。若两者皆无（地址为 IP），该字段为必填。",
+  "rows.requiredError": "路由子域名为必填项 — 请填写此字段以启用生成。",
 
   "config.tlsMode": "TLS 模式",
   "config.noTlsMode": "非 TLS 模式",

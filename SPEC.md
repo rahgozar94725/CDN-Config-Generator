@@ -45,6 +45,7 @@ Xray raw config (VLESS/VMESS/Trojan) × CDN IP list × port/TLS combo = expanded
 | V9 | Theme choice persisted to localStorage and restored on load. `dark` class on `<html>` matches choice | DOM check + reload test |
 | V10 | ∀ processed config with routingSubdomainRequired ∧ empty routingSubdomain → generation blocked before compute | validator test + form gate |
 | V11 | routingSubdomain derivation: explicit `host` param wins → hostname connect address → else required. Input `sni` never consulted | parser matrix test |
+| V12 | ∀ parsed config row consumed by UI → `reactive()`-wrapped so field edits re-trigger validation gate | grep `.map(reactive)` App.vue + UI verify |
 
 ## §T
 
@@ -67,3 +68,4 @@ Xray raw config (VLESS/VMESS/Trojan) × CDN IP list × port/TLS combo = expanded
 | id | date | cause | fix |
 | B1 | 2026-06-11 | genRandomSni used full hostname instead of root domain | V7 |
 | B2 | 2026-06-11 | TLS enabled but alpn/fingerprint empty — generated incomplete TLS configs | V8 |
+| B3 | 2026-07-31 | parsed rows plain objects from computed — routingSubdomain edits never re-triggered missingRows gate, retry dead | V12 |
