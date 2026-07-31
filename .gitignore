@@ -6,4 +6,5 @@ dist/
 *.log
 .agents/
 skills-lock.json
+.opencode/
 
