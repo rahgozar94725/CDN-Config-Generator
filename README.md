@@ -11,6 +11,7 @@ A browser-based SPA that takes raw Xray configs (VLESS / VMESS / Trojan), multip
 ## Features
 
 - **Input:** Paste raw configs and CDN IP/domain list
+- **CDN subdomain field:** Per-config routing subdomain, auto-filled and editable, with apply-to-all
 - **TLS / No-TLS toggle** — both modes with independent port selection
 - **TLS Advanced:**
   - ALPN multi-select (h3, h2, http/1.1 and combos)
@@ -47,7 +48,20 @@ cdn.example.com
 
 **Important:** The CDN hosts you enter must be capable of proxying traffic for the domain in your original config address. The generated links replace the original address with the CDN host while preserving your original domain in the `host` and `sni` parameters — so the CDN must be configured to route requests for your domain to your origin server.
 
-### 3. Configure Settings
+### 3. CDN Subdomain
+
+After pasting configs, each one appears as a row with a **CDN subdomain** field. This field holds the routing identity written into the generated link's `host` and `sni` parameters — the value the CDN uses to route traffic to your origin server.
+
+**Auto-fill order:**
+1. Explicit `host` param from the origin config (wins)
+2. Connect address, if it is a hostname (not an IP)
+3. Otherwise empty — you must fill it
+
+**Required field:** When the connect address is an IP and no `host` param exists, the field is empty and generation is blocked with a per-row error. Enter the routing subdomain (e.g. `sub.example.com`) to proceed.
+
+**Apply to all:** Use the apply-to-all input to fill every row with the same value in one click.
+
+### 4. Configure Settings
 
 - **TLS / No-TLS:** Toggle each mode on/off. At least one must be active.
 - **Ports:** Select ports for each active mode (No-TLS defaults: 80; TLS defaults: 443). At least one port required per active mode.
@@ -56,11 +70,11 @@ cdn.example.com
   - **Fingerprint:** Select one or more fingerprints (chrome, firefox, safari, edge, android, random, randomized). At least one required.
   - **Random SNI:** Toggle to replace SNI with 8-12 random chars + root domain + trailing dot (FQDN bypass).
 
-### 4. Generate
+### 5. Generate
 
 Click **Generate**. A progress bar shows processing per config. No browser freeze.
 
-### 5. Output
+### 6. Output
 
 - **Copy All:** Copies all generated links to clipboard.
 - **Download .txt:** Saves all links as a `.txt` file.
@@ -79,6 +93,8 @@ vless://a1b2c3d4@shop.ir:443?type=ws&security=tls&path=%2Fconnect#cdn-node
 ```
 
 **Settings:** TLS on, port 443, ALPN: h2, Fingerprint: chrome, Random SNI: off
+
+**CDN subdomain:** Auto-filled to `shop.ir` (hostname connect address, no explicit `host` param).
 
 **Generated output (2 links):**
 ```
