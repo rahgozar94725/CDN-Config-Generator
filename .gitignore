@@ -5,11 +5,3 @@ dist/
 .env.*
 *.log
 
-# graphify — never commit cache or lifecycle state
-.graphify/cache/
-.graphify/.graphify_ast.json
-.graphify/.graphify_detect.json
-.graphify/.graphify_labels.json
-.graphify/branch.json
-.graphify/worktree.json
-.graphify/needs_update
