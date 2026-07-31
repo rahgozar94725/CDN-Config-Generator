@@ -6,6 +6,8 @@
 
 一个基于浏览器的单页应用，接收原始 Xray 配置（VLESS / VMESS / Trojan），通过 CDN IP、端口和 TLS 设置进行倍增，生成扩展的即用链接列表。
 
+**在线演示：** [https://rahgozar94725.github.io/CDN-Config-Generator/](https://rahgozar94725.github.io/CDN-Config-Generator/)
+
 ## 功能
 
 - **输入：** 粘贴原始配置和 CDN IP/域名列表

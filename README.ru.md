@@ -6,6 +6,8 @@
 
 Браузерное SPA, которое берёт сырые конфиги Xray (VLESS / VMESS / Trojan), умножает их по IP-адресам CDN, портам и TLS-настройкам — создавая расширенный список готовых к использованию ссылок.
 
+**Демо:** [https://rahgozar94725.github.io/CDN-Config-Generator/](https://rahgozar94725.github.io/CDN-Config-Generator/)
+
 ## Возможности
 
 - **Ввод:** вставка сырых конфигов и списка IP/доменов CDN
