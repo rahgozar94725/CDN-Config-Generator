@@ -36,13 +36,15 @@ Xray raw config (VLESS/VMESS/Trojan) × CDN IP list × port/TLS combo = expanded
 |----|-----------|-------|
 | V1 | Output count = input count × active IPs × active ports × TLS combos (if TLS). No dedup loss | unit test counter |
 | V2 | Processed configs have `security=tls` or `security=none` only | regex output scan |
-| V3 | Original address always moves to `host`+`sni` for processed configs | param diff test |
+| V3 | ∀ processed config → link `host`==`sni`==config routingSubdomain. Connect address never appears in `host`/`sni` | param scan + parser matrix test |
 | V4 | Remark suffix = 3-digit incrementing 001-N. No gaps | output scan |
 | V5 | Non-ws/xhttp/httpupgrade/grpc transport configs passthrough bit-identical | string equality test |
 | V6 | Active TLS/No-TLS mode must have ≥1 port selected | form validation before compute |
-| V7 | ∀ random SNI → root domain extracted (last 2 labels), subdomain prefix stripped | random SNI output test |
+| V7 | ∀ random SNI → root domain of routingSubdomain (last 2 labels), subdomain prefix stripped | random SNI output test |
 | V8 | ∀ TLS mode → alpn.length ≥ 1 ∧ fingerprint.length ≥ 1 | form validation + multiplier test |
 | V9 | Theme choice persisted to localStorage and restored on load. `dark` class on `<html>` matches choice | DOM check + reload test |
+| V10 | ∀ processed config with routingSubdomainRequired ∧ empty routingSubdomain → generation blocked before compute | validator test + form gate |
+| V11 | routingSubdomain derivation: explicit `host` param wins → hostname connect address → else required. Input `sni` never consulted | parser matrix test |
 
 ## §T
 

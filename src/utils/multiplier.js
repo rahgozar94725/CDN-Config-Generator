@@ -1,4 +1,4 @@
-const ALLOWED_TRANSPORTS = ['ws', 'xhttp', 'httpupgrade', 'grpc']
+export const ALLOWED_TRANSPORTS = ['ws', 'xhttp', 'httpupgrade', 'grpc']
 
 export function generateConfigs(configs, cdnList, options) {
   const {
@@ -55,7 +55,8 @@ function buildLink(config, newAddr, newPort, security, extra, randomSni, idx) {
   const suffix = String(idx).padStart(3, '0')
   const remark = config.remark ? `${config.remark}-${suffix}` : `config-${suffix}`
 
-  const sniValue = randomSni ? genRandomSni(config.address) : config.address
+  const routing = config.routingSubdomain
+  const sniValue = randomSni ? genRandomSni(routing) : routing
 
   switch (config.type) {
     case 'vless':
@@ -72,7 +73,7 @@ function buildLink(config, newAddr, newPort, security, extra, randomSni, idx) {
 function buildVless(config, newAddr, newPort, security, sniValue, remark, extra) {
   const p = { ...config.params }
   p.type = p.type || config.transport
-  p.host = config.address
+  p.host = config.routingSubdomain
   p.sni = sniValue
   p.security = security
   if (security === 'tls') {
@@ -98,7 +99,7 @@ function buildVless(config, newAddr, newPort, security, sniValue, remark, extra)
 function buildTrojan(config, newAddr, newPort, security, sniValue, remark, extra) {
   const p = { ...config.params }
   p.type = p.type || config.transport
-  p.host = config.address
+  p.host = config.routingSubdomain
   p.sni = sniValue
   p.security = security
   if (security === 'tls') {
@@ -132,7 +133,7 @@ function buildVmess(config, newAddr, newPort, security, sniValue, remark, extra)
     scy: config.params.scy || 'auto',
     net: config.transport,
     type: config.params.headerType || 'none',
-    host: config.address,
+    host: config.routingSubdomain,
     path: config.params.path || '',
     sni: sniValue,
     tls: security === 'tls' ? 'tls' : 'none',
