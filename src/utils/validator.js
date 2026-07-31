@@ -5,7 +5,7 @@ export function findMissingRoutingSubdomain(configs) {
   configs.forEach((config, index) => {
     if (!config) return
     if (!ALLOWED_TRANSPORTS.includes(config.transport)) return
-    if (config.routingSubdomainRequired && !config.routingSubdomain) {
+    if (config.routingSubdomainRequired && !(config.routingSubdomain || '').trim()) {
       missing.push({ index, config })
     }
   })

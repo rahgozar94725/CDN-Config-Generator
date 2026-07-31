@@ -21,7 +21,7 @@
       </section>
 
       <section v-if="parsedConfigs.length > 0" class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 md:p-6">
-        <ConfigRows :configs="parsedConfigs" />
+        <ConfigRows :configs="parsedConfigs" :missingRows="missingRows" />
       </section>
 
       <section class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 md:p-6">
@@ -66,7 +66,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, reactive } from 'vue'
 import LangSwitcher from './components/LangSwitcher.vue'
 import ThemeSwitcher from './components/ThemeSwitcher.vue'
 import InputPanel from './components/InputPanel.vue'
@@ -75,6 +75,7 @@ import OutputPanel from './components/OutputPanel.vue'
 import ConfigRows from './components/ConfigRows.vue'
 import { parseConfig } from './utils/parser.js'
 import { generateConfigs } from './utils/multiplier.js'
+import { findMissingRoutingSubdomain } from './utils/validator.js'
 
 const rawConfigs = ref('')
 const cdnList = ref('')
@@ -95,15 +96,19 @@ function lines(text) {
 }
 
 const parsedConfigs = computed(() => {
-  return lines(rawConfigs.value).map(parseConfig).filter(Boolean)
+  return lines(rawConfigs.value).map(parseConfig).filter(Boolean).map(reactive)
 })
+
+const missingRows = computed(() => findMissingRoutingSubdomain(parsedConfigs.value))
+
+const hasMissing = computed(() => missingRows.value.length > 0)
 
 const canGenerate = computed(() => {
   const hasInput = rawConfigs.value.trim().length > 0 && cdnList.value.trim().length > 0
   const hasPorts = (enableTls.value && tlsPorts.value.length > 0) || (enableNoTls.value && noTlsPorts.value.length > 0)
   const hasAlpn = !enableTls.value || alpn.value.length > 0
   const hasFingerprint = !enableTls.value || fingerprint.value.length > 0
-  return hasInput && hasPorts && hasAlpn && hasFingerprint
+  return hasInput && hasPorts && hasAlpn && hasFingerprint && !hasMissing.value
 })
 
 async function generate() {
@@ -111,6 +116,7 @@ async function generate() {
   const cdnLines = lines(cdnList.value)
 
   if (rawLines.length === 0 || cdnLines.length === 0) return
+  if (hasMissing.value) return
 
   generating.value = true
   outputConfigs.value = []

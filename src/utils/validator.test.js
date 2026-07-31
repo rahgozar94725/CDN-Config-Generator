@@ -38,6 +38,12 @@ describe('findMissingRoutingSubdomain', () => {
     expect(findMissingRoutingSubdomain(configs)).toEqual([])
   })
 
+  it('flags a whitespace-only routing subdomain as empty', () => {
+    const configs = parseAll('vless://uuid@1.2.3.4:443?type=ws#cfg')
+    configs[0].routingSubdomain = '   '
+    expect(findMissingRoutingSubdomain(configs).length).toBe(1)
+  })
+
   it('skips unparseable entries', () => {
     const missing = findMissingRoutingSubdomain([null, parseConfig('vless://a@host.com:443?type=ws#a')])
     expect(missing).toEqual([])

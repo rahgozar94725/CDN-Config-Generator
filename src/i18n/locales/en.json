@@ -12,6 +12,7 @@
   "rows.applyAllButton": "Apply to all",
   "rows.applyAllPlaceholder": "Value for all rows",
   "rows.note": "Auto-filled from each config's host parameter, or from its connect address when that is a hostname. When neither applies (IP address), the field is required.",
+  "rows.requiredError": "Routing subdomain required — fill this field to enable generation.",
 
   "config.tlsMode": "TLS Mode",
   "config.noTlsMode": "No-TLS Mode",
