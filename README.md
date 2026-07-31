@@ -46,7 +46,7 @@ Enter CDN IP addresses or domain names in the **CDN List** field, one per line:
 cdn.example.com
 ```
 
-**Important:** The CDN hosts you enter must be capable of proxying traffic for the domain in your original config address. The generated links replace the original address with the CDN host while preserving your original domain in the `host` and `sni` parameters — so the CDN must be configured to route requests for your domain to your origin server.
+**Important:** The CDN hosts you enter must be capable of proxying traffic for your routing subdomain. The generated links replace the connect address with the CDN host and write the CDN subdomain field's value into the `host` and `sni` parameters — so the CDN must be configured to route requests for that subdomain to your origin server.
 
 ### 3. CDN Subdomain
 

@@ -21,7 +21,7 @@
   "config.alpn": "ALPN",
   "config.fingerprint": "Fingerprint",
   "config.randomSni": "Random SNI",
-  "config.randomSniHint": "8-12 random chars + host + trailing dot (FQDN bypass)",
+  "config.randomSniHint": "8-12 random chars + root domain + trailing dot (FQDN bypass)",
   "config.portRequired": "Select at least one port for active mode",
   "config.alpnRequired": "Select at least one ALPN option",
   "config.fingerprintRequired": "Select at least one fingerprint option",
