@@ -46,6 +46,7 @@ Xray raw config (VLESS/VMESS/Trojan) × CDN IP list × port/TLS combo = expanded
 | V10 | ∀ processed config with routingSubdomainRequired ∧ empty routingSubdomain → generation blocked before compute | validator test + form gate |
 | V11 | routingSubdomain derivation: explicit `host` param wins → hostname connect address → else required. Input `sni` never consulted | parser matrix test |
 | V12 | ∀ parsed config row consumed by UI → `reactive()`-wrapped so field edits re-trigger validation gate | grep `.map(reactive)` App.vue + UI verify |
+| V13 | Generate gate requires ≥1 valid parsed config row; garbage-only input (0 parsed rows) disables Generate (no silent empty output) | generation unit test + form gate |
 
 ## §T
 

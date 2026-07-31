@@ -46,7 +46,7 @@
       <div class="flex justify-center">
         <button
           @click="generate"
-          :disabled="!canGenerate || generating"
+          :disabled="!canGenerate(parsedConfigs, cdnLines, generationOptions) || generating"
           class="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-medium px-8 py-3 rounded-lg transition w-full md:w-auto"
         >
           {{ generating ? $t('output.generating') : $t('common.generate') }}
@@ -73,9 +73,7 @@ import InputPanel from './components/InputPanel.vue'
 import ConfigPanel from './components/ConfigPanel.vue'
 import OutputPanel from './components/OutputPanel.vue'
 import ConfigRows from './components/ConfigRows.vue'
-import { parseConfig } from './utils/parser.js'
-import { generateConfigs } from './utils/multiplier.js'
-import { findMissingRoutingSubdomain } from './utils/validator.js'
+import { parseRows, splitLines, canGenerate, generateLinks, findMissingRoutingSubdomain } from './utils/generation.js'
 
 const rawConfigs = ref('')
 const cdnList = ref('')
@@ -91,66 +89,41 @@ const generating = ref(false)
 const progressCurrent = ref(0)
 const progressTotal = ref(0)
 
-function lines(text) {
-  return text.split('\n').map(s => s.trim()).filter(Boolean)
-}
-
-const parsedConfigs = computed(() => {
-  return lines(rawConfigs.value).map(parseConfig).filter(Boolean).map(reactive)
-})
+const parsedConfigs = computed(() => parseRows(rawConfigs.value).map(reactive))
 
 const missingRows = computed(() => findMissingRoutingSubdomain(parsedConfigs.value))
 
 const hasMissing = computed(() => missingRows.value.length > 0)
 
-const canGenerate = computed(() => {
-  const hasInput = rawConfigs.value.trim().length > 0 && cdnList.value.trim().length > 0
-  const hasPorts = (enableTls.value && tlsPorts.value.length > 0) || (enableNoTls.value && noTlsPorts.value.length > 0)
-  const hasAlpn = !enableTls.value || alpn.value.length > 0
-  const hasFingerprint = !enableTls.value || fingerprint.value.length > 0
-  return hasInput && hasPorts && hasAlpn && hasFingerprint && !hasMissing.value
-})
+const cdnLines = computed(() => splitLines(cdnList.value))
+
+const generationOptions = computed(() => ({
+  enableTls: enableTls.value,
+  enableNoTls: enableNoTls.value,
+  noTlsPorts: noTlsPorts.value,
+  tlsPorts: tlsPorts.value,
+  alpn: alpn.value,
+  fingerprint: fingerprint.value,
+  randomSni: randomSni.value,
+}))
 
 async function generate() {
-  const rawLines = lines(rawConfigs.value)
-  const cdnLines = lines(cdnList.value)
-
-  if (rawLines.length === 0 || cdnLines.length === 0) return
+  if (parsedConfigs.value.length === 0 || cdnLines.value.length === 0) return
   if (hasMissing.value) return
 
   generating.value = true
   outputConfigs.value = []
 
-  const parsed = parsedConfigs.value
-
-  progressTotal.value = parsed.length
+  progressTotal.value = parsedConfigs.value.length
   progressCurrent.value = 0
 
-  const allResults = []
-  for (const cfg of parsed) {
-    const batch = generateConfigs(
-      [cfg],
-      cdnLines,
-      {
-        enableTls: enableTls.value,
-        enableNoTls: enableNoTls.value,
-        noTlsPorts: noTlsPorts.value,
-        tlsPorts: tlsPorts.value,
-        alpn: alpn.value,
-        fingerprint: fingerprint.value,
-        randomSni: randomSni.value,
-      }
-    )
-    allResults.push(...batch)
-    progressCurrent.value++
-    await tick()
-  }
+  outputConfigs.value = await generateLinks(
+    parsedConfigs.value,
+    cdnLines.value,
+    generationOptions.value,
+    (current) => { progressCurrent.value = current }
+  )
 
-  outputConfigs.value = allResults
   generating.value = false
-}
-
-function tick() {
-  return new Promise(r => setTimeout(r, 0))
 }
 </script>
