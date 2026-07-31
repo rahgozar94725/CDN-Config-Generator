@@ -6,7 +6,8 @@ Generates per-CDN-node proxy links from one or more original proxy configs. The 
 
 **Origin config**:
 A pasted proxy link (vless/vmess/trojan) that the generator starts from.
-_Avoid_: Source config, raw config
+"Raw config" is the accepted user-facing label (the UI input is named Raw Configs); origin config is the canonical term.
+_Avoid_: Source config
 
 **Connect address**:
 The host portion of the origin config's URL — where a client would connect without a CDN. May be an IP or a hostname.
@@ -35,3 +36,33 @@ _Avoid_: SNI
 **CDN subdomain field**:
 The per-config user-facing input that holds the routing subdomain. Auto-filled, editable, and required only when no routing subdomain is derivable from the origin config.
 _Avoid_: Domain field
+
+**hostname**:
+A connect address that is a host name rather than an IP.
+_Avoid_: Domain name
+
+## Persian (فارسی)
+
+Canonical Persian renderings. UI (fa.json) and README.fa.md must use these.
+For register, orthography and RTL rules, see `docs/agents/persian-style.md`.
+
+| Term | فارسی |
+|---|---|
+| Origin config | کانفیگ خام |
+| Connect address | آدرس اتصال |
+| hostname | هاست |
+| Routing subdomain | ساب‌دامین مسیریابی |
+| CDN host | هاست CDN |
+| CDN list | لیست CDN |
+| CDN subdomain field | ساب‌دامین CDN |
+| host param | پارامتر host |
+| sni param | پارامتر SNI |
+| domain | دامین |
+| root domain | دامین ریشه |
+| trailing dot | نقطه انتهایی |
+| FQDN bypass | دور زدن FQDN |
+| theme | پوسته |
+
+`هاست` renders both **CDN host** (as «هاست CDN») and **hostname**. Where **hostname**
+appears alone, the surrounding sentence must contrast it with IP, since bare «هاست»
+does not carry "not an IP" on its own.
