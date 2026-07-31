@@ -20,6 +20,10 @@
         />
       </section>
 
+      <section v-if="parsedConfigs.length > 0" class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 md:p-6">
+        <ConfigRows :configs="parsedConfigs" />
+      </section>
+
       <section class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 md:p-6">
         <ConfigPanel
           :enableTls="enableTls"
@@ -68,6 +72,7 @@ import ThemeSwitcher from './components/ThemeSwitcher.vue'
 import InputPanel from './components/InputPanel.vue'
 import ConfigPanel from './components/ConfigPanel.vue'
 import OutputPanel from './components/OutputPanel.vue'
+import ConfigRows from './components/ConfigRows.vue'
 import { parseConfig } from './utils/parser.js'
 import { generateConfigs } from './utils/multiplier.js'
 
@@ -85,6 +90,14 @@ const generating = ref(false)
 const progressCurrent = ref(0)
 const progressTotal = ref(0)
 
+function lines(text) {
+  return text.split('\n').map(s => s.trim()).filter(Boolean)
+}
+
+const parsedConfigs = computed(() => {
+  return lines(rawConfigs.value).map(parseConfig).filter(Boolean)
+})
+
 const canGenerate = computed(() => {
   const hasInput = rawConfigs.value.trim().length > 0 && cdnList.value.trim().length > 0
   const hasPorts = (enableTls.value && tlsPorts.value.length > 0) || (enableNoTls.value && noTlsPorts.value.length > 0)
@@ -94,15 +107,15 @@ const canGenerate = computed(() => {
 })
 
 async function generate() {
-  const rawLines = rawConfigs.value.split('\n').map(s => s.trim()).filter(Boolean)
-  const cdnLines = cdnList.value.split('\n').map(s => s.trim()).filter(Boolean)
+  const rawLines = lines(rawConfigs.value)
+  const cdnLines = lines(cdnList.value)
 
   if (rawLines.length === 0 || cdnLines.length === 0) return
 
   generating.value = true
   outputConfigs.value = []
 
-  const parsed = rawLines.map(parseConfig).filter(Boolean)
+  const parsed = parsedConfigs.value
 
   progressTotal.value = parsed.length
   progressCurrent.value = 0
