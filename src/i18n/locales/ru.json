@@ -7,6 +7,12 @@
   "input.cdnList.label": "Список IP/доменов CDN",
   "input.cdnList.placeholder": "Введите IP или домены CDN (по одному на строку)",
 
+  "rows.title": "Маршрутные поддомены",
+  "rows.fieldLabel": "Поддомен CDN",
+  "rows.applyAllButton": "Применить ко всем",
+  "rows.applyAllPlaceholder": "Значение для всех строк",
+  "rows.note": "Автоматически берётся из параметра host конфига или из адреса подключения, если это имя хоста. Если ни то, ни другое неприменимо (адрес — IP), поле обязательно.",
+
   "config.tlsMode": "Режим TLS",
   "config.noTlsMode": "Режим без TLS",
   "config.ports": "Порты",
