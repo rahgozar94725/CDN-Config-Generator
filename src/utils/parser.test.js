@@ -70,6 +70,64 @@ describe('parseTrojan', () => {
   })
 })
 
+describe('routing subdomain derivation', () => {
+  it('hostname address without host param → address used, not required', () => {
+    const r = parseVless('vless://uuid@connect.example.com:443?type=ws#cfg')
+    expect(r.routingSubdomain).toBe('connect.example.com')
+    expect(r.routingSubdomainRequired).toBe(false)
+  })
+
+  it('explicit host param wins over differing hostname address', () => {
+    const r = parseVless('vless://uuid@connect.example.com:443?type=ws&host=routing.example.com#cfg')
+    expect(r.routingSubdomain).toBe('routing.example.com')
+    expect(r.routingSubdomainRequired).toBe(false)
+  })
+
+  it('IP address with host param → host used, not required', () => {
+    const r = parseTrojan('trojan://pw@1.2.3.4:443?type=ws&host=route.example.com#cfg')
+    expect(r.routingSubdomain).toBe('route.example.com')
+    expect(r.routingSubdomainRequired).toBe(false)
+  })
+
+  it('IP address without host param → empty and required', () => {
+    const r = parseVless('vless://uuid@1.2.3.4:443?type=ws#cfg')
+    expect(r.routingSubdomain).toBe('')
+    expect(r.routingSubdomainRequired).toBe(true)
+  })
+
+  it('input sni param never consulted for derivation', () => {
+    const r = parseVless('vless://uuid@connect.example.com:443?type=ws&sni=bypass.foo#cfg')
+    expect(r.routingSubdomain).toBe('connect.example.com')
+    expect(r.routingSubdomainRequired).toBe(false)
+  })
+
+  it('IP address with sni param but no host param → still empty and required', () => {
+    const r = parseVless('vless://uuid@1.2.3.4:443?type=ws&sni=bypass.foo#cfg')
+    expect(r.routingSubdomain).toBe('')
+    expect(r.routingSubdomainRequired).toBe(true)
+  })
+
+  it('IPv6 address without host param → empty and required', () => {
+    const r = parseVless('vless://uuid@[2001:db8::1]:443?type=ws#cfg')
+    expect(r.routingSubdomain).toBe('')
+    expect(r.routingSubdomainRequired).toBe(true)
+  })
+
+  it('vmess uses JSON host field when present', () => {
+    const obj = { v: '2', ps: 'm', add: '1.2.3.4', port: 443, id: 'uuid', net: 'ws', host: 'route.example.com', tls: 'tls' }
+    const r = parseVmess('vmess://' + btoa(JSON.stringify(obj)))
+    expect(r.routingSubdomain).toBe('route.example.com')
+    expect(r.routingSubdomainRequired).toBe(false)
+  })
+
+  it('vmess IP without host → empty and required', () => {
+    const obj = { v: '2', ps: 'm', add: '1.2.3.4', port: 443, id: 'uuid', net: 'ws', tls: 'tls' }
+    const r = parseVmess('vmess://' + btoa(JSON.stringify(obj)))
+    expect(r.routingSubdomain).toBe('')
+    expect(r.routingSubdomainRequired).toBe(true)
+  })
+})
+
 describe('parseConfig', () => {
   it('routes vless:// correctly', () => {
     const r = parseConfig('vless://uuid@x.com:443?type=ws#test')

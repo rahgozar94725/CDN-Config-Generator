@@ -14,7 +14,7 @@ export function parseVless(raw) {
     const u = new URL(raw)
     const port = Number(u.port) || 443
     const params = Object.fromEntries(u.searchParams.entries())
-    return {
+    return withRoutingSubdomain({
       type: 'vless',
       uuid: u.username || '',
       address: u.hostname,
@@ -24,7 +24,7 @@ export function parseVless(raw) {
       remark: decodeURIComponent(u.hash.replace('#', '')),
       params,
       raw,
-    }
+    })
   } catch {
     return null
   }
@@ -35,7 +35,7 @@ export function parseTrojan(raw) {
     const u = new URL(raw)
     const port = Number(u.port) || 443
     const params = Object.fromEntries(u.searchParams.entries())
-    return {
+    return withRoutingSubdomain({
       type: 'trojan',
       uuid: u.username || '',
       address: u.hostname,
@@ -45,7 +45,7 @@ export function parseTrojan(raw) {
       remark: decodeURIComponent(u.hash.replace('#', '')),
       params,
       raw,
-    }
+    })
   } catch {
     return null
   }
@@ -56,7 +56,7 @@ export function parseVmess(raw) {
     const b64 = raw.replace('vmess://', '')
     const decoded = decodeBase64(b64)
     const json = JSON.parse(decoded)
-    return {
+    return withRoutingSubdomain({
       type: 'vmess',
       uuid: json.id || '',
       address: json.add || '',
@@ -76,10 +76,25 @@ export function parseVmess(raw) {
         v: json.v || '2',
       },
       raw,
-    }
+    })
   } catch {
     return null
   }
+}
+
+function withRoutingSubdomain(parsed) {
+  const hostParam = parsed.params.host
+  if (hostParam) {
+    return { ...parsed, routingSubdomain: hostParam, routingSubdomainRequired: false }
+  }
+  if (parsed.address && !isIpAddress(parsed.address)) {
+    return { ...parsed, routingSubdomain: parsed.address, routingSubdomainRequired: false }
+  }
+  return { ...parsed, routingSubdomain: '', routingSubdomainRequired: true }
+}
+
+function isIpAddress(host) {
+  return /^(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}$/.test(host) || host.includes(':')
 }
 
 function decodeBase64(str) {
