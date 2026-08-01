@@ -62,6 +62,7 @@
         />
       </section>
     </main>
+    <Footer />
   </div>
 </template>
 
@@ -73,6 +74,7 @@ import InputPanel from './components/InputPanel.vue'
 import ConfigPanel from './components/ConfigPanel.vue'
 import OutputPanel from './components/OutputPanel.vue'
 import ConfigRows from './components/ConfigRows.vue'
+import Footer from './components/Footer.vue'
 import { parseRows, splitLines, canGenerate, generateLinks, findMissingRoutingSubdomain } from './utils/generation.js'
 
 const rawConfigs = ref('')
