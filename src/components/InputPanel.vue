@@ -3,7 +3,8 @@
     <div>
       <label class="block text-sm font-medium mb-1">{{ $t('input.rawConfigs.label') }}</label>
       <textarea
-        v-model="rawConfigs"
+        :value="rawConfigs"
+        @input="$emit('update:rawConfigs', $event.target.value)"
         :placeholder="$t('input.rawConfigs.placeholder')"
         class="w-full h-48 border rounded p-3 font-mono text-sm bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 resize-y"
       ></textarea>
@@ -11,7 +12,8 @@
     <div>
       <label class="block text-sm font-medium mb-1">{{ $t('input.cdnList.label') }}</label>
       <textarea
-        v-model="cdnList"
+        :value="cdnList"
+        @input="$emit('update:cdnList', $event.target.value)"
         :placeholder="$t('input.cdnList.placeholder')"
         class="w-full h-48 border rounded p-3 font-mono text-sm bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 resize-y"
       ></textarea>
@@ -20,15 +22,13 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
+// Controlled by the owner: deleting a row rewrites the raw-configs text, so the
+// value has to be pushed down as well as reported up. Local state here would
+// leave the textarea showing a line the model no longer has.
+defineProps({
+  rawConfigs: { type: String, default: '' },
+  cdnList: { type: String, default: '' },
+})
 
-const rawConfigs = ref('')
-const cdnList = ref('')
-
-const emit = defineEmits(['update:rawConfigs', 'update:cdnList'])
-
-watch(rawConfigs, (v) => emit('update:rawConfigs', v))
-watch(cdnList, (v) => emit('update:cdnList', v))
-
-defineExpose({ rawConfigs, cdnList })
+defineEmits(['update:rawConfigs', 'update:cdnList'])
 </script>

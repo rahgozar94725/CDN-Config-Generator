@@ -14,6 +14,13 @@
         >
           {{ $t('rows.applyAllButton') }}
         </button>
+        <button
+          v-if="excludedCount > 0"
+          @click="$emit('delete-excluded')"
+          class="px-3 py-1 rounded text-sm border border-red-400 dark:border-red-500 text-red-700 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/30 transition"
+        >
+          {{ $t('rows.deleteExcludedButton', { count: excludedCount }) }}
+        </button>
       </div>
     </div>
 
@@ -75,6 +82,16 @@
             {{ $t(errorKey(reasonFor(i))) }}
           </p>
         </div>
+
+        <button
+          type="button"
+          :title="$t('rows.deleteTitle')"
+          :aria-label="$t('rows.deleteTitle')"
+          @click="$emit('delete', cfg.line)"
+          class="shrink-0 self-start sm:self-center px-2 py-1 rounded text-sm text-gray-500 dark:text-gray-400 hover:bg-red-50 dark:hover:bg-red-900/30 hover:text-red-600 dark:hover:text-red-400 transition"
+        >
+          &#10005;
+        </button>
       </li>
     </ul>
   </div>
@@ -89,9 +106,11 @@ const props = defineProps({
   invalidRows: { type: Array, default: () => [] },
 })
 
-const emit = defineEmits(['edit', 'reset', 'apply-all'])
+const emit = defineEmits(['edit', 'reset', 'apply-all', 'delete', 'delete-excluded'])
 
 const applyAllValue = ref('')
+
+const excludedCount = computed(() => props.configs.filter(cfg => isExcluded(cfg)).length)
 
 const ERROR_KEYS = {
   required: 'rows.requiredError',

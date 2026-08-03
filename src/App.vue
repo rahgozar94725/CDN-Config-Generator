@@ -15,6 +15,8 @@
     <main class="max-w-7xl mx-auto px-4 py-4 md:py-6 space-y-4 md:space-y-6">
       <section class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 md:p-6">
         <InputPanel
+          :rawConfigs="rawConfigs"
+          :cdnList="cdnList"
           @update:rawConfigs="rawConfigs = $event"
           @update:cdnList="cdnList = $event"
         />
@@ -27,6 +29,8 @@
           @edit="setRoutingSubdomain"
           @reset="resetRoutingSubdomain"
           @apply-all="applyRoutingSubdomain"
+          @delete="deleteRow"
+          @delete-excluded="deleteExcludedRows"
         />
       </section>
 
@@ -83,7 +87,7 @@ import ConfigPanel from './components/ConfigPanel.vue'
 import OutputPanel from './components/OutputPanel.vue'
 import ConfigRows from './components/ConfigRows.vue'
 import Footer from './components/Footer.vue'
-import { parseRows, splitLines, canGenerate, generateLinks } from './utils/generation.js'
+import { parseRows, splitLines, canGenerate, generateLinks, removeLines, excludedRows } from './utils/generation.js'
 import { configFingerprint, resolveRoutingSubdomain, findInvalidRoutingSubdomain, isCompatibleConfig } from './utils/rows.js'
 
 const rawConfigs = ref('')
@@ -135,6 +139,17 @@ function setRoutingSubdomain(key, value) {
 
 function resetRoutingSubdomain(key) {
   routingOverrides.delete(key)
+}
+
+// Deletion rewrites the user's own paste and is not undoable. It addresses the
+// source line, not the row position: blank lines make the two disagree, and two
+// identical lines are two rows sharing one fingerprint.
+function deleteRow(line) {
+  rawConfigs.value = removeLines(rawConfigs.value, [line])
+}
+
+function deleteExcludedRows() {
+  rawConfigs.value = removeLines(rawConfigs.value, excludedRows(effectiveRows.value).map(r => r.line))
 }
 
 function applyRoutingSubdomain(value) {

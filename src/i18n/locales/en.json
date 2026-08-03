@@ -16,6 +16,8 @@
   "rows.invalidError": "Invalid routing subdomain — it must be a hostname of at least two labels, using only ASCII letters, digits and hyphens. IP addresses are not accepted.",
   "rows.trailingDotError": "Remove the trailing dot — it belongs to SNI, not to the routing subdomain. Turn on Random SNI to get it in generated links.",
   "rows.resetTitle": "Reset to the auto-filled value",
+  "rows.deleteTitle": "Delete this line from Raw Configs",
+  "rows.deleteExcludedButton": "Delete {count} excluded",
   "rows.transportError": "This transport cannot pass a CDN. Only ws, xhttp, grpc and httpupgrade can — change the transport on your server, or delete this row.",
   "rows.securityError": "REALITY cannot pass a CDN, and no transport security other than plain or TLS is accepted. Change it on your server, or delete this row.",
   "rows.flowError": "This config works with no client at all: xtls-rprx-vision needs a direct TLS or REALITY connection, or VLESS Encryption. No CDN setting can fix it.",
