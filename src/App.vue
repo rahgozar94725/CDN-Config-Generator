@@ -39,6 +39,7 @@
           :alpn="alpn"
           :fingerprint="fingerprint"
           :randomSni="randomSni"
+          :includeExcluded="includeExcluded"
           @update:enableTls="enableTls = $event"
           @update:enableNoTls="enableNoTls = $event"
           @update:noTlsPorts="noTlsPorts = $event"
@@ -46,6 +47,7 @@
           @update:alpn="alpn = $event"
           @update:fingerprint="fingerprint = $event"
           @update:randomSni="randomSni = $event"
+          @update:includeExcluded="includeExcluded = $event"
         />
       </section>
 
@@ -82,7 +84,7 @@ import OutputPanel from './components/OutputPanel.vue'
 import ConfigRows from './components/ConfigRows.vue'
 import Footer from './components/Footer.vue'
 import { parseRows, splitLines, canGenerate, generateLinks } from './utils/generation.js'
-import { configFingerprint, resolveRoutingSubdomain, findInvalidRoutingSubdomain, isProcessedConfig } from './utils/rows.js'
+import { configFingerprint, resolveRoutingSubdomain, findInvalidRoutingSubdomain, isCompatibleConfig } from './utils/rows.js'
 
 const rawConfigs = ref('')
 const cdnList = ref('')
@@ -93,6 +95,7 @@ const tlsPorts = ref([443])
 const alpn = ref([])
 const fingerprint = ref([])
 const randomSni = ref(false)
+const includeExcluded = ref(false)
 const outputConfigs = ref([])
 const generating = ref(false)
 const progressCurrent = ref(0)
@@ -138,7 +141,7 @@ function applyRoutingSubdomain(value) {
   const v = (value || '').trim()
   if (!v) return
   for (const c of effectiveRows.value) {
-    if (isProcessedConfig(c)) routingOverrides.set(configFingerprint(c), v)
+    if (isCompatibleConfig(c)) routingOverrides.set(configFingerprint(c), v)
   }
 }
 
@@ -152,6 +155,7 @@ const generationOptions = computed(() => ({
   alpn: alpn.value,
   fingerprint: fingerprint.value,
   randomSni: randomSni.value,
+  includeExcluded: includeExcluded.value,
 }))
 
 async function generate() {

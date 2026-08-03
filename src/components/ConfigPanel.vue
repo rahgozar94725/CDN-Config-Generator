@@ -90,6 +90,16 @@
         </div>
       </label>
     </div>
+
+    <div class="border-t pt-4">
+      <label class="flex items-center gap-2 cursor-pointer">
+        <input type="checkbox" v-model="local.includeExcluded" />
+        <div>
+          <span class="font-medium">{{ $t('config.includeExcluded') }}</span>
+          <p class="text-xs text-gray-500 dark:text-gray-400">{{ $t('config.includeExcludedHint') }}</p>
+        </div>
+      </label>
+    </div>
   </div>
 </template>
 
@@ -109,23 +119,27 @@ const props = defineProps({
   alpn: { type: Array, default: () => [] },
   fingerprint: { type: Array, default: () => [] },
   randomSni: { type: Boolean, default: false },
+  includeExcluded: { type: Boolean, default: false },
 })
 
 const emit = defineEmits([
   'update:enableTls', 'update:enableNoTls',
   'update:noTlsPorts', 'update:tlsPorts',
   'update:alpn', 'update:fingerprint', 'update:randomSni',
+  'update:includeExcluded',
 ])
 
 const local = reactive({
   enableTls: props.enableTls,
   enableNoTls: props.enableNoTls,
   randomSni: props.randomSni,
+  includeExcluded: props.includeExcluded,
 })
 
 watch(() => local.enableTls, (v) => emit('update:enableTls', v))
 watch(() => local.enableNoTls, (v) => emit('update:enableNoTls', v))
 watch(() => local.randomSni, (v) => emit('update:randomSni', v))
+watch(() => local.includeExcluded, (v) => emit('update:includeExcluded', v))
 
 const selectedNoTlsPorts = reactive([...props.noTlsPorts])
 const selectedTlsPorts = reactive([...props.tlsPorts])

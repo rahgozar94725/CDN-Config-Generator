@@ -1,9 +1,11 @@
 import { describe, it, expect } from 'vitest'
 import { generateConfigs } from './multiplier.js'
-import { parseConfig } from './parser.js'
+import { parseRows } from './generation.js'
 
+// Rows, not bare parse output: generateConfigs decides what to emit from a row's
+// status, which parseRows is what assigns.
 function parseAll(lines) {
-  return lines.split('\n').filter(Boolean).map(parseConfig)
+  return parseRows(lines)
 }
 
 describe('multiplier', () => {
@@ -52,14 +54,51 @@ describe('multiplier', () => {
     expect(out[1]).toMatch(/#mycfg-002$/)
   })
 
-  it('V5: non-allowed transport passes through unchanged', () => {
+  it('V5: an excluded row is left out of the output by default', () => {
     const raw = 'vless://uuid@orig.com:443?type=tcp#cfg'
-    const configs = parseAll(raw)
     const cdnList = ['1.1.1.1']
     const opts = { enableTls: true, enableNoTls: false, tlsPorts: [443], alpn: ['h2'], fingerprint: ['chrome'] }
-    const out = generateConfigs(configs, cdnList, opts)
+    expect(generateConfigs(parseAll(raw), cdnList, opts)).toEqual([])
+  })
+
+  it('V5: includeExcluded copies an excluded row through bit-identical', () => {
+    const raw = 'vless://uuid@orig.com:443?type=tcp#cfg'
+    const cdnList = ['1.1.1.1']
+    const opts = { enableTls: true, enableNoTls: false, tlsPorts: [443], alpn: ['h2'], fingerprint: ['chrome'], includeExcluded: true }
+    const out = generateConfigs(parseAll(raw), cdnList, opts)
+    expect(out).toEqual([raw])
+  })
+
+  it('V5: an unparsed line passes through as its own text, never as a link', () => {
+    const raw = 'vless://uuid@orig.com:443?type=ws#ok\nthis is not a link'
+    const cdnList = ['1.1.1.1']
+    const base = { enableTls: false, enableNoTls: true, noTlsPorts: [80], alpn: [], fingerprint: [] }
+    expect(generateConfigs(parseAll(raw), cdnList, base).length).toBe(1)
+    const withExcluded = generateConfigs(parseAll(raw), cdnList, { ...base, includeExcluded: true })
+    expect(withExcluded.length).toBe(2)
+    expect(withExcluded[1]).toBe('this is not a link')
+  })
+
+  // The reported defect: REALITY was never examined, so an allowed transport
+  // carried it straight into a rewritten link with pbk/sid/spx still attached.
+  it('a REALITY config never reaches the output, params and all', () => {
+    const raw = 'vless://uuid@orig.com:443?type=ws&security=reality&pbk=KEY&sid=ab&spx=%2F#cfg'
+    const opts = { enableTls: true, enableNoTls: false, tlsPorts: [443], alpn: ['h2'], fingerprint: ['chrome'] }
+    expect(generateConfigs(parseAll(raw), ['1.1.1.1'], opts)).toEqual([])
+  })
+
+  it('a flow config without VLESS Encryption never reaches the output', () => {
+    const raw = 'vless://uuid@orig.com:443?type=ws&security=tls&flow=xtls-rprx-vision#cfg'
+    const opts = { enableTls: true, enableNoTls: false, tlsPorts: [443], alpn: ['h2'], fingerprint: ['chrome'] }
+    expect(generateConfigs(parseAll(raw), ['1.1.1.1'], opts)).toEqual([])
+  })
+
+  it('a flow config with VLESS Encryption is generated, flow intact', () => {
+    const raw = 'vless://uuid@orig.com:443?type=ws&security=tls&flow=xtls-rprx-vision&encryption=mlkem768x25519plus.native.0rtt.abc#cfg'
+    const opts = { enableTls: true, enableNoTls: false, tlsPorts: [443], alpn: ['h2'], fingerprint: ['chrome'] }
+    const out = generateConfigs(parseAll(raw), ['1.1.1.1'], opts)
     expect(out.length).toBe(1)
-    expect(out[0]).toBe(raw)
+    expect(out[0]).toMatch(/flow=xtls-rprx-vision/)
   })
 
   it('handles multiple input configs', () => {

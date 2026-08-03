@@ -1,5 +1,23 @@
-import { ALLOWED_TRANSPORTS } from './multiplier.js'
 import { isIpAddress } from './parser.js'
+
+// The CDN method carries a config only through a transport the CDN can proxy,
+// under plain or ordinary TLS. Both lists are allowlists on purpose (ADR-0004):
+// a blocklist would let an unrecognised `security` fall through and be rewritten
+// to `security=tls`, which is the REALITY defect reproduced under a new name.
+export const ALLOWED_TRANSPORTS = ['ws', 'xhttp', 'httpupgrade', 'grpc']
+export const ALLOWED_SECURITY = ['none', 'tls']
+
+export const ROW_OK = 'ok'
+export const ROW_INCOMPATIBLE = 'incompatible'
+export const ROW_UNPARSED = 'unparsed'
+
+// Reasons are message keys. They stay separate because the remedies differ:
+// a refused transport is the server's to change, while `flow` without VLESS
+// Encryption is a config no client accepts at all.
+export const INCOMPATIBLE_TRANSPORT = 'transport'
+export const INCOMPATIBLE_SECURITY = 'security'
+export const INCOMPATIBLE_FLOW = 'flow'
+export const INCOMPATIBLE_SS_PLUGIN = 'ssPlugin'
 
 // Stable identity for a parsed config across re-derives. Deliberately excludes
 // remark and transport: "the same underlying config" means the same endpoint,
@@ -22,8 +40,34 @@ export function resolveRoutingSubdomain(config, overrides) {
   return config.routingSubdomain || ''
 }
 
-export function isProcessedConfig(config) {
-  return !!config && ALLOWED_TRANSPORTS.includes(config.transport)
+// Returns the reason this config cannot be carried, or null when it can.
+// Order matters: an `ss` link in the plugin dialect states its transport inside
+// `plugin` and so carries no `type` param at all — checking the transport first
+// would blame the wrong thing and send the user to fix their server (ADR-0005).
+export function compatibilityReason(config) {
+  if (!config) return INCOMPATIBLE_TRANSPORT
+  if (config.type === 'ss' && param(config, 'plugin')) return INCOMPATIBLE_SS_PLUGIN
+  if (!ALLOWED_TRANSPORTS.includes(config.transport)) return INCOMPATIBLE_TRANSPORT
+  if (!ALLOWED_SECURITY.includes(config.security)) return INCOMPATIBLE_SECURITY
+  if (param(config, 'flow') && !hasVlessEncryption(config)) return INCOMPATIBLE_FLOW
+  return null
+}
+
+export function isCompatibleConfig(config) {
+  return !!config && compatibilityReason(config) === null
+}
+
+function param(config, name) {
+  return String((config.params && config.params[name]) || '').trim()
+}
+
+// VLESS Encryption is the sole reason the flow rule is conditional rather than a
+// flat refusal: it is what lets Vision run off raw TCP, and therefore behind a
+// CDN. `none` is the documented explicit disable, and an absent value means the
+// same thing.
+function hasVlessEncryption(config) {
+  const value = param(config, 'encryption')
+  return value !== '' && value !== 'none'
 }
 
 const LABEL = /^[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?$/
@@ -57,12 +101,13 @@ export function validateRoutingSubdomain(value) {
 
 // Validates the resolved value, so a subdomain derived from the origin config is
 // held to the same rule as a typed one — an unusable `host` param produces the
-// same broken link either way (V10).
+// same broken link either way (V10). Only compatible configs are checked: an
+// excluded row has no CDN subdomain field to be wrong.
 export function findInvalidRoutingSubdomain(configs) {
   const invalid = []
   configs.forEach((config, index) => {
     if (!config) return
-    if (!isProcessedConfig(config)) return
+    if (!isCompatibleConfig(config)) return
     const reason = validateRoutingSubdomain(config.routingSubdomain)
     if (reason) {
       invalid.push({ index, config, reason })

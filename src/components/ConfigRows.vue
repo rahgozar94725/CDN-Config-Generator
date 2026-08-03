@@ -25,25 +25,38 @@
       <li
         v-for="(cfg, i) in configs"
         :key="i"
-        class="flex flex-col sm:flex-row sm:items-center gap-2 border rounded-lg p-3 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600"
+        class="flex flex-col sm:flex-row sm:items-center gap-2 border rounded-lg p-3"
+        :class="isExcluded(cfg)
+          ? 'bg-gray-50 dark:bg-gray-900/40 border-gray-300 dark:border-gray-700'
+          : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600'"
       >
         <div class="flex-1 min-w-0">
           <p class="text-sm font-medium truncate">
-            <span class="text-blue-600 dark:text-blue-400 uppercase text-xs mr-1">{{ cfg.type }}</span>
+            <span v-if="cfg.type" class="text-blue-600 dark:text-blue-400 uppercase text-xs mr-1">{{ cfg.type }}</span>
             {{ rowIdentity(cfg) }}
           </p>
-          <p class="text-xs text-gray-500 dark:text-gray-400 truncate">
-            {{ cfg.transport || '\u2014' }} &middot; {{ cfg.address }}
+          <p v-if="!isUnparsed(cfg)" class="text-xs text-gray-500 dark:text-gray-400 truncate">
+            {{ cfg.transport || '—' }} &middot; {{ cfg.address }}
           </p>
         </div>
-        <div class="flex flex-col gap-1">
+
+        <!-- An excluded row carries the reason instead of a field: it has no
+             routing subdomain to hold, and a disabled field said something was
+             wrong without saying what. -->
+        <p
+          v-if="isExcluded(cfg)"
+          class="text-xs text-amber-700 dark:text-amber-300 sm:text-right sm:max-w-md"
+        >
+          {{ $t(excludedKey(cfg)) }}
+        </p>
+
+        <div v-else class="flex flex-col gap-1">
           <label class="flex items-center gap-2 text-sm">
             <span class="text-gray-600 dark:text-gray-400 shrink-0">{{ $t('rows.fieldLabel') }}</span>
             <input
               :value="cfg.routingSubdomain"
               type="text"
-              :disabled="!isProcessed(cfg)"
-              class="border rounded px-3 py-1 font-mono text-sm bg-white dark:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-64"
+              class="border rounded px-3 py-1 font-mono text-sm bg-white dark:bg-gray-800 w-full sm:w-64"
               :class="reasonFor(i) ? 'border-red-500 dark:border-red-400' : 'border-gray-300 dark:border-gray-600'"
               @input="onEdit(cfg, $event.target.value)"
             />
@@ -69,7 +82,7 @@
 
 <script setup>
 import { ref, computed } from 'vue'
-import { isProcessedConfig } from '../utils/rows.js'
+import { isCompatibleConfig, ROW_UNPARSED } from '../utils/rows.js'
 
 const props = defineProps({
   configs: { type: Array, default: () => [] },
@@ -86,6 +99,14 @@ const ERROR_KEYS = {
   format: 'rows.invalidError',
 }
 
+// One message per reason, because the remedies differ — see ADR-0004. The flow
+// message in particular must not read as a CDN problem.
+const EXCLUDED_KEYS = {
+  transport: 'rows.transportError',
+  security: 'rows.securityError',
+  flow: 'rows.flowError',
+}
+
 const reasonByIndex = computed(() => new Map(props.invalidRows.map(r => [r.index, r.reason])))
 
 function reasonFor(i) {
@@ -96,14 +117,23 @@ function errorKey(reason) {
   return ERROR_KEYS[reason] || ERROR_KEYS.format
 }
 
+function excludedKey(cfg) {
+  if (isUnparsed(cfg)) return 'rows.unparsedError'
+  return EXCLUDED_KEYS[cfg.incompatibleReason] || EXCLUDED_KEYS.transport
+}
+
+function isUnparsed(cfg) {
+  return cfg.status === ROW_UNPARSED
+}
+
+function isExcluded(cfg) {
+  return !isCompatibleConfig(cfg)
+}
+
 // Reset restores the derived value by dropping the override, so it is offered
 // only when both exist — there is nothing to fall back to otherwise.
 function canReset(cfg) {
-  return isProcessed(cfg) && cfg.hasOverride && !!cfg.derivedRoutingSubdomain
-}
-
-function isProcessed(cfg) {
-  return isProcessedConfig(cfg)
+  return !isExcluded(cfg) && cfg.hasOverride && !!cfg.derivedRoutingSubdomain
 }
 
 // Field edits never touch the derived row; they report (fingerprint, value) to
@@ -118,6 +148,7 @@ function applyAll() {
 }
 
 function rowIdentity(cfg) {
+  if (isUnparsed(cfg)) return cfg.raw
   return cfg.remark || cfg.address || cfg.type
 }
 </script>

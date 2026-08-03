@@ -2,7 +2,8 @@ import { describe, it, expect } from 'vitest'
 import {
   configFingerprint,
   resolveRoutingSubdomain,
-  isProcessedConfig,
+  isCompatibleConfig,
+  compatibilityReason,
   validateRoutingSubdomain,
   findInvalidRoutingSubdomain,
 } from './rows.js'
@@ -67,12 +68,59 @@ describe('resolveRoutingSubdomain', () => {
   })
 })
 
-describe('isProcessedConfig', () => {
-  it('true only for allowed transports', () => {
-    expect(isProcessedConfig(parseConfig('vless://a@x.com:443?type=ws#a'))).toBe(true)
-    expect(isProcessedConfig(parseConfig('vless://a@x.com:443?type=grpc#a'))).toBe(true)
-    expect(isProcessedConfig(parseConfig('vless://a@x.com:443?type=tcp#a'))).toBe(false)
-    expect(isProcessedConfig(null)).toBe(false)
+describe('compatibilityReason', () => {
+  const reason = raw => compatibilityReason(parseConfig(raw))
+
+  it('accepts every transport a CDN can proxy', () => {
+    for (const t of ['ws', 'xhttp', 'grpc', 'httpupgrade']) {
+      expect(reason(`vless://a@x.com:443?type=${t}&security=none#a`)).toBe(null)
+    }
+  })
+
+  it('refuses every other transport, including an absent one', () => {
+    for (const t of ['tcp', 'raw', 'kcp', 'quic', 'http']) {
+      expect(reason(`vless://a@x.com:443?type=${t}#a`)).toBe('transport')
+    }
+    expect(reason('vless://a@x.com:443#a')).toBe('transport')
+  })
+
+  it('accepts plain and TLS transport security', () => {
+    expect(reason('vless://a@x.com:443?type=ws&security=none#a')).toBe(null)
+    expect(reason('vless://a@x.com:443?type=ws&security=tls#a')).toBe(null)
+    expect(reason('vless://a@x.com:443?type=ws#a')).toBe(null)
+  })
+
+  // Allowlisted rather than blocklisted: an unrecognised value must be refused,
+  // not rewritten to security=tls (ADR-0004).
+  it('refuses REALITY and any other transport security', () => {
+    expect(reason('vless://a@x.com:443?type=ws&security=reality&pbk=K#a')).toBe('security')
+    expect(reason('vless://a@x.com:443?type=ws&security=xtls#a')).toBe('security')
+    expect(reason('vless://a@x.com:443?type=ws&security=whatever-comes-next#a')).toBe('security')
+  })
+
+  // Vision needs a direct TLS/REALITY connection, which no CDN-passing
+  // transport gives it — unless VLESS Encryption carries it instead.
+  it('refuses flow without VLESS Encryption', () => {
+    expect(reason('vless://a@x.com:443?type=ws&security=tls&flow=xtls-rprx-vision#a')).toBe('flow')
+    expect(reason('vless://a@x.com:443?type=ws&security=tls&flow=xtls-rprx-vision&encryption=none#a')).toBe('flow')
+    expect(reason('vless://a@x.com:443?type=ws&security=none&flow=xtls-rprx-vision-udp443#a')).toBe('flow')
+  })
+
+  it('accepts flow when VLESS Encryption is present', () => {
+    expect(reason('vless://a@x.com:443?type=ws&security=tls&flow=xtls-rprx-vision&encryption=mlkem768x25519plus.native.0rtt.k#a')).toBe(null)
+  })
+
+  it('ignores an empty flow value', () => {
+    expect(reason('vless://a@x.com:443?type=ws&security=tls&flow=#a')).toBe(null)
+  })
+})
+
+describe('isCompatibleConfig', () => {
+  it('true only when there is no reason to exclude', () => {
+    expect(isCompatibleConfig(parseConfig('vless://a@x.com:443?type=ws#a'))).toBe(true)
+    expect(isCompatibleConfig(parseConfig('vless://a@x.com:443?type=grpc#a'))).toBe(true)
+    expect(isCompatibleConfig(parseConfig('vless://a@x.com:443?type=tcp#a'))).toBe(false)
+    expect(isCompatibleConfig(null)).toBe(false)
   })
 })
 
@@ -171,9 +219,9 @@ describe('findInvalidRoutingSubdomain', () => {
     expect(invalid.map(m => m.index)).toEqual([1, 2])
   })
 
-  it('never flags pass-through configs even with an IP address', () => {
-    const configs = parseAll('vless://uuid@1.2.3.4:443?type=tcp#cfg')
-    expect(findInvalidRoutingSubdomain(configs)).toEqual([])
+  it('never flags an excluded config even with an IP address', () => {
+    expect(findInvalidRoutingSubdomain(parseAll('vless://uuid@1.2.3.4:443?type=tcp#cfg'))).toEqual([])
+    expect(findInvalidRoutingSubdomain(parseAll('vless://uuid@1.2.3.4:443?type=ws&security=reality#cfg'))).toEqual([])
   })
 
   it('flags a whitespace-only routing subdomain as required', () => {

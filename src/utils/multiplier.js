@@ -1,4 +1,4 @@
-export const ALLOWED_TRANSPORTS = ['ws', 'xhttp', 'httpupgrade', 'grpc']
+import { ROW_OK } from './rows.js'
 
 export function generateConfigs(configs, cdnList, options) {
   const {
@@ -9,6 +9,7 @@ export function generateConfigs(configs, cdnList, options) {
     alpn = [],
     fingerprint = [],
     randomSni = false,
+    includeExcluded = false,
   } = options
 
   const results = []
@@ -17,12 +18,13 @@ export function generateConfigs(configs, cdnList, options) {
   for (const config of configs) {
     if (!config) continue
 
-    if (!ALLOWED_TRANSPORTS.includes(config.transport)) {
-      results.push(config.raw)
+    // An excluded row reaches the output only when the user asked for it
+    // (ADR-0004). Emitting it unasked is what made an untouched link
+    // indistinguishable from a generated one.
+    if (config.status !== ROW_OK) {
+      if (includeExcluded) results.push(config.raw)
       continue
     }
-
-    const originalAddr = config.address
 
     for (const cdnIp of cdnList) {
       if (enableNoTls) {

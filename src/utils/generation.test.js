@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { parseRows, canGenerate, generateLinks } from './generation.js'
+import { parseRows, removeLines, canGenerate, generateLinks } from './generation.js'
 
 const goodOpts = {
   enableTls: true,
@@ -12,12 +12,46 @@ const goodOpts = {
 }
 
 describe('parseRows', () => {
-  it('drops empty lines and unparseable entries, keeps the rest', () => {
-    const raw = '\n  \nvless://a@x.com:443?type=ws#a\nss://nope\n\nvless://b@1.2.3.4:443?type=ws#b\n'
+  it('drops blank lines but keeps every other line as a row', () => {
+    const raw = '\n  \nvless://a@x.com:443?type=ws#a\nnot a link\n\nvless://b@1.2.3.4:443?type=ws#b\n'
     const rows = parseRows(raw)
-    expect(rows.length).toBe(2)
+    expect(rows.map(r => r.status)).toEqual(['ok', 'unparsed', 'ok'])
     expect(rows[0].remark).toBe('a')
-    expect(rows[1].remark).toBe('b')
+    expect(rows[1].raw).toBe('not a link')
+    expect(rows[2].remark).toBe('b')
+  })
+
+  // Deletion rewrites the user's textarea, so a row must know which line it came
+  // from — blank lines make row position and line number disagree.
+  it('carries the source line index through blank lines', () => {
+    const raw = 'vless://a@x.com:443?type=ws#a\n\n\nvless://b@y.com:443?type=ws#b'
+    expect(parseRows(raw).map(r => r.line)).toEqual([0, 3])
+  })
+
+  it('marks an incompatible config with its reason', () => {
+    const rows = parseRows(
+      'vless://a@x.com:443?type=kcp#a\n' +
+      'vless://b@x.com:443?type=ws&security=reality&pbk=K#b\n' +
+      'vless://c@x.com:443?type=ws&flow=xtls-rprx-vision#c'
+    )
+    expect(rows.map(r => r.status)).toEqual(['incompatible', 'incompatible', 'incompatible'])
+    expect(rows.map(r => r.incompatibleReason)).toEqual(['transport', 'security', 'flow'])
+  })
+})
+
+describe('removeLines', () => {
+  it('removes exactly the addressed lines and leaves the rest verbatim', () => {
+    const raw = 'one\ntwo\nthree'
+    expect(removeLines(raw, [1])).toBe('one\nthree')
+    expect(removeLines(raw, [0, 2])).toBe('two')
+    expect(removeLines(raw, [])).toBe(raw)
+  })
+
+  // Two identical lines are two rows sharing one fingerprint; deleting one must
+  // not take both.
+  it('removes one of two identical lines', () => {
+    const raw = 'vless://a@x.com:443?type=ws#a\nvless://a@x.com:443?type=ws#a'
+    expect(removeLines(raw, [0])).toBe('vless://a@x.com:443?type=ws#a')
   })
 })
 
@@ -47,6 +81,19 @@ describe('canGenerate', () => {
   it('false when there are no rows or no cdn hosts', () => {
     expect(canGenerate([], ['1.1.1.1'], goodOpts)).toBe(false)
     expect(canGenerate(parseRows('vless://a@x.com:443?type=ws#a'), [], goodOpts)).toBe(false)
+  })
+
+  // V13: a parsed-but-excluded row would otherwise satisfy "at least one row"
+  // and produce an empty output — the case V13 exists to prevent.
+  it('V13: false when every row is excluded, whatever the passthrough setting', () => {
+    const rows = parseRows('vless://a@x.com:443?type=kcp#a\nnot a link')
+    expect(canGenerate(rows, ['1.1.1.1'], goodOpts)).toBe(false)
+    expect(canGenerate(rows, ['1.1.1.1'], { ...goodOpts, includeExcluded: true })).toBe(false)
+  })
+
+  it('V13: true as soon as one compatible row is present alongside excluded ones', () => {
+    const rows = parseRows('vless://a@x.com:443?type=kcp#a\nvless://b@y.com:443?type=ws#b')
+    expect(canGenerate(rows, ['1.1.1.1'], goodOpts)).toBe(true)
   })
 })
 

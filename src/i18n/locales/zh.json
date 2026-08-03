@@ -16,6 +16,10 @@
   "rows.invalidError": "路由子域名无效 — 必须是至少两段的域名，且仅限 ASCII 字母、数字和连字符。不接受 IP 地址。",
   "rows.trailingDotError": "请删除尾随点 — 它属于 SNI，而非路由子域名。启用「随机 SNI」即可在生成的链接中获得它。",
   "rows.resetTitle": "恢复为自动填充的值",
+  "rows.transportError": "此传输方式无法通过 CDN。只有 ws、xhttp、grpc 和 httpupgrade 可以 — 请在服务器上更改传输方式，或删除此行。",
+  "rows.securityError": "REALITY 无法通过 CDN，且除普通或 TLS 之外的传输安全方式均不接受。请在服务器上更改，或删除此行。",
+  "rows.flowError": "此配置在任何客户端上都无法工作：xtls-rprx-vision 需要直接的 TLS 或 REALITY 连接，或需要 VLESS Encryption。任何 CDN 设置都无法修复。",
+  "rows.unparsedError": "无法识别为代理链接。只读取 vless、vmess 和 trojan 链接。",
 
   "config.tlsMode": "TLS 模式",
   "config.noTlsMode": "非 TLS 模式",
@@ -30,6 +34,8 @@
   "config.fingerprintRequired": "请选择至少一个指纹选项",
   "config.noTlsPorts": "非 TLS 端口",
   "config.tlsPorts": "TLS 端口",
+  "config.includeExcluded": "在输出中包含被排除的配置",
+  "config.includeExcludedHint": "关闭：仅生成的链接。开启：每个被排除行的原文将原样复制到输出中 — 适用于希望整体返回的混合订阅。",
 
   "output.title": "生成的配置",
   "output.copyAll": "全部复制",
