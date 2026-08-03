@@ -31,7 +31,7 @@
   "config.alpn": "ALPN",
   "config.fingerprint": "Отпечаток",
   "config.randomSni": "Случайный SNI",
-  "config.randomSniHint": "8-12 случайных символов + хост + точка в конце (обход FQDN)",
+  "config.randomSniHint": "8-12 случайных символов + корневой домен + точка в конце (обход FQDN)",
   "config.portRequired": "Выберите хотя бы один порт для активного режима",
   "config.alpnRequired": "Выберите хотя бы один ALPN",
   "config.fingerprintRequired": "Выберите хотя бы один отпечаток",

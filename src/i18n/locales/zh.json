@@ -31,7 +31,7 @@
   "config.alpn": "ALPN",
   "config.fingerprint": "指纹",
   "config.randomSni": "随机 SNI",
-  "config.randomSniHint": "8-12 随机字符 + 主机 + 尾随点 (FQDN 绕过)",
+  "config.randomSniHint": "8-12 随机字符 + 根域名 + 尾随点 (FQDN 绕过)",
   "config.portRequired": "请为活动模式选择至少一个端口",
   "config.alpnRequired": "请选择至少一个 ALPN 选项",
   "config.fingerprintRequired": "请选择至少一个指纹选项",

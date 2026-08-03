@@ -4,7 +4,7 @@
 
 [فارسی](README.fa.md) | [Русский](README.ru.md) | [中文](README.zh.md)
 
-A browser-based SPA that takes raw Xray configs (VLESS / VMESS / Trojan), multiplies them across CDN IPs, ports, and TLS settings — producing an expanded list of ready-to-use links.
+A browser-based SPA that takes raw Xray configs (VLESS / VMESS / Trojan / Shadowsocks), multiplies them across CDN IPs, ports, and TLS settings — producing an expanded list of ready-to-use links.
 
 **Live:** [https://rahgozar94725.github.io/CDN-Config-Generator/](https://rahgozar94725.github.io/CDN-Config-Generator/)
 
@@ -12,6 +12,7 @@ A browser-based SPA that takes raw Xray configs (VLESS / VMESS / Trojan), multip
 
 - **Input:** Paste raw configs and CDN IP/domain list
 - **CDN subdomain field:** Per-config routing subdomain, auto-filled and editable, with apply-to-all
+- **Compatibility check:** configs a CDN cannot carry are listed with the reason, kept out of the output, and deletable one by one or all at once
 - **TLS / No-TLS toggle** — both modes with independent port selection
 - **TLS Advanced:**
   - ALPN multi-select (h3, h2, http/1.1 and combos)
@@ -32,9 +33,26 @@ Paste Xray config links in the **Raw Configs** field, one per line. Supported fo
 vless://uuid@example.com:443?type=ws&security=tls&path=%2F#my-server
 trojan://password@example.com:443?type=ws&security=tls&sni=sni.example.com#trojan-box
 vmess://eyJ2IjoiMiIsInBzIjoibSIsImFkZCI6...
+ss://YWVzLTI1Ni1nY206cGFzc3dvcmQ@example.com:443?type=ws&security=tls#ss-box
 ```
 
-**Note:** Only configs with transport type `ws`, `xhttp`, `httpupgrade`, or `grpc` are processed. Other transports pass through unchanged.
+### What a CDN can carry
+
+A config is only rewritten when all three hold:
+
+- transport is `ws`, `xhttp`, `grpc` or `httpupgrade`
+- transport security is `none` or `tls` — REALITY cannot pass a CDN
+- it declares no `flow`, or declares one together with VLESS Encryption
+
+Anything else gets a row explaining why it was excluded, and stays out of the
+output. Each row has a delete control, and one button removes every excluded row
+at once. Turn on **Include excluded configs in the output** if you pasted a mixed
+subscription and want the untouched lines back in the same list.
+
+Shadowsocks is read in the Xray-native dialect, where the transport is stated in
+the query string as it is for VLESS. The older `plugin=` form is not supported:
+it cannot carry ALPN or fingerprint, and its SNI is pinned to the routing
+subdomain.
 
 ### 2. Input CDN List
 

@@ -12,7 +12,7 @@ Xray raw config (VLESS/VMESS/Trojan/Shadowsocks) × CDN IP list × port/TLS comb
 4.  Input B: CDN IP/domain one-per-line.
 5.  Toggle TLS mode + No-TLS mode. Both default ON.
 6.  Port lists: No-TLS [80,8080,8880,2052,2082,2086,2095] default 80. TLS [443,2053,2083,2087,2096,8443] default 443. ≥1 per active mode.
-7.  TLS advanced: ALPN multi-select, fingerprint multi-select, random SNI toggle (8-12 rand chars + `.` + orig host + `.`).
+7.  TLS advanced: ALPN multi-select, fingerprint multi-select, random SNI toggle (8-12 rand chars + `.` + root domain of routingSubdomain + `.`).
 8.  Compatibility gate: transport ∈ {`ws`,`xhttp`,`httpupgrade`,`grpc`} ∧ security ∈ {`none`,`tls`} ∧ (no `flow` ∨ VLESS Encryption present). Excluded rows are labelled with a reason and left out of the output; opt-in checkbox copies them through raw.
 9.  Param mapping: new addr=IP_B, new port=selected, routing subdomain → `host`, and → `sni` under TLS only. TLS→`security=tls`,`insecure=0`,`allowInsecure=0`. No-TLS→`security=none`.
 10. Remark suffix: 3-digit incrementing (`#name-001`), percent-encoded in the fragment.

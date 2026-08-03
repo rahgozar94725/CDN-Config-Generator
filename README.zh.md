@@ -4,7 +4,7 @@
 
 [English](README.md) | [فارسی](README.fa.md) | [Русский](README.ru.md)
 
-一个基于浏览器的单页应用，接收原始 Xray 配置（VLESS / VMESS / Trojan），通过 CDN IP、端口和 TLS 设置进行倍增，生成扩展的即用链接列表。
+一个基于浏览器的单页应用，接收原始 Xray 配置（VLESS / VMESS / Trojan / Shadowsocks），通过 CDN IP、端口和 TLS 设置进行倍增，生成扩展的即用链接列表。
 
 **在线演示：** [https://rahgozar94725.github.io/CDN-Config-Generator/](https://rahgozar94725.github.io/CDN-Config-Generator/)
 
@@ -12,6 +12,7 @@
 
 - **输入：** 粘贴原始配置和 CDN IP/域名列表
 - **CDN 子域名字段：** 每个配置的路由子域名，自动填充并可编辑，支持全部应用
+- **兼容性检查：** 无法通过 CDN 的配置会列出原因、不进入输出，并可逐个或一次性删除
 - **TLS / 非 TLS 切换** — 两种模式均可独立选择端口
 - **TLS 高级设置：**
   - ALPN 多选（h3, h2, http/1.1 及组合）
@@ -32,9 +33,23 @@
 vless://uuid@example.com:443?type=ws&security=tls&path=%2F#my-server
 trojan://password@example.com:443?type=ws&security=tls&sni=sni.example.com#trojan-box
 vmess://eyJ2IjoiMiIsInBzIjoibSIsImFkZCI6...
+ss://YWVzLTI1Ni1nY206cGFzc3dvcmQ@example.com:443?type=ws&security=tls#ss-box
 ```
 
-**注意：** 仅处理传输类型为 `ws`、`xhttp`、`httpupgrade` 或 `grpc` 的配置。其他传输类型保持原样。
+### 哪些配置能通过 CDN
+
+只有同时满足以下三点，配置才会被改写：
+
+- 传输方式为 `ws`、`xhttp`、`grpc` 或 `httpupgrade`
+- 传输安全为 `none` 或 `tls` —— REALITY 无法通过 CDN
+- 不带 `flow`，或带 `flow` 的同时启用了 VLESS Encryption
+
+其余配置会显示一行说明被排除的原因，并且不会进入输出。每行都有删除按钮，另有
+一个按钮可一次删除所有被排除的行。如果你粘贴的是混合订阅并希望原样保留那些行，
+请开启 **在输出中包含被排除的配置**。
+
+Shadowsocks 按 Xray 原生格式读取，即传输方式写在查询字符串中，与 VLESS 相同。
+不支持较早的 `plugin=` 形式：它无法携带 ALPN 或指纹，且其 SNI 被固定为路由子域名。
 
 ### 2. 输入 CDN 列表
 
