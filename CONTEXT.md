@@ -34,7 +34,7 @@ The TLS Server Name Indication value in the origin config. Deliberately ignored 
 _Avoid_: SNI
 
 **CDN subdomain field**:
-The per-config user-facing input that holds the routing subdomain. Auto-filled, editable, and required only when no routing subdomain is derivable from the origin config.
+The per-config user-facing input that holds the routing subdomain. Auto-filled, editable, and required only when no routing subdomain is derivable from the origin config. Manual edits persist across re-parses: they live in an override map keyed by the config's structural fingerprint (type + uuid + connect address + port), so a non-empty typed value re-applies to the matching config whenever it reappears; an empty override falls back to the derived value.
 _Avoid_: Domain field
 
 **hostname**:

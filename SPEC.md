@@ -43,9 +43,9 @@ Xray raw config (VLESS/VMESS/Trojan) × CDN IP list × port/TLS combo = expanded
 | V7 | ∀ random SNI → root domain of routingSubdomain (last 2 labels), subdomain prefix stripped | random SNI output test |
 | V8 | ∀ TLS mode → alpn.length ≥ 1 ∧ fingerprint.length ≥ 1 | form validation + multiplier test |
 | V9 | Theme choice persisted to localStorage and restored on load. `dark` class on `<html>` matches choice | DOM check + reload test |
-| V10 | ∀ processed config with routingSubdomainRequired ∧ empty routingSubdomain → generation blocked before compute | validator test + form gate |
+| V10 | ∀ processed config → generation blocked before compute when resolved routingSubdomain (override ?? derivation) is empty | rows unit test + form gate |
 | V11 | routingSubdomain derivation: explicit `host` param wins → hostname connect address → else required. Input `sni` never consulted | parser matrix test |
-| V12 | ∀ parsed config row consumed by UI → `reactive()`-wrapped so field edits re-trigger validation gate | grep `.map(reactive)` App.vue + UI verify |
+| V12 | ∀ routing-subdomain field edit → written to override map keyed by config fingerprint; effective rows re-resolve so the validation gate re-triggers. No `.map(reactive)` over a computed | rows unit test (resolve) + UI verify |
 | V13 | Generate gate requires ≥1 valid parsed config row; garbage-only input (0 parsed rows) disables Generate (no silent empty output) | generation unit test + form gate |
 
 ## §T
@@ -70,3 +70,4 @@ Xray raw config (VLESS/VMESS/Trojan) × CDN IP list × port/TLS combo = expanded
 | B1 | 2026-06-11 | genRandomSni used full hostname instead of root domain | V7 |
 | B2 | 2026-06-11 | TLS enabled but alpn/fingerprint empty — generated incomplete TLS configs | V8 |
 | B3 | 2026-07-31 | parsed rows plain objects from computed — routingSubdomain edits never re-triggered missingRows gate, retry dead | V12 |
+| B4 | 2026-08-03 | editable routingSubdomain lived inside a recomputed derived value — a raw-config re-parse silently discarded typed entries (latent data loss); `.map(reactive)` only masked B3's gate, not ownership | V12 |

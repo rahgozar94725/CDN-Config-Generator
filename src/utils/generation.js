@@ -1,6 +1,6 @@
 import { parseConfig } from './parser.js'
 import { generateConfigs } from './multiplier.js'
-import { findMissingRoutingSubdomain } from './validator.js'
+import { findMissingRoutingSubdomain } from './rows.js'
 
 export function splitLines(text) {
   return text.split('\n').map(s => s.trim()).filter(Boolean)
@@ -42,5 +42,3 @@ export async function generateLinks(rows, cdnList, options, onProgress) {
 
   return results
 }
-
-export { findMissingRoutingSubdomain }

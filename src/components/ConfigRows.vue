@@ -40,11 +40,12 @@
           <label class="flex items-center gap-2 text-sm">
             <span class="text-gray-600 dark:text-gray-400 shrink-0">{{ $t('rows.fieldLabel') }}</span>
             <input
-              v-model="cfg.routingSubdomain"
+              :value="cfg.routingSubdomain"
               type="text"
               :disabled="!isProcessed(cfg)"
               class="border rounded px-3 py-1 font-mono text-sm bg-white dark:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-64"
               :class="isMissing(i) ? 'border-red-500 dark:border-red-400' : 'border-gray-300 dark:border-gray-600'"
+              @input="onEdit(cfg, $event.target.value)"
             />
           </label>
           <p v-if="isMissing(i)" class="text-xs text-red-600 dark:text-red-400 sm:text-right">
@@ -58,12 +59,14 @@
 
 <script setup>
 import { ref, computed } from 'vue'
-import { ALLOWED_TRANSPORTS } from '../utils/multiplier.js'
+import { isProcessedConfig } from '../utils/rows.js'
 
 const props = defineProps({
   configs: { type: Array, default: () => [] },
   missingRows: { type: Array, default: () => [] },
 })
+
+const emit = defineEmits(['edit', 'apply-all'])
 
 const applyAllValue = ref('')
 
@@ -74,15 +77,17 @@ function isMissing(i) {
 }
 
 function isProcessed(cfg) {
-  return ALLOWED_TRANSPORTS.includes(cfg.transport)
+  return isProcessedConfig(cfg)
+}
+
+// Field edits never touch the derived row; they report (fingerprint, value) to
+// the owner, which writes the override map and lets effective rows re-resolve.
+function onEdit(cfg, value) {
+  emit('edit', cfg.fingerprint, value)
 }
 
 function applyAll() {
-  const v = applyAllValue.value.trim()
-  if (!v) return
-  for (const cfg of props.configs) {
-    if (isProcessed(cfg)) cfg.routingSubdomain = v
-  }
+  emit('apply-all', applyAllValue.value)
   applyAllValue.value = ''
 }
 

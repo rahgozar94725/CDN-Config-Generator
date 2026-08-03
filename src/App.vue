@@ -20,8 +20,13 @@
         />
       </section>
 
-      <section v-if="parsedConfigs.length > 0" class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 md:p-6">
-        <ConfigRows :configs="parsedConfigs" :missingRows="missingRows" />
+      <section v-if="effectiveRows.length > 0" class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 md:p-6">
+        <ConfigRows
+          :configs="effectiveRows"
+          :missingRows="missingRows"
+          @edit="setRoutingSubdomain"
+          @apply-all="applyRoutingSubdomain"
+        />
       </section>
 
       <section class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 md:p-6">
@@ -46,7 +51,7 @@
       <div class="flex justify-center">
         <button
           @click="generate"
-          :disabled="!canGenerate(parsedConfigs, cdnLines, generationOptions) || generating"
+          :disabled="!canGenerate(effectiveRows, cdnLines, generationOptions) || generating"
           class="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-medium px-8 py-3 rounded-lg transition w-full md:w-auto"
         >
           {{ generating ? $t('output.generating') : $t('common.generate') }}
@@ -75,7 +80,8 @@ import ConfigPanel from './components/ConfigPanel.vue'
 import OutputPanel from './components/OutputPanel.vue'
 import ConfigRows from './components/ConfigRows.vue'
 import Footer from './components/Footer.vue'
-import { parseRows, splitLines, canGenerate, generateLinks, findMissingRoutingSubdomain } from './utils/generation.js'
+import { parseRows, splitLines, canGenerate, generateLinks } from './utils/generation.js'
+import { configFingerprint, resolveRoutingSubdomain, findMissingRoutingSubdomain, isProcessedConfig } from './utils/rows.js'
 
 const rawConfigs = ref('')
 const cdnList = ref('')
@@ -91,11 +97,36 @@ const generating = ref(false)
 const progressCurrent = ref(0)
 const progressTotal = ref(0)
 
-const parsedConfigs = computed(() => parseRows(rawConfigs.value).map(reactive))
+// Editable routing-subdomain overrides, keyed by config fingerprint (rows.js).
+// Parse output is immutable facts; the field is user-owned state layered on top,
+// so a raw-config re-parse never discards a typed entry.
+const routingOverrides = reactive(new Map())
 
-const missingRows = computed(() => findMissingRoutingSubdomain(parsedConfigs.value))
+const parsedConfigs = computed(() => parseRows(rawConfigs.value))
+
+const effectiveRows = computed(() => parsedConfigs.value.map(c => ({
+  ...c,
+  fingerprint: configFingerprint(c),
+  routingSubdomain: resolveRoutingSubdomain(c, routingOverrides),
+})))
+
+const missingRows = computed(() => findMissingRoutingSubdomain(effectiveRows.value))
 
 const hasMissing = computed(() => missingRows.value.length > 0)
+
+function setRoutingSubdomain(fingerprint, value) {
+  const v = (value || '').trim()
+  if (v) routingOverrides.set(fingerprint, v)
+  else routingOverrides.delete(fingerprint)
+}
+
+function applyRoutingSubdomain(value) {
+  const v = (value || '').trim()
+  if (!v) return
+  for (const c of effectiveRows.value) {
+    if (isProcessedConfig(c)) routingOverrides.set(configFingerprint(c), v)
+  }
+}
 
 const cdnLines = computed(() => splitLines(cdnList.value))
 
@@ -110,17 +141,17 @@ const generationOptions = computed(() => ({
 }))
 
 async function generate() {
-  if (parsedConfigs.value.length === 0 || cdnLines.value.length === 0) return
+  if (effectiveRows.value.length === 0 || cdnLines.value.length === 0) return
   if (hasMissing.value) return
 
   generating.value = true
   outputConfigs.value = []
 
-  progressTotal.value = parsedConfigs.value.length
+  progressTotal.value = effectiveRows.value.length
   progressCurrent.value = 0
 
   outputConfigs.value = await generateLinks(
-    parsedConfigs.value,
+    effectiveRows.value,
     cdnLines.value,
     generationOptions.value,
     (current) => { progressCurrent.value = current }
