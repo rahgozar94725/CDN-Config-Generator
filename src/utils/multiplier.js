@@ -62,9 +62,9 @@ function buildLink(config, newAddr, newPort, security, extra, randomSni, idx) {
 
   switch (config.type) {
     case 'vless':
-      return buildVless(config, newAddr, newPort, security, sniValue, remark, extra)
     case 'trojan':
-      return buildTrojan(config, newAddr, newPort, security, sniValue, remark, extra)
+    case 'ss':
+      return buildQueryLink(config, newAddr, newPort, security, sniValue, remark, extra)
     case 'vmess':
       return buildVmess(config, newAddr, newPort, security, sniValue, remark, extra)
     default:
@@ -72,7 +72,10 @@ function buildLink(config, newAddr, newPort, security, extra, randomSni, idx) {
   }
 }
 
-function buildVless(config, newAddr, newPort, security, sniValue, remark, extra) {
+// vless, trojan and ss share one shape: credentials, address, and the transport
+// stated in the query string. For ss the credential segment is the opaque
+// userinfo, carried through exactly as it arrived (ADR-0005).
+function buildQueryLink(config, newAddr, newPort, security, sniValue, remark, extra) {
   const p = { ...config.params }
   p.type = p.type || config.transport
   p.host = config.routingSubdomain
@@ -95,33 +98,7 @@ function buildVless(config, newAddr, newPort, security, sniValue, remark, extra)
     .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
     .join('&')
 
-  return `vless://${config.uuid}@${newAddr}:${newPort}?${qs}#${remark}`
-}
-
-function buildTrojan(config, newAddr, newPort, security, sniValue, remark, extra) {
-  const p = { ...config.params }
-  p.type = p.type || config.transport
-  p.host = config.routingSubdomain
-  p.sni = sniValue
-  p.security = security
-  if (security === 'tls') {
-    p.insecure = '0'
-    p.allowInsecure = '0'
-    if (extra.alpn) p.alpn = extra.alpn
-    if (extra.fp) p.fp = extra.fp
-  } else {
-    delete p.insecure
-    delete p.allowInsecure
-    delete p.alpn
-    delete p.fp
-  }
-
-  const qs = Object.entries(p)
-    .filter(([, v]) => v != null && v !== '')
-    .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
-    .join('&')
-
-  return `trojan://${config.uuid}@${newAddr}:${newPort}?${qs}#${remark}`
+  return `${config.type}://${config.uuid}@${newAddr}:${newPort}?${qs}#${remark}`
 }
 
 function buildVmess(config, newAddr, newPort, security, sniValue, remark, extra) {

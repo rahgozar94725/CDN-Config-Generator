@@ -8,7 +8,7 @@ Xray raw config (VLESS/VMESS/Trojan) × CDN IP list × port/TLS combo = expanded
 
 1.  Vue 3 + Vite + Tailwind CSS + vue-i18n. SPA no SSR.
 2.  i18n: EN default, FA (RTL), RU, ZH. Persistent lang toggle.
-3.  Input A: raw configs line-separated. Support `vless://`, `vmess://`, `trojan://`.
+3.  Input A: raw configs line-separated. Support `vless://`, `vmess://`, `trojan://`, `ss://` (Xray-native dialect only; `plugin=` refused).
 4.  Input B: CDN IP/domain one-per-line.
 5.  Toggle TLS mode + No-TLS mode. Both default ON.
 6.  Port lists: No-TLS [80,8080,8880,2052,2082,2086,2095] default 80. TLS [443,2053,2083,2087,2096,8443] default 443. ≥1 per active mode.
@@ -27,7 +27,7 @@ Xray raw config (VLESS/VMESS/Trojan) × CDN IP list × port/TLS combo = expanded
 - **I.i18n** — vue-i18n locale JSON files (en/fa/ru/zh)
 - **I.clip** — navigator.clipboard API
 - **I.dl** — Blob + URL.createObjectURL for .txt download
-- **I.parse** — URL pattern matching for vless:// vmess:// trojan://
+- **I.parse** — URL pattern matching for vless:// vmess:// trojan:// ss://
 - **I.theme** — localStorage key `cdn-cfg-theme` (light|dark|system). Tailwind `darkMode: class`
 
 ## §V
@@ -51,6 +51,7 @@ Xray raw config (VLESS/VMESS/Trojan) × CDN IP list × port/TLS combo = expanded
 | V15 | ∀ generated link → `host` carries no trailing dot; a trailing dot appears only in `sni` under random SNI, and root-domain extraction ignores one if present | multiplier unit test |
 | V16 | Compatibility is an allowlist on both axes: an unrecognised transport or an unrecognised `security` is excluded, never rewritten. No param is stripped to make a config fit — `flow` is either legitimate (VLESS Encryption present) or the whole config is excluded | rows unit test (compatibilityReason) |
 | V17 | Every non-blank input line is exactly one row carrying its source line index; deletion addresses lines by that index, so one of two identical lines can be removed | generation unit test (parseRows, removeLines) |
+| V18 | ss credential segment reaches generated links byte-for-byte as it arrived — no base64 decode, no SIP002/SIP022 distinction. `plugin=` links are excluded with their own reason, never blamed on the transport | parser + rows unit tests |
 
 ## §T
 
@@ -68,6 +69,8 @@ Xray raw config (VLESS/VMESS/Trojan) × CDN IP list × port/TLS combo = expanded
 | T10 | x | edge case handling: malformed URL, empty input, large list (non-blocking) | C13 |
 | T11 | x | theme switcher UI: light/dark/system toggle, localStorage persist | C14,I.theme,V9 |
 | T12 | x | compatibility gate: security/flow rules, row status, reason messages, passthrough checkbox | C8,V1,V5,V13,V16,V17 |
+| T13 | x | per-row and bulk deletion; InputPanel becomes controlled | V17 |
+| T14 | x | ss:// support, Xray-native dialect only | C3,I.parse,V18 |
 
 ## §B
 

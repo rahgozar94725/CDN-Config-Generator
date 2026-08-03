@@ -5,6 +5,7 @@ export function parseConfig(raw) {
   if (trimmed.startsWith('vless://')) return parseVless(trimmed)
   if (trimmed.startsWith('vmess://')) return parseVmess(trimmed)
   if (trimmed.startsWith('trojan://')) return parseTrojan(trimmed)
+  if (trimmed.startsWith('ss://')) return parseSs(trimmed)
 
   return null
 }
@@ -40,6 +41,34 @@ export function parseTrojan(raw) {
       uuid: u.username || '',
       address: u.hostname,
       port,
+      transport: params.type || '',
+      security: params.security || 'none',
+      remark: decodeURIComponent(u.hash.replace('#', '')),
+      params,
+      raw,
+    })
+  } catch {
+    return null
+  }
+}
+
+// Shadowsocks is an ordinary Xray proxy protocol over the shared transport
+// layer, so its links state the transport in query params exactly as VLESS does
+// (ADR-0005). The credential segment is split off by hand and carried verbatim:
+// `new URL` would break SIP022's `method:password` on the colon, and treating
+// it as opaque means nothing here has to know base64 from percent-encoding.
+export function parseSs(raw) {
+  try {
+    const body = raw.slice('ss://'.length)
+    const at = body.indexOf('@')
+    if (at <= 0) return null
+    const u = new URL('ss://' + body.slice(at + 1))
+    const params = Object.fromEntries(u.searchParams.entries())
+    return withRoutingSubdomain({
+      type: 'ss',
+      uuid: body.slice(0, at),
+      address: u.hostname,
+      port: Number(u.port) || 443,
       transport: params.type || '',
       security: params.security || 'none',
       remark: decodeURIComponent(u.hash.replace('#', '')),

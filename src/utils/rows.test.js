@@ -113,6 +113,18 @@ describe('compatibilityReason', () => {
   it('ignores an empty flow value', () => {
     expect(reason('vless://a@x.com:443?type=ws&security=tls&flow=#a')).toBe(null)
   })
+
+  it('accepts an Xray-native ss link on the same terms as vless', () => {
+    expect(reason('ss://YWVzOnB3@x.com:443?type=ws&security=tls#a')).toBe(null)
+    expect(reason('ss://YWVzOnB3@x.com:443?type=kcp#a')).toBe('transport')
+  })
+
+  // The plugin dialect states its transport inside `plugin`, so it carries no
+  // `type` at all — blaming the transport would send the user to fix a server
+  // that is not the problem (ADR-0005).
+  it('refuses the ss plugin dialect by its own reason, not by transport', () => {
+    expect(reason('ss://YWVzOnB3@x.com:443?plugin=xray-plugin%3Bmode%3Dwebsocket%3Btls%3Bhost%3Dx.com#a')).toBe('ssPlugin')
+  })
 })
 
 describe('isCompatibleConfig', () => {

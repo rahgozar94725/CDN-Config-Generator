@@ -3,7 +3,7 @@
   "app.subtitle": "تکثیرکننده کانفیگ Xray و تولیدکننده لینک CDN",
 
   "input.rawConfigs.label": "کانفیگ‌های خام",
-  "input.rawConfigs.placeholder": "لینک‌ها را وارد کنید، هر خط یکی: VLESS:// VMESS:// TROJAN",
+  "input.rawConfigs.placeholder": "لینک‌ها را وارد کنید، هر خط یکی: VLESS:// VMESS:// TROJAN:// SS",
   "input.cdnList.label": "لیست IP/دامین CDN",
   "input.cdnList.placeholder": "IP یا دامین CDN را وارد کنید (هر خط یک مورد)",
 
@@ -21,7 +21,8 @@
   "rows.transportError": "این ترنسپورت از CDN رد نمی‌شود. فقط این‌ها رد می‌شوند: ws xhttp grpc httpupgrade — ترنسپورت را روی سرور عوض کنید یا این ردیف را حذف کنید.",
   "rows.securityError": "روش REALITY از CDN رد نمی‌شود، و هیچ امنیت ترنسپورتی جز ساده یا TLS پذیرفته نیست. روی سرور عوضش کنید یا این ردیف را حذف کنید.",
   "rows.flowError": "این کانفیگ با هیچ کلاینتی کار نمی‌کند: مقدار xtls-rprx-vision به اتصال مستقیم TLS یا REALITY نیاز دارد، یا به رمزنگاری VLESS. هیچ تنظیم CDN این را درست نمی‌کند.",
-  "rows.unparsedError": "لینک پروکسی شناخته‌شده‌ای نیست. فقط این‌ها خوانده می‌شوند: vless vmess trojan",
+  "rows.ssPluginError": "لینک شدوساکس از نوع plugin پشتیبانی نمی‌شود: این فرم نه ALPN را می‌تواند حمل کند، نه fingerprint را، و نه یک SNI جدا از ساب‌دامین مسیریابی. از لینک بومی Xray استفاده کنید که پنل شما می‌تواند بسازد.",
+  "rows.unparsedError": "لینک پروکسی شناخته‌شده‌ای نیست. فقط این‌ها خوانده می‌شوند: vless vmess trojan ss",
 
   "config.tlsMode": "حالت TLS",
   "config.noTlsMode": "حالت بدون TLS",

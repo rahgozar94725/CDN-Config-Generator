@@ -124,6 +124,7 @@ const EXCLUDED_KEYS = {
   transport: 'rows.transportError',
   security: 'rows.securityError',
   flow: 'rows.flowError',
+  ssPlugin: 'rows.ssPluginError',
 }
 
 const reasonByIndex = computed(() => new Map(props.invalidRows.map(r => [r.index, r.reason])))

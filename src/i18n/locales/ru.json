@@ -3,7 +3,7 @@
   "app.subtitle": "Мультипликатор конфигов Xray и генератор ссылок CDN",
 
   "input.rawConfigs.label": "Исходные конфиги",
-  "input.rawConfigs.placeholder": "Вставьте ссылки VLESS://, VMESS://, TROJAN:// (по одной на строку)",
+  "input.rawConfigs.placeholder": "Вставьте ссылки VLESS://, VMESS://, TROJAN://, SS:// (по одной на строку)",
   "input.cdnList.label": "Список IP/доменов CDN",
   "input.cdnList.placeholder": "Введите IP или домены CDN (по одному на строку)",
 
@@ -21,7 +21,8 @@
   "rows.transportError": "Этот транспорт не проходит через CDN. Проходят только ws, xhttp, grpc и httpupgrade — измените транспорт на сервере или удалите эту строку.",
   "rows.securityError": "REALITY не проходит через CDN, и никакая транспортная безопасность, кроме обычной или TLS, не принимается. Измените её на сервере или удалите эту строку.",
   "rows.flowError": "Эта конфигурация не работает ни с одним клиентом: xtls-rprx-vision требует прямого TLS- или REALITY-соединения либо VLESS Encryption. Никакие настройки CDN это не исправят.",
-  "rows.unparsedError": "Не распознано как ссылка прокси. Читаются только ссылки vless, vmess и trojan.",
+  "rows.ssPluginError": "Ссылки Shadowsocks с plugin не поддерживаются: этот формат не передаёт ни ALPN, ни отпечаток, ни SNI, отличный от маршрутного поддомена. Используйте ss-ссылку в нативном формате Xray, которую умеет выдавать ваша панель.",
+  "rows.unparsedError": "Не распознано как ссылка прокси. Читаются только ссылки vless, vmess, trojan и ss.",
 
   "config.tlsMode": "Режим TLS",
   "config.noTlsMode": "Режим без TLS",

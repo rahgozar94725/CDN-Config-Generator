@@ -217,6 +217,30 @@ describe('multiplier', () => {
     expect(out[1]).toMatch(/sni=host2\.com/)
   })
 
+  it('ss links are rewritten like vless, credential segment untouched', () => {
+    const userinfo = 'YWVzLTI1Ni1nY206cGFzc3dvcmQ'
+    const configs = parseAll(`ss://${userinfo}@1.2.3.4:443?type=ws&host=route.example.com#cfg`)
+    const opts = { enableTls: true, enableNoTls: false, tlsPorts: [443], alpn: ['h2'], fingerprint: ['chrome'] }
+    const out = generateConfigs(configs, ['9.9.9.9'], opts)
+    expect(out[0]).toBe(
+      `ss://${userinfo}@9.9.9.9:443?type=ws&host=route.example.com&sni=route.example.com&security=tls&insecure=0&allowInsecure=0&alpn=h2&fp=chrome#cfg-001`
+    )
+  })
+
+  // ss carries ALPN and fingerprint exactly as vless does, so the combos are
+  // real links rather than duplicates (ADR-0005).
+  it('ss multiplies over ALPN and fingerprint like every other scheme', () => {
+    const configs = parseAll('ss://YWVzOnB3@x.com:443?type=ws#cfg')
+    const opts = { enableTls: true, enableNoTls: false, tlsPorts: [443], alpn: ['h2', 'http/1.1'], fingerprint: ['chrome', 'firefox'] }
+    expect(generateConfigs(configs, ['1.1.1.1'], opts).length).toBe(4)
+  })
+
+  it('an ss plugin link never reaches the output', () => {
+    const configs = parseAll('ss://YWVzOnB3@x.com:443?plugin=xray-plugin%3Bmode%3Dwebsocket#cfg')
+    const opts = { enableTls: true, enableNoTls: false, tlsPorts: [443], alpn: ['h2'], fingerprint: ['chrome'] }
+    expect(generateConfigs(configs, ['1.1.1.1'], opts)).toEqual([])
+  })
+
   it('vmess config generates valid base64', () => {
     const configs = parseAll('vmess://' + btoa(JSON.stringify({ v: '2', ps: 'm', add: 'x.com', port: 443, id: 'uuid', net: 'ws', host: 'x.com', path: '/ws', tls: 'tls' })))
     const cdnList = ['1.1.1.1']

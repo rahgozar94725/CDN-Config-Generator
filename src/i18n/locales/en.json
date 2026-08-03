@@ -3,7 +3,7 @@
   "app.subtitle": "Xray Config Multiplier & CDN Link Generator",
 
   "input.rawConfigs.label": "Raw Configs",
-  "input.rawConfigs.placeholder": "Paste VLESS://, VMESS://, TROJAN:// links, one per line",
+  "input.rawConfigs.placeholder": "Paste VLESS://, VMESS://, TROJAN://, SS:// links, one per line",
   "input.cdnList.label": "CDN IP / Domain List",
   "input.cdnList.placeholder": "Enter CDN IPs or domains, one per line",
 
@@ -21,7 +21,8 @@
   "rows.transportError": "This transport cannot pass a CDN. Only ws, xhttp, grpc and httpupgrade can — change the transport on your server, or delete this row.",
   "rows.securityError": "REALITY cannot pass a CDN, and no transport security other than plain or TLS is accepted. Change it on your server, or delete this row.",
   "rows.flowError": "This config works with no client at all: xtls-rprx-vision needs a direct TLS or REALITY connection, or VLESS Encryption. No CDN setting can fix it.",
-  "rows.unparsedError": "Not a recognised proxy link. Only vless, vmess and trojan links are read.",
+  "rows.ssPluginError": "Shadowsocks plugin links are not supported: the plugin form cannot carry ALPN, fingerprint, or an SNI distinct from the routing subdomain. Use the Xray-native ss link your panel can produce.",
+  "rows.unparsedError": "Not a recognised proxy link. Only vless, vmess, trojan and ss links are read.",
 
   "config.tlsMode": "TLS Mode",
   "config.noTlsMode": "No-TLS Mode",
