@@ -2,7 +2,7 @@
 
 ## §G
 
-Xray raw config (VLESS/VMESS/Trojan) × CDN IP list × port/TLS combo = expanded link list. SPA. Vue 3.
+Xray raw config (VLESS/VMESS/Trojan/Shadowsocks) × CDN IP list × port/TLS combo = expanded link list. SPA. Vue 3.
 
 ## §C
 
@@ -14,8 +14,8 @@ Xray raw config (VLESS/VMESS/Trojan) × CDN IP list × port/TLS combo = expanded
 6.  Port lists: No-TLS [80,8080,8880,2052,2082,2086,2095] default 80. TLS [443,2053,2083,2087,2096,8443] default 443. ≥1 per active mode.
 7.  TLS advanced: ALPN multi-select, fingerprint multi-select, random SNI toggle (8-12 rand chars + `.` + orig host + `.`).
 8.  Compatibility gate: transport ∈ {`ws`,`xhttp`,`httpupgrade`,`grpc`} ∧ security ∈ {`none`,`tls`} ∧ (no `flow` ∨ VLESS Encryption present). Excluded rows are labelled with a reason and left out of the output; opt-in checkbox copies them through raw.
-9.  Param mapping: new addr=IP_B, new port=selected, orig addr → `host`+`sni`. TLS→`security=tls`,`insecure=0`,`allowInsecure=0`. No-TLS→`security=none`.
-10. Remark suffix: 3-digit incrementing (`#name-001`).
+9.  Param mapping: new addr=IP_B, new port=selected, routing subdomain → `host`, and → `sni` under TLS only. TLS→`security=tls`,`insecure=0`,`allowInsecure=0`. No-TLS→`security=none`.
+10. Remark suffix: 3-digit incrementing (`#name-001`), percent-encoded in the fragment.
 11. Progress bar. Copy All + Download .txt.
 12. Responsive mobile+desktop.
 13. No browser freeze. Computation non-blocking.
@@ -36,8 +36,8 @@ Xray raw config (VLESS/VMESS/Trojan) × CDN IP list × port/TLS combo = expanded
 |----|-----------|-------|
 | V1 | Output count = compatible-row count × active IPs × active ports × TLS combos (if TLS), plus excluded-row count when `includeExcluded`. No dedup loss | unit test counter |
 | V2 | Processed configs have `security=tls` or `security=none` only | regex output scan |
-| V3 | ∀ processed config → link `host`==`sni`==config routingSubdomain. Connect address never appears in `host`/`sni` | param scan + parser matrix test |
-| V4 | Remark suffix = 3-digit incrementing 001-N. No gaps | output scan |
+| V3 | ∀ generated link → `host`==config routingSubdomain, and `sni` is written (equal to it, or to the random SNI) only under TLS — no TLS handshake, no server name to indicate. Connect address never appears in `host`/`sni` | param scan + parser matrix test |
+| V4 | Remark suffix = 3-digit incrementing 001-N. No gaps. Fragment percent-encoded, so a generated link re-parses to the remark it was built from | output scan |
 | V5 | Excluded rows never reach the output unless `includeExcluded`; when they do, bit-identical to the input line | string equality test |
 | V6 | Active TLS/No-TLS mode must have ≥1 port selected | form validation before compute |
 | V7 | ∀ random SNI → root domain of routingSubdomain (last 2 labels), subdomain prefix stripped | random SNI output test |
@@ -61,7 +61,7 @@ Xray raw config (VLESS/VMESS/Trojan) × CDN IP list × port/TLS combo = expanded
 | T2 | x | i18n setup EN/FA/RU/ZH. RTL support. Lang toggle persistent | C2,I.i18n |
 | T3 | x | textarea A input (raw configs). textarea B input (CDN list) | C3,C4 |
 | T4 | x | config panel: TLS/No-TLS toggle, port multi-select, TLS advanced (ALPN/fingerprint/random SNI) | C5,C6,C7,V6 |
-| T5 | x | parser module: extract type/uuid/addr/port/params/frag from vless:// vmess:// trojan:// | C3,I.parse |
+| T5 | x | parser module: extract type/uuid/addr/port/params/frag from vless:// vmess:// trojan:// ss:// | C3,I.parse |
 | T6 | x | multiplier engine: filter transport, map params, combine IP×port×TLS | C8,C9,V1,V2,V3,V5 |
 | T7 | x | output list display + progress bar during generation | C11,C13 |
 | T8 | x | Copy All (clipboard) + Download .txt | C11,I.clip,I.dl,V4 |
@@ -82,3 +82,4 @@ Xray raw config (VLESS/VMESS/Trojan) × CDN IP list × port/TLS combo = expanded
 | B5 | 2026-08-03 | override resolution keyed on truthiness, so clearing a derivable field deleted a key that was never set: the resolved value did not change, Vue skipped the DOM patch, and field and model diverged — screen empty, links still carrying the deleted value | V10, V12 |
 | B6 | 2026-08-03 | CDN subdomain field validated emptiness only — `abc`, `1.2.3.4`, `MY_Host!!` and `example.com.` all reached `host`/`sni`; with random SNI the trailing-dot case emitted root `com.` and an SNI of `rand.com..` | V14, V15 |
 | B7 | 2026-08-03 | only transport was gated. `security` was never examined, so REALITY with an allowed transport was rewritten to `security=tls` with `pbk`/`sid`/`spx` still attached; `flow` was never examined either. Everything else passed through raw into the output, indistinguishable from a generated link | V5, V13, V16 |
+| B8 | 2026-08-03 | `sni` written unconditionally, so no-TLS links carried a server name with no handshake to indicate it in; remark decoded on parse but re-emitted raw, so an encoded fragment came back with literal spaces and multi-byte characters | V3, V4 |

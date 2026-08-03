@@ -79,14 +79,17 @@ function buildQueryLink(config, newAddr, newPort, security, sniValue, remark, ex
   const p = { ...config.params }
   p.type = p.type || config.transport
   p.host = config.routingSubdomain
-  p.sni = sniValue
   p.security = security
   if (security === 'tls') {
+    p.sni = sniValue
     p.insecure = '0'
     p.allowInsecure = '0'
     if (extra.alpn) p.alpn = extra.alpn
     if (extra.fp) p.fp = extra.fp
   } else {
+    // No TLS handshake, so there is no server name to indicate. Writing one
+    // added a parameter the origin config did not have and nothing reads.
+    delete p.sni
     delete p.insecure
     delete p.allowInsecure
     delete p.alpn
@@ -98,7 +101,7 @@ function buildQueryLink(config, newAddr, newPort, security, sniValue, remark, ex
     .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
     .join('&')
 
-  return `${config.type}://${config.uuid}@${newAddr}:${newPort}?${qs}#${remark}`
+  return `${config.type}://${config.uuid}@${newAddr}:${newPort}?${qs}#${encodeURIComponent(remark)}`
 }
 
 function buildVmess(config, newAddr, newPort, security, sniValue, remark, extra) {
@@ -114,11 +117,11 @@ function buildVmess(config, newAddr, newPort, security, sniValue, remark, extra)
     type: config.params.headerType || 'none',
     host: config.routingSubdomain,
     path: config.params.path || '',
-    sni: sniValue,
     tls: security === 'tls' ? 'tls' : 'none',
   }
 
   if (security === 'tls') {
+    obj.sni = sniValue
     if (extra.alpn) obj.alpn = extra.alpn
     if (extra.fp) obj.fp = extra.fp
   }
