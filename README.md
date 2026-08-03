@@ -36,9 +36,7 @@ vmess://eyJ2IjoiMiIsInBzIjoibSIsImFkZCI6...
 ss://YWVzLTI1Ni1nY206cGFzc3dvcmQ@example.com:443?type=ws&security=tls#ss-box
 ```
 
-### What a CDN can carry
-
-A config is only rewritten when all three hold:
+**What a CDN can carry.** A config is only rewritten when all three hold:
 
 - transport is `ws`, `xhttp`, `grpc` or `httpupgrade`
 - transport security is `none` or `tls` — REALITY cannot pass a CDN
@@ -64,11 +62,11 @@ Enter CDN IP addresses or domain names in the **CDN List** field, one per line:
 cdn.example.com
 ```
 
-**Important:** The CDN hosts you enter must be capable of proxying traffic for your routing subdomain. The generated links replace the connect address with the CDN host and write the CDN subdomain field's value into the `host` and `sni` parameters — so the CDN must be configured to route requests for that subdomain to your origin server.
+**Important:** The CDN hosts you enter must be capable of proxying traffic for your routing subdomain. The generated links replace the connect address with the CDN host and write the CDN subdomain field's value into the `host` parameter — so the CDN must be configured to route requests for that subdomain to your origin server.
 
 ### 3. CDN Subdomain
 
-After pasting configs, each one appears as a row with a **CDN subdomain** field. This field holds the routing identity written into the generated link's `host` and `sni` parameters — the value the CDN uses to route traffic to your origin server.
+After pasting configs, each compatible one appears as a row with a **CDN subdomain** field; excluded rows carry their reason instead. This field holds the routing identity written into the generated link's `host` parameter, and into `sni` as well when TLS is on — the value the CDN uses to route traffic to your origin server.
 
 **Auto-fill order:**
 1. Explicit `host` param from the origin config (wins)
@@ -87,6 +85,7 @@ After pasting configs, each one appears as a row with a **CDN subdomain** field.
   - **ALPN:** Select one or more protocols (h3, h2, http/1.1, or combos). At least one required.
   - **Fingerprint:** Select one or more fingerprints (chrome, firefox, safari, edge, android, random, randomized). At least one required.
   - **Random SNI:** Toggle to replace SNI with 8-12 random chars + root domain + trailing dot (FQDN bypass).
+- **Include excluded configs in the output:** Off by default, so the output holds generated links only. Turn it on to have each excluded row's original text copied into the output unchanged.
 
 ### 5. Generate
 
