@@ -11,8 +11,11 @@
   "rows.fieldLabel": "CDN Subdomain",
   "rows.applyAllButton": "Apply to all",
   "rows.applyAllPlaceholder": "Value for all rows",
-  "rows.note": "Auto-filled from each config's host parameter, or from its connect address when that is a hostname. When neither applies (IP address), the field is required.",
+  "rows.note": "Auto-filled from each config's host parameter, or from its connect address when that is a hostname. Otherwise (IP address) the field is required. The value must be a hostname of at least two labels — IP addresses, trailing dots and non-ASCII names are rejected. Your edits persist: a field you clear stays cleared and blocks generation until you type a value or reset the row.",
   "rows.requiredError": "Routing subdomain required — fill this field to enable generation.",
+  "rows.invalidError": "Invalid routing subdomain — it must be a hostname of at least two labels, using only ASCII letters, digits and hyphens. IP addresses are not accepted.",
+  "rows.trailingDotError": "Remove the trailing dot — it belongs to SNI, not to the routing subdomain. Turn on Random SNI to get it in generated links.",
+  "rows.resetTitle": "Reset to the auto-filled value",
 
   "config.tlsMode": "TLS Mode",
   "config.noTlsMode": "No-TLS Mode",

@@ -148,6 +148,24 @@ describe('multiplier', () => {
     expect(out[0]).toMatch(/host=info\.example\.com/)
   })
 
+  // The validation gate rejects a trailing dot before generation, but the root
+  // extraction must not rely on it: `example.com.` used to split to a trailing
+  // empty label, yielding the root `com.` and an SNI of `rand.com..`.
+  it('V7: a trailing dot in the routing subdomain does not corrupt the root domain', () => {
+    const configs = parseAll('vless://uuid@1.2.3.4:443?type=ws&host=info.example.com.#cfg')
+    const opts = { enableTls: true, enableNoTls: false, tlsPorts: [443], alpn: ['h2'], fingerprint: ['chrome'], randomSni: true }
+    const out = generateConfigs(configs, ['9.9.9.9'], opts)
+    expect(out[0]).toMatch(/sni=[a-z0-9]+\.example\.com\.(?!\.)/)
+    expect(out[0]).not.toMatch(/sni=[a-z0-9]+\.com\./)
+  })
+
+  it('V7: a single-label routing subdomain yields no empty root', () => {
+    const configs = parseAll('vless://uuid@1.2.3.4:443?type=ws&host=abc.#cfg')
+    const opts = { enableTls: true, enableNoTls: false, tlsPorts: [443], alpn: ['h2'], fingerprint: ['chrome'], randomSni: true }
+    const out = generateConfigs(configs, ['9.9.9.9'], opts)
+    expect(out[0]).toMatch(/sni=[a-z0-9]+\.abc\.(?!\.)/)
+  })
+
   it('edited routing subdomain propagates to its links only', () => {
     const raw = 'vless://a@host1.com:443?type=ws#a\ntrojan://b@host2.com:443?type=ws#b'
     const configs = parseAll(raw)

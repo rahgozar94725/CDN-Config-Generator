@@ -160,8 +160,12 @@ function genRandomSni(originalHost) {
   return `${rand}.${root}.`
 }
 
+// The validation gate rejects a trailing dot in the CDN subdomain field, but a
+// pure function should not depend on a UI gate for correctness: without this,
+// `example.com.` splits to a trailing empty label and the root comes out `com.`,
+// which genRandomSni then turns into `rand.com..` (V7).
 function extractRootDomain(host) {
-  const parts = host.split('.')
-  if (parts.length <= 2) return host
+  const parts = host.replace(/\.+$/, '').split('.')
+  if (parts.length <= 2) return parts.join('.')
   return parts.slice(-2).join('.')
 }

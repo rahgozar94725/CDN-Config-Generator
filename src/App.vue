@@ -23,8 +23,9 @@
       <section v-if="effectiveRows.length > 0" class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 md:p-6">
         <ConfigRows
           :configs="effectiveRows"
-          :missingRows="missingRows"
+          :invalidRows="invalidRows"
           @edit="setRoutingSubdomain"
+          @reset="resetRoutingSubdomain"
           @apply-all="applyRoutingSubdomain"
         />
       </section>
@@ -81,7 +82,7 @@ import OutputPanel from './components/OutputPanel.vue'
 import ConfigRows from './components/ConfigRows.vue'
 import Footer from './components/Footer.vue'
 import { parseRows, splitLines, canGenerate, generateLinks } from './utils/generation.js'
-import { configFingerprint, resolveRoutingSubdomain, findMissingRoutingSubdomain, isProcessedConfig } from './utils/rows.js'
+import { configFingerprint, resolveRoutingSubdomain, findInvalidRoutingSubdomain, isProcessedConfig } from './utils/rows.js'
 
 const rawConfigs = ref('')
 const cdnList = ref('')
@@ -104,20 +105,33 @@ const routingOverrides = reactive(new Map())
 
 const parsedConfigs = computed(() => parseRows(rawConfigs.value))
 
-const effectiveRows = computed(() => parsedConfigs.value.map(c => ({
-  ...c,
-  fingerprint: configFingerprint(c),
-  routingSubdomain: resolveRoutingSubdomain(c, routingOverrides),
-})))
+// derivedRoutingSubdomain and hasOverride are carried so a row can offer reset
+// only when there is something to reset to — an override plus a derivation.
+const effectiveRows = computed(() => parsedConfigs.value.map(c => {
+  const key = configFingerprint(c)
+  return {
+    ...c,
+    fingerprint: key,
+    derivedRoutingSubdomain: c.routingSubdomain || '',
+    hasOverride: routingOverrides.has(key),
+    routingSubdomain: resolveRoutingSubdomain(c, routingOverrides),
+  }
+}))
 
-const missingRows = computed(() => findMissingRoutingSubdomain(effectiveRows.value))
+const invalidRows = computed(() => findInvalidRoutingSubdomain(effectiveRows.value))
 
-const hasMissing = computed(() => missingRows.value.length > 0)
+const hasInvalid = computed(() => invalidRows.value.length > 0)
 
-function setRoutingSubdomain(fingerprint, value) {
-  const v = (value || '').trim()
-  if (v) routingOverrides.set(fingerprint, v)
-  else routingOverrides.delete(fingerprint)
+// Stores what was typed, verbatim and including the empty string: an empty
+// override is a rejection of the derived value, not a request to re-derive
+// (ADR-0003). Trimming here would strip characters mid-typing, so it is left to
+// the generation boundary.
+function setRoutingSubdomain(key, value) {
+  routingOverrides.set(key, value || '')
+}
+
+function resetRoutingSubdomain(key) {
+  routingOverrides.delete(key)
 }
 
 function applyRoutingSubdomain(value) {
@@ -142,7 +156,7 @@ const generationOptions = computed(() => ({
 
 async function generate() {
   if (effectiveRows.value.length === 0 || cdnLines.value.length === 0) return
-  if (hasMissing.value) return
+  if (hasInvalid.value) return
 
   generating.value = true
   outputConfigs.value = []
@@ -150,8 +164,10 @@ async function generate() {
   progressTotal.value = effectiveRows.value.length
   progressCurrent.value = 0
 
+  // Surrounding whitespace is preserved while typing (setRoutingSubdomain) and
+  // stripped here, at the only boundary where it would reach a generated link.
   outputConfigs.value = await generateLinks(
-    effectiveRows.value,
+    effectiveRows.value.map(r => ({ ...r, routingSubdomain: r.routingSubdomain.trim() })),
     cdnLines.value,
     generationOptions.value,
     (current) => { progressCurrent.value = current }

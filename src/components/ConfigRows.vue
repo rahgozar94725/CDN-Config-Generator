@@ -44,12 +44,22 @@
               type="text"
               :disabled="!isProcessed(cfg)"
               class="border rounded px-3 py-1 font-mono text-sm bg-white dark:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-64"
-              :class="isMissing(i) ? 'border-red-500 dark:border-red-400' : 'border-gray-300 dark:border-gray-600'"
+              :class="reasonFor(i) ? 'border-red-500 dark:border-red-400' : 'border-gray-300 dark:border-gray-600'"
               @input="onEdit(cfg, $event.target.value)"
             />
+            <button
+              v-if="canReset(cfg)"
+              type="button"
+              :title="$t('rows.resetTitle')"
+              :aria-label="$t('rows.resetTitle')"
+              @click="$emit('reset', cfg.fingerprint)"
+              class="shrink-0 px-2 py-1 rounded text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+            >
+              &#8635;
+            </button>
           </label>
-          <p v-if="isMissing(i)" class="text-xs text-red-600 dark:text-red-400 sm:text-right">
-            {{ $t('rows.requiredError') }}
+          <p v-if="reasonFor(i)" class="text-xs text-red-600 dark:text-red-400 sm:text-right">
+            {{ $t(errorKey(reasonFor(i))) }}
           </p>
         </div>
       </li>
@@ -63,17 +73,33 @@ import { isProcessedConfig } from '../utils/rows.js'
 
 const props = defineProps({
   configs: { type: Array, default: () => [] },
-  missingRows: { type: Array, default: () => [] },
+  invalidRows: { type: Array, default: () => [] },
 })
 
-const emit = defineEmits(['edit', 'apply-all'])
+const emit = defineEmits(['edit', 'reset', 'apply-all'])
 
 const applyAllValue = ref('')
 
-const missingIndexes = computed(() => new Set(props.missingRows.map(m => m.index)))
+const ERROR_KEYS = {
+  required: 'rows.requiredError',
+  trailingDot: 'rows.trailingDotError',
+  format: 'rows.invalidError',
+}
 
-function isMissing(i) {
-  return missingIndexes.value.has(i)
+const reasonByIndex = computed(() => new Map(props.invalidRows.map(r => [r.index, r.reason])))
+
+function reasonFor(i) {
+  return reasonByIndex.value.get(i) || null
+}
+
+function errorKey(reason) {
+  return ERROR_KEYS[reason] || ERROR_KEYS.format
+}
+
+// Reset restores the derived value by dropping the override, so it is offered
+// only when both exist — there is nothing to fall back to otherwise.
+function canReset(cfg) {
+  return isProcessed(cfg) && cfg.hasOverride && !!cfg.derivedRoutingSubdomain
 }
 
 function isProcessed(cfg) {

@@ -93,7 +93,7 @@ function withRoutingSubdomain(parsed) {
   return { ...parsed, routingSubdomain: '', routingSubdomainRequired: true }
 }
 
-function isIpAddress(host) {
+export function isIpAddress(host) {
   return /^(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}$/.test(host) || host.includes(':')
 }
 

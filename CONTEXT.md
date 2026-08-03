@@ -14,8 +14,16 @@ The host portion of the origin config's URL — where a client would connect wit
 _Avoid_: Domain, host, address of origin
 
 **Routing subdomain**:
-The subdomain the CDN is configured to route to the origin server. Written into the generated link as both the `host` and `sni` parameters. Always a hostname, never an IP.
+The subdomain the CDN is configured to route to the origin server. Written into the generated link as both the `host` and `sni` parameters. Always a hostname of at least two labels; never an IP, never carrying a trailing dot, never a non-ASCII or punycode name.
 _Avoid_: Domain, SNI host, CDN hostname
+
+**Trailing dot**:
+The dot that ends a fully qualified name (`example.com.`). An artefact of the generated `sni` alone — random SNI appends it — and never part of a routing subdomain, so it is rejected in the CDN subdomain field and never appears in `host`.
+_Avoid_: Final dot, root dot
+
+**FQDN bypass**:
+Emitting the routing identity as a fully qualified name, trailing dot included, so that filtering keyed on the bare name does not match it. Reachable only by turning on random SNI.
+_Avoid_: Dot trick
 
 **CDN host**:
 An edge node (IP or domain) from the CDN list that replaces the connect address in generated links.
@@ -34,7 +42,7 @@ The TLS Server Name Indication value in the origin config. Deliberately ignored 
 _Avoid_: SNI
 
 **CDN subdomain field**:
-The per-config user-facing input that holds the routing subdomain. Auto-filled, editable, and required only when no routing subdomain is derivable from the origin config. Manual edits persist across re-parses: they live in an override map keyed by the config's structural fingerprint (type + uuid + connect address + port), so a non-empty typed value re-applies to the matching config whenever it reappears; an empty override falls back to the derived value.
+The per-config user-facing input that holds the routing subdomain. It has three states: **untouched**, filled by the derived routing subdomain; **edited**, holding the user's own value; and **cleared**, deliberately empty because the user rejected the derived value. Editing and clearing both persist when the origin configs are re-parsed, and both are reversible by resetting the row. Whatever the field ends up holding must be a valid routing subdomain, whether the user typed it or it was derived.
 _Avoid_: Domain field
 
 **hostname**:

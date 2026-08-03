@@ -11,8 +11,11 @@
   "rows.fieldLabel": "CDN 子域名",
   "rows.applyAllButton": "应用到全部",
   "rows.applyAllPlaceholder": "用于所有行的值",
-  "rows.note": "自动从配置的 host 参数填充，若连接地址是域名则使用该地址。若两者皆无（地址为 IP），该字段为必填。",
+  "rows.note": "自动从配置的 host 参数填充，若连接地址是域名则使用该地址。若两者皆无（地址为 IP），该字段为必填。取值必须是至少两段的域名；IP 地址、尾随点和非 ASCII 名称均不接受。你的编辑会保留：清空的字段将保持为空并阻止生成，直到你输入值或重置该行。",
   "rows.requiredError": "路由子域名为必填项 — 请填写此字段以启用生成。",
+  "rows.invalidError": "路由子域名无效 — 必须是至少两段的域名，且仅限 ASCII 字母、数字和连字符。不接受 IP 地址。",
+  "rows.trailingDotError": "请删除尾随点 — 它属于 SNI，而非路由子域名。启用「随机 SNI」即可在生成的链接中获得它。",
+  "rows.resetTitle": "恢复为自动填充的值",
 
   "config.tlsMode": "TLS 模式",
   "config.noTlsMode": "非 TLS 模式",

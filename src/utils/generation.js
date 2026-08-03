@@ -1,6 +1,6 @@
 import { parseConfig } from './parser.js'
 import { generateConfigs } from './multiplier.js'
-import { findMissingRoutingSubdomain } from './rows.js'
+import { findInvalidRoutingSubdomain } from './rows.js'
 
 export function splitLines(text) {
   return text.split('\n').map(s => s.trim()).filter(Boolean)
@@ -24,7 +24,7 @@ export function canGenerate(rows, cdnList, options) {
   const hasPorts = (enableTls && tlsPorts.length > 0) || (enableNoTls && noTlsPorts.length > 0)
   const hasAlpn = !enableTls || alpn.length > 0
   const hasFingerprint = !enableTls || fingerprint.length > 0
-  return hasInput && hasPorts && hasAlpn && hasFingerprint && findMissingRoutingSubdomain(rows).length === 0
+  return hasInput && hasPorts && hasAlpn && hasFingerprint && findInvalidRoutingSubdomain(rows).length === 0
 }
 
 export async function generateLinks(rows, cdnList, options, onProgress) {

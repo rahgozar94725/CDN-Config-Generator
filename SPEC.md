@@ -43,10 +43,12 @@ Xray raw config (VLESS/VMESS/Trojan) × CDN IP list × port/TLS combo = expanded
 | V7 | ∀ random SNI → root domain of routingSubdomain (last 2 labels), subdomain prefix stripped | random SNI output test |
 | V8 | ∀ TLS mode → alpn.length ≥ 1 ∧ fingerprint.length ≥ 1 | form validation + multiplier test |
 | V9 | Theme choice persisted to localStorage and restored on load. `dark` class on `<html>` matches choice | DOM check + reload test |
-| V10 | ∀ processed config → generation blocked before compute when resolved routingSubdomain (override ?? derivation) is empty | rows unit test + form gate |
+| V10 | ∀ processed config → generation blocked before compute when resolved routingSubdomain (override ?? derivation) is empty or fails V14 | rows unit test + form gate |
 | V11 | routingSubdomain derivation: explicit `host` param wins → hostname connect address → else required. Input `sni` never consulted | parser matrix test |
-| V12 | ∀ routing-subdomain field edit → written to override map keyed by config fingerprint; effective rows re-resolve so the validation gate re-triggers. No `.map(reactive)` over a computed | rows unit test (resolve) + UI verify |
+| V12 | ∀ routing-subdomain field edit → written to override map keyed by config fingerprint; effective rows re-resolve so the validation gate re-triggers. No `.map(reactive)` over a computed. Override presence — not truthiness — selects: `''` is a stored value, not an absent one | rows unit test (resolve) + UI verify |
 | V13 | Generate gate requires ≥1 valid parsed config row; garbage-only input (0 parsed rows) disables Generate (no silent empty output) | generation unit test + form gate |
+| V14 | routingSubdomain validity, applied to the resolved value regardless of source: ≥2 labels, per-label `[A-Za-z0-9]` with inner `-` only and ≤63 chars, ≤253 total, no trailing dot, not an IP, no `xn--` label. Case preserved, never normalised | rows unit test (validate) |
+| V15 | ∀ generated link → `host` carries no trailing dot; a trailing dot appears only in `sni` under random SNI, and root-domain extraction ignores one if present | multiplier unit test |
 
 ## §T
 
@@ -71,3 +73,5 @@ Xray raw config (VLESS/VMESS/Trojan) × CDN IP list × port/TLS combo = expanded
 | B2 | 2026-06-11 | TLS enabled but alpn/fingerprint empty — generated incomplete TLS configs | V8 |
 | B3 | 2026-07-31 | parsed rows plain objects from computed — routingSubdomain edits never re-triggered missingRows gate, retry dead | V12 |
 | B4 | 2026-08-03 | editable routingSubdomain lived inside a recomputed derived value — a raw-config re-parse silently discarded typed entries (latent data loss); `.map(reactive)` only masked B3's gate, not ownership | V12 |
+| B5 | 2026-08-03 | override resolution keyed on truthiness, so clearing a derivable field deleted a key that was never set: the resolved value did not change, Vue skipped the DOM patch, and field and model diverged — screen empty, links still carrying the deleted value | V10, V12 |
+| B6 | 2026-08-03 | CDN subdomain field validated emptiness only — `abc`, `1.2.3.4`, `MY_Host!!` and `example.com.` all reached `host`/`sni`; with random SNI the trailing-dot case emitted root `com.` and an SNI of `rand.com..` | V14, V15 |
