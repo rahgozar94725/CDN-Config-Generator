@@ -86,8 +86,12 @@ The credential segment of an `ss` link, between the scheme and the connect addre
 _Avoid_: Password, credentials
 
 **Link identity**:
-The set of properties that make two output links interchangeable for a client: the query key=value set (compared order-insensitively), plus address, port, security, transport, and any other link-shaping fields — excluding the remark. Two links with equal identity are one link, whatever their byte order.
+The set of properties that make two output links interchangeable for a client: the query key=value set (compared order-insensitively), plus address, port, security, transport, and any other link-shaping fields — excluding the remark, and excluding a random SNI, which is a nonce rather than a property of where the link goes. Two links with equal identity are one link, whatever their byte order.
 _Avoid_: Dedup key, fingerprint, equality
+
+**Nonce**:
+A value regenerated per generated link and carrying no meaning of its own — the random SNI is the only one. Two links differing in nothing but a nonce are the same link, so a nonce is never part of link identity.
+_Avoid_: Random value, salt
 
 ## Persian (فارسی)
 

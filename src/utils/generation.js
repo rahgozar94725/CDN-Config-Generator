@@ -91,25 +91,39 @@ export function canGenerate(rows, cdnList, options) {
 // multiplier's own per-batch suffix is irrelevant here — the engine strips the
 // fragment it wrote and re-numbers from the base remark. Passthrough raw lines
 // are the user's own text: copied through bit-identical, never deduplicated.
+//
+// Dedup is a whole-run step but the output is still the user's list in the order
+// they pasted it (V5): every item carries the position it was produced at, and
+// the survivors are merged back with the passthrough lines by that position. A
+// raw line therefore sits where its row sits, not after every generated link.
 export async function generateLinks(rows, cdnList, options, onProgress) {
   const entries = []
   const passthrough = []
   const total = rows.length
   let current = 0
+  let position = 0
   const includeExcluded = !!(options && options.includeExcluded)
+  const randomSni = !!(options && options.randomSni)
 
   for (const config of rows) {
     if (config.status !== ROW_OK) {
-      if (includeExcluded) passthrough.push(config.raw)
+      if (includeExcluded) passthrough.push({ position: position++, text: config.raw })
     } else {
       const batch = generateConfigs([config], cdnList, options)
-      for (const link of batch) entries.push({ link, remark: config.remark })
+      for (const link of batch) {
+        entries.push({ link, remark: config.remark, position: position++ })
+      }
     }
     current++
     if (onProgress) onProgress(current, total)
     await new Promise(r => setTimeout(r, 0))
   }
 
-  const { links: deduped, dropped } = dedupeAndNumber(entries)
-  return { links: [...deduped, ...passthrough], dropped }
+  const { links: deduped, dropped, kept } = dedupeAndNumber(entries, { randomSni })
+  const merged = deduped
+    .map((text, i) => ({ position: entries[kept[i]].position, text }))
+    .concat(passthrough)
+    .sort((a, b) => a.position - b.position)
+    .map(item => item.text)
+  return { links: merged, dropped }
 }

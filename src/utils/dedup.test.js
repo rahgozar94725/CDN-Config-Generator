@@ -44,6 +44,43 @@ describe('linkIdentity', () => {
   it('vmess drops ps and is order-insensitive on the decoded fields', () => {
     expect(linkIdentity(vmess('one'))).toBe(linkIdentity(vmess('two')))
   })
+
+  // A random SNI is a nonce: it is regenerated per built link, so keeping it in
+  // identity means no two links ever match and dedup is off for anyone with the
+  // option on. Dropping it is safe because `host` still carries the routing
+  // subdomain unrandomised, so two different routings stay apart (ADR-0006).
+  it('ignores sni under random SNI, but keeps host distinguishing', () => {
+    const a = 'vless://u@1.1.1.1:443?type=ws&host=x.com&security=tls&sni=aaa.x.com.#one'
+    const b = 'vless://u@1.1.1.1:443?type=ws&host=x.com&security=tls&sni=bbb.x.com.#two'
+    const c = 'vless://u@1.1.1.1:443?type=ws&host=y.com&security=tls&sni=aaa.y.com.#three'
+    expect(linkIdentity(a, { randomSni: true })).toBe(linkIdentity(b, { randomSni: true }))
+    expect(linkIdentity(a, { randomSni: true })).not.toBe(linkIdentity(c, { randomSni: true }))
+  })
+
+  it('keeps sni in identity when the SNI is not random', () => {
+    const a = 'vless://u@1.1.1.1:443?type=ws&host=x.com&security=tls&sni=a.x.com#one'
+    const b = 'vless://u@1.1.1.1:443?type=ws&host=x.com&security=tls&sni=b.x.com#two'
+    expect(linkIdentity(a)).not.toBe(linkIdentity(b))
+  })
+
+  it('ignores the vmess sni field under random SNI', () => {
+    const vm = sni => 'vmess://' + btoa(encodeURIComponent(JSON.stringify(
+      { v: '2', ps: 'a', add: '1.1.1.1', port: 443, id: 'uuid', net: 'ws', host: 'x.com', tls: 'tls', sni }
+    )))
+    expect(linkIdentity(vm('aaa.x.com.'), { randomSni: true }))
+      .toBe(linkIdentity(vm('bbb.x.com.'), { randomSni: true }))
+    expect(linkIdentity(vm('aaa.x.com.'))).not.toBe(linkIdentity(vm('bbb.x.com.')))
+  })
+
+  // An undecodable link states no identity, so it can only be its own byte-equal
+  // twin. Collapsing every undecodable vmess link into one empty identity would
+  // drop links that share nothing but being unreadable.
+  it('falls back to the whole link when vmess does not decode', () => {
+    const a = 'vmess://not-base64-at-all'
+    const b = 'vmess://also-not-base64'
+    expect(linkIdentity(a)).not.toBe(linkIdentity(b))
+    expect(linkIdentity(a)).toBe(linkIdentity(a))
+  })
 })
 
 describe('dedupeAndNumber', () => {
@@ -146,6 +183,52 @@ describe('dedupeAndNumber', () => {
     expect(decodeVmess(out[0]).ps).toBe('a-001')
     expect(decodeVmess(out[1]).ps).toBe('a-002')
     expect(decodeVmess(out[2]).ps).toBe('b-001')
+  })
+
+  // The label is `remark || 'config'`, so keying the counter on the remark text
+  // gave an empty remark and a remark of literally `config` two counters writing
+  // into one label space — two links, both `config-001`. Keyed on the label base,
+  // uniqueness is structural.
+  it('shares one sequence between no remark and a remark of config', () => {
+    const links = [
+      q('vless://u@1.1.1.1:443?type=ws&host=x.com&security=tls', ''),
+      q('vless://u@2.2.2.2:443?type=ws&host=x.com&security=tls', 'config'),
+      q('vless://u@3.3.3.3:443?type=ws&host=x.com&security=tls', undefined),
+    ]
+    const { links: out } = dedupeAndNumber(links)
+    expect(out[0]).toMatch(/#config-001$/)
+    expect(out[1]).toMatch(/#config-002$/)
+    expect(out[2]).toMatch(/#config-003$/)
+  })
+
+  // A bare object reads its counter through Object.prototype, so a remark naming
+  // a prototype member returned a function instead of 0 and the suffix became the
+  // function's source text.
+  it('numbers remarks that name Object.prototype members', () => {
+    const links = [
+      q('vless://u@1.1.1.1:443?type=ws&host=x.com&security=tls', 'constructor'),
+      q('vless://u@2.2.2.2:443?type=ws&host=x.com&security=tls', 'constructor'),
+      q('vless://u@3.3.3.3:443?type=ws&host=x.com&security=tls', 'toString'),
+      q('vless://u@4.4.4.4:443?type=ws&host=x.com&security=tls', '__proto__'),
+    ]
+    const { links: out } = dedupeAndNumber(links)
+    expect(out[0]).toMatch(/#constructor-001$/)
+    expect(out[1]).toMatch(/#constructor-002$/)
+    expect(out[2]).toMatch(/#toString-001$/)
+    expect(out[3]).toMatch(/#__proto__-001$/)
+  })
+
+  it('collapses links that differ only in a random sni when told the SNI is random', () => {
+    const a = 'vless://u@1.1.1.1:443?type=ws&host=x.com&security=tls&sni=aaa.x.com.'
+    const b = 'vless://u@1.1.1.1:443?type=ws&host=x.com&security=tls&sni=bbb.x.com.'
+    const off = dedupeAndNumber([q(a, 'cfg'), q(b, 'cfg')])
+    expect(off.links).toHaveLength(2)
+    expect(off.dropped).toBe(0)
+    const on = dedupeAndNumber([q(a, 'cfg'), q(b, 'cfg')], { randomSni: true })
+    expect(on.links).toHaveLength(1)
+    expect(on.dropped).toBe(1)
+    // The survivor keeps its own random SNI: only identity is canonicalised.
+    expect(on.links[0]).toMatch(/sni=aaa\.x\.com\./)
   })
 
   it('dedupes through the multiplier pipeline over identical generated links', () => {
