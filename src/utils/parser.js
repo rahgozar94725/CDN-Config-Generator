@@ -126,7 +126,7 @@ export function isIpAddress(host) {
   return /^(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}$/.test(host) || host.includes(':')
 }
 
-function decodeBase64(str) {
+export function decodeBase64(str) {
   try {
     const normalized = str.replace(/-/g, '+').replace(/_/g, '/')
     const padded = normalized.padEnd(normalized.length + (4 - normalized.length % 4) % 4, '=')

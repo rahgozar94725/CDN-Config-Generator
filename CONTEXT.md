@@ -85,6 +85,10 @@ _Avoid_: SS format, SIP002
 The credential segment of an `ss` link, between the scheme and the connect address. Deliberately opaque: it is carried into generated links verbatim, so its encoding is never a question the generator has to answer.
 _Avoid_: Password, credentials
 
+**Link identity**:
+The set of properties that make two output links interchangeable for a client: the query key=value set (compared order-insensitively), plus address, port, security, transport, and any other link-shaping fields — excluding the remark. Two links with equal identity are one link, whatever their byte order.
+_Avoid_: Dedup key, fingerprint, equality
+
 ## Persian (فارسی)
 
 Canonical Persian renderings. UI (fa.json) and README.fa.md must use these.
