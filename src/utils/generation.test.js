@@ -98,26 +98,96 @@ describe('canGenerate', () => {
 })
 
 describe('generateLinks', () => {
+  const tlsOnly = { enableTls: true, enableNoTls: false, tlsPorts: [443], alpn: ['h2'], fingerprint: ['chrome'] }
+
   it('V1: count correct through the pipeline (2 configs × 2 cdn × 2 modes)', async () => {
     const rows = parseRows('vless://a@x.com:443?type=ws#a\ntrojan://b@y.com:443?type=ws#b')
     const cdn = ['1.1.1.1', '2.2.2.2']
     const out = await generateLinks(rows, cdn, goodOpts)
-    expect(out.length).toBe(8)
+    expect(out.links).toHaveLength(8)
+    expect(out.dropped).toBe(0)
   })
 
   it('V10: filled routing subdomain flows into output host/sni', async () => {
     const rows = parseRows('vless://a@1.2.3.4:443?type=ws#a')
     rows[0].routingSubdomain = 'route.example.com'
-    const out = await generateLinks(rows, ['9.9.9.9'], { enableTls: true, enableNoTls: false, tlsPorts: [443], alpn: ['h2'], fingerprint: ['chrome'] })
-    expect(out[0]).toMatch(/host=route\.example\.com/)
-    expect(out[0]).toMatch(/sni=route\.example\.com/)
+    const out = await generateLinks(rows, ['9.9.9.9'], tlsOnly)
+    expect(out.links[0]).toMatch(/host=route\.example\.com/)
+    expect(out.links[0]).toMatch(/sni=route\.example\.com/)
   })
 
-  it('preserves the per-config remark suffix reset', async () => {
-    const rows = parseRows('vless://a@x.com:443?type=ws#a\ntrojan://b@y.com:443?type=ws#b')
-    const out = await generateLinks(rows, ['1.1.1.1'], { enableTls: true, enableNoTls: false, tlsPorts: [443], alpn: ['h2'], fingerprint: ['chrome'] })
-    expect(out[0]).toMatch(/#a-001$/)
-    expect(out[1]).toMatch(/#b-001$/)
+  // The per-config remark counter was the reported defect: two rows sharing a
+  // remark both produced SS-001. Numbering now spans the whole run per remark
+  // text (V4), so shared remarks get unique sequential labels.
+  it('V4: numbers per remark text across the whole run, not per config', async () => {
+    const rows = parseRows('vless://a@x1.com:443?type=ws#ss\ntrojan://b@x2.com:443?type=ws#ss')
+    const out = await generateLinks(rows, ['1.1.1.1'], tlsOnly)
+    expect(out.links[0]).toMatch(/#ss-001$/)
+    expect(out.links[1]).toMatch(/#ss-002$/)
+  })
+
+  it('V4: distinct remarks each restart at 001', async () => {
+    const rows = parseRows('vless://a@x1.com:443?type=ws#ss\nvless://b@x2.com:443?type=ws#gg')
+    const out = await generateLinks(rows, ['1.1.1.1'], tlsOnly)
+    expect(out.links[0]).toMatch(/#ss-001$/)
+    expect(out.links[1]).toMatch(/#gg-001$/)
+  })
+
+  it('V4: configs without a remark share the implicit config- sequence', async () => {
+    const rows = parseRows('vless://a@x1.com:443?type=ws\nvless://b@x2.com:443?type=ws')
+    const out = await generateLinks(rows, ['1.1.1.1'], tlsOnly)
+    expect(out.links[0]).toMatch(/#config-001$/)
+    expect(out.links[1]).toMatch(/#config-002$/)
+  })
+
+  // The reported defect: No-TLS and TLS variants of one endpoint each expanded,
+  // and the cross-config pairs were semantically identical. 8 built links must
+  // collapse to the 4 distinct ones, first-wins, with the drop reported (V1).
+  it('V1: dedups the No-TLS and TLS variants of one endpoint and reports the drop', async () => {
+    const rows = parseRows(
+      'vless://u@x.com:80?type=ws&host=route.example.com#a\n' +
+      'vless://u@x.com:443?type=ws&security=tls&host=route.example.com#b'
+    )
+    const cdn = ['1.1.1.1', '2.2.2.2']
+    const out = await generateLinks(rows, cdn, goodOpts)
+    expect(out.links).toHaveLength(4)
+    expect(out.dropped).toBe(4)
+    expect(out.links[0]).toMatch(/#a-001$/)
+    expect(out.links[1]).toMatch(/#a-002$/)
+    expect(out.links[2]).toMatch(/#a-003$/)
+    expect(out.links[3]).toMatch(/#a-004$/)
+  })
+
+  it('V1: dedups links that differ only in query-parameter order', async () => {
+    const rows = parseRows(
+      'vless://u@x.com:443?type=ws&host=route.example.com&security=tls#a\n' +
+      'vless://u@x.com:443?security=tls&host=route.example.com&type=ws#b'
+    )
+    const out = await generateLinks(rows, ['1.1.1.1'], tlsOnly)
+    expect(out.links).toHaveLength(1)
+    expect(out.dropped).toBe(1)
+    expect(out.links[0]).toMatch(/#a-001$/)
+  })
+
+  it('V1: dedups vmess links by dropping ps, through the pipeline', async () => {
+    const vm = ps => 'vmess://' + btoa(JSON.stringify({ v: '2', ps, add: 'x.com', port: 443, id: 'uuid', net: 'ws', host: 'route.example.com', path: '/', tls: 'tls' }))
+    const rows = parseRows(vm('one') + '\n' + vm('two'))
+    const out = await generateLinks(rows, ['1.1.1.1'], tlsOnly)
+    expect(out.links).toHaveLength(1)
+    expect(out.dropped).toBe(1)
+  })
+
+  it('V5: passthrough raw lines are not deduplicated and stay bit-identical', async () => {
+    const rows = parseRows(
+      'vless://u@x.com:443?type=ws&host=route.example.com#a\n' +
+      'vless://u@x.com:443?type=ws&host=route.example.com#b\n' +
+      'vless://bad@x.com:443?type=tcp#raw'
+    )
+    const out = await generateLinks(rows, ['1.1.1.1'], { ...tlsOnly, includeExcluded: true })
+    expect(out.links).toHaveLength(2)
+    expect(out.links[0]).toMatch(/#a-001$/)
+    expect(out.links[1]).toBe('vless://bad@x.com:443?type=tcp#raw')
+    expect(out.dropped).toBe(1)
   })
 
   it('calls onProgress once per config with correct totals', async () => {

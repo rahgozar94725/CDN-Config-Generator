@@ -47,6 +47,7 @@
   "output.count": "{count} کانفیگ تولید شد",
   "output.empty": "هنوز کانفیگی تولید نشده",
   "output.progress": "پردازش {current} از {total}",
+  "output.dropped": "{count} لینک تکراری حذف شد",
 
   "theme.label": "پوسته",
   "theme.light": "روشن",

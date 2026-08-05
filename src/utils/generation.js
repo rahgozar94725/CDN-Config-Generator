@@ -1,5 +1,6 @@
 import { parseConfig } from './parser.js'
 import { generateConfigs } from './multiplier.js'
+import { dedupeAndNumber } from './dedup.js'
 import {
   compatibilityReason,
   findInvalidRoutingSubdomain,
@@ -83,18 +84,32 @@ export function canGenerate(rows, cdnList, options) {
   return hasInput && hasPorts && hasAlpn && hasFingerprint && findInvalidRoutingSubdomain(rows).length === 0
 }
 
+// The whole-run pipeline (V1, V4): links are built per config, collected with
+// their base remark, then deduplicated and numbered over all of them at once.
+// Numbering is the engine's last step, over the survivors, so a label reads
+// `001-N` with no holes and two configs sharing a remark get unique labels. The
+// multiplier's own per-batch suffix is irrelevant here — the engine strips the
+// fragment it wrote and re-numbers from the base remark. Passthrough raw lines
+// are the user's own text: copied through bit-identical, never deduplicated.
 export async function generateLinks(rows, cdnList, options, onProgress) {
-  const results = []
+  const entries = []
+  const passthrough = []
   const total = rows.length
   let current = 0
+  const includeExcluded = !!(options && options.includeExcluded)
 
   for (const config of rows) {
-    const batch = generateConfigs([config], cdnList, options)
-    results.push(...batch)
+    if (config.status !== ROW_OK) {
+      if (includeExcluded) passthrough.push(config.raw)
+    } else {
+      const batch = generateConfigs([config], cdnList, options)
+      for (const link of batch) entries.push({ link, remark: config.remark })
+    }
     current++
     if (onProgress) onProgress(current, total)
     await new Promise(r => setTimeout(r, 0))
   }
 
-  return results
+  const { links: deduped, dropped } = dedupeAndNumber(entries)
+  return { links: [...deduped, ...passthrough], dropped }
 }

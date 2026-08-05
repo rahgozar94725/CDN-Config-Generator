@@ -47,6 +47,7 @@
   "output.count": "Сгенерировано {count} конфигов",
   "output.empty": "Конфиги еще не сгенерированы",
   "output.progress": "Обработка {current} из {total}",
+  "output.dropped": "Удалено дублей: {count}",
 
   "theme.label": "Тема",
   "theme.light": "Светлая",

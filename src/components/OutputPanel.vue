@@ -16,6 +16,9 @@
       <p class="text-sm">
         <span v-if="configs.length > 0">{{ $t('output.count', { count: configs.length }) }}</span>
         <span v-else>{{ $t('output.empty') }}</span>
+        <span v-if="dropped > 0" class="ml-2 text-amber-600 dark:text-amber-400">
+          {{ $t('output.dropped', { count: dropped }) }}
+        </span>
       </p>
       <div class="flex gap-2" v-if="configs.length > 0">
         <button
@@ -51,6 +54,7 @@ import { computed } from 'vue'
 
 const props = defineProps({
   configs: { type: Array, default: () => [] },
+  dropped: { type: Number, default: 0 },
   generating: { type: Boolean, default: false },
   progressCurrent: { type: Number, default: 0 },
   progressTotal: { type: Number, default: 0 },

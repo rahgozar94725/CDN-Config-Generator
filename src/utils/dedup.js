@@ -5,7 +5,7 @@ import { decodeBase64 } from './parser.js'
 // ticket #10 refers to), it collapses links with equal normalised identity
 // (first-wins) and then numbers the survivors per remark text across the whole
 // run (ADR-0006). It is a pure function — it does not know about rows, options
-// or the pipeline, and nothing wires it in yet.
+// or the pipeline; generation.js hosts it as the last step of generateLinks.
 //
 // The remark is passed in rather than guessed from the link: a fragment/`ps`
 // ending in `-001` cannot be told apart from a genuine remark that ends in three

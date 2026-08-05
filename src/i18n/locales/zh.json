@@ -47,6 +47,7 @@
   "output.count": "已生成 {count} 个配置",
   "output.empty": "尚未生成配置",
   "output.progress": "处理中 {current}/{total}",
+  "output.dropped": "已移除 {count} 个重复链接",
 
   "theme.label": "主题",
   "theme.light": "浅色",

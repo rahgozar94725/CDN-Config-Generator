@@ -47,6 +47,7 @@
   "output.count": "{count} configs generated",
   "output.empty": "No configs generated yet",
   "output.progress": "Processing {current} of {total}",
+  "output.dropped": "{count} duplicate links removed",
 
   "theme.label": "Theme",
   "theme.light": "Light",

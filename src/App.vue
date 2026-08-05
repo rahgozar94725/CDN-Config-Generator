@@ -68,6 +68,7 @@
       <section class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 md:p-6">
         <OutputPanel
           :configs="outputConfigs"
+          :dropped="droppedCount"
           :generating="generating"
           :progressCurrent="progressCurrent"
           :progressTotal="progressTotal"
@@ -101,6 +102,7 @@ const fingerprint = ref([])
 const randomSni = ref(false)
 const includeExcluded = ref(false)
 const outputConfigs = ref([])
+const droppedCount = ref(0)
 const generating = ref(false)
 const progressCurrent = ref(0)
 const progressTotal = ref(0)
@@ -179,18 +181,21 @@ async function generate() {
 
   generating.value = true
   outputConfigs.value = []
+  droppedCount.value = 0
 
   progressTotal.value = effectiveRows.value.length
   progressCurrent.value = 0
 
   // Surrounding whitespace is preserved while typing (setRoutingSubdomain) and
   // stripped here, at the only boundary where it would reach a generated link.
-  outputConfigs.value = await generateLinks(
+  const result = await generateLinks(
     effectiveRows.value.map(r => ({ ...r, routingSubdomain: r.routingSubdomain.trim() })),
     cdnLines.value,
     generationOptions.value,
     (current) => { progressCurrent.value = current }
   )
+  outputConfigs.value = result.links
+  droppedCount.value = result.dropped
 
   generating.value = false
 }
