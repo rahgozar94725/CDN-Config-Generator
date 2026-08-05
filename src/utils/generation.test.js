@@ -190,6 +190,53 @@ describe('generateLinks', () => {
     expect(out.dropped).toBe(1)
   })
 
+  // Random SNI regenerates per built link, so keeping it in identity switched
+  // dedup off for anyone with the option on and the reported duplicates came
+  // back. A nonce does not make two links distinct (ADR-0006).
+  it('V1: dedups duplicate endpoints even under random SNI', async () => {
+    const rows = parseRows(
+      'vless://u@x.com:443?type=ws&host=route.example.com#a\n' +
+      'vless://u@x.com:443?type=ws&host=route.example.com#b'
+    )
+    const out = await generateLinks(rows, ['1.1.1.1'], { ...tlsOnly, randomSni: true })
+    expect(out.links).toHaveLength(1)
+    expect(out.dropped).toBe(1)
+    expect(out.links[0]).toMatch(/#a-001$/)
+  })
+
+  it('V1: random SNI does not collapse links with different routing subdomains', async () => {
+    const rows = parseRows(
+      'vless://u@x.com:443?type=ws&host=one.example.com#a\n' +
+      'vless://u@x.com:443?type=ws&host=two.example.com#b'
+    )
+    const out = await generateLinks(rows, ['1.1.1.1'], { ...tlsOnly, randomSni: true })
+    expect(out.links).toHaveLength(2)
+    expect(out.dropped).toBe(0)
+  })
+
+  it('V4: a remark of config shares the implicit sequence, so no two labels collide', async () => {
+    const rows = parseRows('vless://a@x1.com:443?type=ws\nvless://b@x2.com:443?type=ws#config')
+    const out = await generateLinks(rows, ['1.1.1.1'], tlsOnly)
+    expect(out.links[0]).toMatch(/#config-001$/)
+    expect(out.links[1]).toMatch(/#config-002$/)
+  })
+
+  // Passthrough serves the mixed subscription a user wants back as one list, so
+  // a raw line holds its row position rather than being appended after every
+  // generated link (V5).
+  it('V5: passthrough lines keep their source row position', async () => {
+    const rows = parseRows(
+      'vless://a@x1.com:443?type=ws#one\n' +
+      'vless://bad@x.com:443?type=tcp#raw\n' +
+      'vless://b@x2.com:443?type=ws#two'
+    )
+    const out = await generateLinks(rows, ['1.1.1.1'], { ...tlsOnly, includeExcluded: true })
+    expect(out.links).toHaveLength(3)
+    expect(out.links[0]).toMatch(/#one-001$/)
+    expect(out.links[1]).toBe('vless://bad@x.com:443?type=tcp#raw')
+    expect(out.links[2]).toMatch(/#two-001$/)
+  })
+
   it('calls onProgress once per config with correct totals', async () => {
     const rows = parseRows('vless://a@x.com:443?type=ws#a\ntrojan://b@y.com:443?type=ws#b')
     const onProgress = vi.fn()

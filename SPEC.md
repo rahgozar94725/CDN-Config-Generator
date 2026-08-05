@@ -15,7 +15,7 @@ Xray raw config (VLESS/VMESS/Trojan/Shadowsocks) × CDN IP list × port/TLS comb
 7.  TLS advanced: ALPN multi-select, fingerprint multi-select, random SNI toggle (8-12 rand chars + `.` + root domain of routingSubdomain + `.`).
 8.  Compatibility gate: transport ∈ {`ws`,`xhttp`,`httpupgrade`,`grpc`} ∧ security ∈ {`none`,`tls`} ∧ (no `flow` ∨ VLESS Encryption present). Excluded rows are labelled with a reason and left out of the output; opt-in checkbox copies them through raw.
 9.  Param mapping: new addr=IP_B, new port=selected, routing subdomain → `host`, and → `sni` under TLS only. TLS→`security=tls`,`insecure=0`,`allowInsecure=0`. No-TLS→`security=none`.
-10. Remark suffix: 3-digit incrementing per remark text (`#name-001`), percent-encoded in the fragment. Applied last, after dedup. Configs with no remark share an implicit `config-` sequence.
+10. Remark suffix: 3-digit incrementing per label base (`#name-001`), percent-encoded in the fragment. Applied last, after dedup. Configs with no remark share an implicit `config-` sequence, as does a config whose remark is literally `config`.
 11. Progress bar. Copy All + Download .txt.
 12. Responsive mobile+desktop.
 13. No browser freeze. Computation non-blocking.
@@ -34,11 +34,11 @@ Xray raw config (VLESS/VMESS/Trojan/Shadowsocks) × CDN IP list × port/TLS comb
 
 | id | invariant | check |
 |----|-----------|-------|
-| V1 | Output = distinct generated links under normalised identity (query pairs order-insensitive, minus remark fragment; vmess minus `ps`), first-wins; excluded rows counted only when `includeExcluded`. Duplicates dropped are reported to the user | unit test counter + dedup test |
+| V1 | Output = distinct generated links under normalised identity (query pairs order-insensitive, minus remark fragment; vmess minus `ps`; minus `sni` when random SNI is on, since it is a nonce), first-wins; excluded rows counted only when `includeExcluded`. Duplicates dropped are reported to the user | unit test counter + dedup test |
 | V2 | Processed configs have `security=tls` or `security=none` only | regex output scan |
 | V3 | ∀ generated link → `host`==config routingSubdomain, and `sni` is written (equal to it, or to the random SNI) only under TLS — no TLS handshake, no server name to indicate. Connect address never appears in `host`/`sni` | param scan + parser matrix test |
-| V4 | Remark suffix = 3-digit incrementing 001-N per remark text, applied after dedup so survivors have no gaps. Fragment percent-encoded, so a generated link re-parses to the remark it was built from | output scan |
-| V5 | Excluded rows never reach the output unless `includeExcluded`; when they do, bit-identical to the input line | string equality test |
+| V4 | Remark suffix = 3-digit incrementing 001-N per label base (the remark text, or `config` where there is none), applied after dedup so survivors have no gaps. No two output links share a label. Fragment percent-encoded, so a generated link re-parses to the remark it was built from | output scan |
+| V5 | Excluded rows never reach the output unless `includeExcluded`; when they do, bit-identical to the input line and at the position of their row, so the output list keeps the order of the paste | string equality + order test |
 | V6 | Active TLS/No-TLS mode must have ≥1 port selected | form validation before compute |
 | V7 | ∀ random SNI → root domain of routingSubdomain (last 2 labels), subdomain prefix stripped | random SNI output test |
 | V8 | ∀ TLS mode → alpn.length ≥ 1 ∧ fingerprint.length ≥ 1 | form validation + multiplier test |
@@ -84,3 +84,4 @@ Xray raw config (VLESS/VMESS/Trojan/Shadowsocks) × CDN IP list × port/TLS comb
 | B7 | 2026-08-03 | only transport was gated. `security` was never examined, so REALITY with an allowed transport was rewritten to `security=tls` with `pbk`/`sid`/`spx` still attached; `flow` was never examined either. Everything else passed through raw into the output, indistinguishable from a generated link | V5, V13, V16 |
 | B8 | 2026-08-03 | `sni` written unconditionally, so no-TLS links carried a server name with no handshake to indicate it in; remark decoded on parse but re-emitted raw, so an encoded fragment came back with literal spaces and multi-byte characters | V3, V4 |
 | B9 | 2026-08-03 | output carried duplicate generated links (collapsed No-TLS/TLS variants of one endpoint, missed even by string comparison because origin param ordering survived), and the per-config remark counter restarted at 001 for every row, so two rows shared `SS-001`; dedup and numbering only compose in one order | V1, V4, ADR-0006 |
+| B10 | 2026-08-05 | defects of B9's own fix: random SNI put a fresh nonce in every link, so identity never matched and dedup was off for anyone with the option on; the counter was keyed on the remark text while the label was `remark \|\| config`, so an empty remark and a remark of `config` both wrote `config-001`; the counter object read through `Object.prototype`, so a remark of `constructor` numbered to the function's source text; and passthrough lines were appended after every generated link instead of holding their row position | V1, V4, V5, ADR-0006 |
