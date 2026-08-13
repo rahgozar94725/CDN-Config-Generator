@@ -1,4 +1,4 @@
-import { decodeBase64 } from './parser.js'
+import { decodeBase64, encodeBase64 } from './parser.js'
 
 // The engine for the whole dedup + per-remark numbering ticket chain: given the
 // built origin links together with their base remark (the "routing context"
@@ -95,12 +95,15 @@ export function linkIdentity(link, options) {
 
 // Rewrites a numbered remark back into a link. vless/trojan/ss carry it as a
 // percent-encoded fragment; vmess as the `ps` field of its base64 JSON object,
-// re-encoded exactly as the multiplier builds it so it still parses back.
+// re-encoded with the same codec the multiplier builds with so it still parses
+// back. This is the last writer of every vmess link the app emits, so an
+// encoding the multiplier gets right and this site gets wrong is still wrong in
+// the output the user is handed.
 function withRemark(link, remark) {
   if (isVmess(link)) {
     const obj = vmessConfig(link)
     obj.ps = remark
-    return 'vmess://' + btoa(encodeURIComponent(JSON.stringify(obj)))
+    return 'vmess://' + encodeBase64(JSON.stringify(obj))
   }
   return `${splitFragment(link).head}#${encodeURIComponent(remark)}`
 }

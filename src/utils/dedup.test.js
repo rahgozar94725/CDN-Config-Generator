@@ -2,14 +2,18 @@ import { describe, it, expect } from 'vitest'
 import { dedupeAndNumber, linkIdentity } from './dedup.js'
 import { parseRows } from './generation.js'
 import { generateConfigs } from './multiplier.js'
+import { encodeBase64 } from './parser.js'
 
 function vmess(ps, add = '1.1.1.1') {
   const obj = { v: '2', ps, add, port: 443, id: 'uuid', net: 'ws', host: 'x.com', tls: 'tls' }
-  return 'vmess://' + btoa(encodeURIComponent(JSON.stringify(obj)))
+  return 'vmess://' + encodeBase64(JSON.stringify(obj))
 }
 
+// Read the payload the way a client does: one base64 step, then JSON. A second
+// decode step here would let a non-standard payload pass as correct.
 function decodeVmess(link) {
-  return JSON.parse(decodeURIComponent(atob(link.replace('vmess://', ''))))
+  const bytes = Uint8Array.from(atob(link.replace('vmess://', '')), c => c.charCodeAt(0))
+  return JSON.parse(new TextDecoder().decode(bytes))
 }
 
 // Entries carry the base remark explicitly, never guessed from the link
@@ -64,9 +68,9 @@ describe('linkIdentity', () => {
   })
 
   it('ignores the vmess sni field under random SNI', () => {
-    const vm = sni => 'vmess://' + btoa(encodeURIComponent(JSON.stringify(
+    const vm = sni => 'vmess://' + encodeBase64(JSON.stringify(
       { v: '2', ps: 'a', add: '1.1.1.1', port: 443, id: 'uuid', net: 'ws', host: 'x.com', tls: 'tls', sni }
-    )))
+    ))
     expect(linkIdentity(vm('aaa.x.com.'), { randomSni: true }))
       .toBe(linkIdentity(vm('bbb.x.com.'), { randomSni: true }))
     expect(linkIdentity(vm('aaa.x.com.'))).not.toBe(linkIdentity(vm('bbb.x.com.')))

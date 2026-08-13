@@ -1,4 +1,5 @@
 import { ROW_OK } from './rows.js'
+import { encodeBase64 } from './parser.js'
 
 export function generateConfigs(configs, cdnList, options) {
   const {
@@ -127,7 +128,7 @@ function buildVmess(config, newAddr, newPort, security, sniValue, remark, extra)
   }
 
   const json = JSON.stringify(obj)
-  const b64 = btoa(encodeURIComponent(json))
+  const b64 = encodeBase64(json)
   return 'vmess://' + b64
 }
 
