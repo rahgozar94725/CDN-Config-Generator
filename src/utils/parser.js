@@ -126,6 +126,19 @@ export function isIpAddress(host) {
   return /^(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}$/.test(host) || host.includes(':')
 }
 
+// The write side of decodeBase64, and its exact inverse: base64 of the string's
+// UTF-8 bytes, which is what a client base64-decoding and parsing JSON expects.
+// `btoa` alone is not that encoder — it takes one byte per code unit and throws
+// on anything above U+00FF, so a Persian remark or an emoji never reaches it.
+// The string is mapped to UTF-8 bytes first, byte by byte rather than spread in
+// one call, so a long payload cannot overflow the argument stack.
+export function encodeBase64(str) {
+  const bytes = new TextEncoder().encode(str)
+  let binary = ''
+  for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i])
+  return btoa(binary)
+}
+
 export function decodeBase64(str) {
   try {
     const normalized = str.replace(/-/g, '+').replace(/_/g, '/')
