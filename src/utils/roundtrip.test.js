@@ -1,4 +1,6 @@
-import { describe, it, expect } from 'vitest'
+import { beforeAll, describe, it, expect } from 'vitest'
+import { parseConfig } from './parser.js'
+import { generateLinks, parseRows } from './generation.js'
 import {
   EXPECT,
   INTENDED_FIELDS,
@@ -441,3 +443,221 @@ for (const scheme of SCHEMES) {
     }
   })
 }
+
+// ---------------------------------------------------------------------------
+// V19: the round-trip gate
+// ---------------------------------------------------------------------------
+//
+// Everything above reads hand-built links. This is the loop the rest of the app
+// never closed: a link the REAL generator emitted, read back and compared field
+// by field against what the generator meant to write.
+//
+// The subject is the output of `generateLinks` — post-dedup, post-numbering —
+// not the builder's interim output. `dedupeAndNumber` is the last writer of
+// every link the app hands the user, so a builder that is right and a rewriter
+// that is wrong still emits a broken link. That is exactly what happened.
+//
+// Both decode paths must agree: `parseConfig` satisfies the round trip through
+// the project's own parser, `decodeLink` satisfies it through a decoder written
+// independently of it, and neither alone can make the gate pass.
+
+const CDN = '104.16.0.1'
+const ROUTE = 'route.example.com'
+
+const CREDENTIALS = {
+  vless: 'uuid-1111',
+  vmess: '11111111-2222-3333-4444-555555555555',
+  trojan: 'p4ssw0rd',
+  // Opaque and awkward on purpose: base64 padding and an inner `/`, neither of
+  // which anything may decode or re-encode (ADR-0005, V18).
+  ss: 'YWVzLTI1Ni1nY206cC9zcw==',
+}
+
+// The input table (R6): the ASCII happy path, plus the cases a fixed table has
+// to buy deliberately because it cannot randomise its way into them. A trailing
+// dot is not among them — `validateRoutingSubdomain` rejects it before
+// generation, and the builder replaces the connect address anyway, so no
+// emitted field can carry one.
+const GATE_ROWS = [
+  { name: 'ASCII happy path', remark: 'my-config', address: 'origin.example.com', tls: true, path: '/ws', alpn: 'h2', fp: 'chrome' },
+  { name: 'a Persian remark', remark: 'سرور تهران', address: 'origin.example.com', tls: true, path: '/ws', alpn: 'h2', fp: 'chrome' },
+  { name: 'an emoji remark', remark: 'config 🚀', address: 'origin.example.com', tls: true, path: '/ws', alpn: 'h2', fp: 'chrome' },
+  { name: 'an omitted optional parameter', remark: 'no-path', address: 'origin.example.com', tls: false },
+  { name: 'a bare IP connect address', remark: 'bare-ip', address: '1.2.3.4', tls: true, path: '/ws', alpn: 'h2', fp: 'chrome' },
+  { name: 'a path carrying reserved characters', remark: 'reserved-path', address: 'origin.example.com', tls: true, path: '/ws?ed=2048', alpn: 'h2', fp: 'chrome' },
+  { name: 'a random SNI nonce', remark: 'random-sni', address: 'origin.example.com', tls: true, path: '/ws', alpn: 'h2', fp: 'chrome', randomSni: true },
+]
+
+// The source config the user pastes. `host` is always stated, so the bare-IP row
+// still resolves a routing subdomain (V11) instead of being blocked by V10.
+function sourceLink(scheme, row) {
+  if (scheme === 'vmess') {
+    const config = {
+      v: '2', ps: row.remark, add: row.address, port: '443', id: CREDENTIALS.vmess,
+      aid: '0', scy: 'auto', net: 'ws', type: 'none', host: ROUTE, tls: row.tls ? 'tls' : 'none',
+    }
+    // Omitted entirely rather than set empty, so the row exercises the parser's
+    // default reaching the builder's fixed key set.
+    if (row.path) config.path = row.path
+    return vmessLink(config)
+  }
+  const query = ['type=ws', `security=${row.tls ? 'tls' : 'none'}`, `host=${ROUTE}`]
+  if (row.path) query.push(`path=${encodeURIComponent(row.path)}`)
+  return `${scheme}://${CREDENTIALS[scheme]}@${row.address}:443?${query.join('&')}#${encodeURIComponent(row.remark)}`
+}
+
+function gateOptions(row) {
+  return {
+    enableTls: !!row.tls,
+    enableNoTls: !row.tls,
+    tlsPorts: [443],
+    noTlsPorts: [80],
+    alpn: row.alpn ? [row.alpn] : [],
+    fingerprint: row.fp ? [row.fp] : [],
+    randomSni: !!row.randomSni,
+  }
+}
+
+function gateContext(scheme, row) {
+  return roundTripContext({
+    scheme,
+    credential: CREDENTIALS[scheme],
+    cdnAddress: CDN,
+    port: row.tls ? 443 : 80,
+    tls: !!row.tls,
+    randomSni: !!row.randomSni,
+    routingSubdomain: ROUTE,
+    transport: 'ws',
+    path: row.path || '',
+    alpn: row.alpn || '',
+    fp: row.fp || '',
+    // The remark dedup renumbers to, not the builder's interim suffix.
+    label: `${row.remark}-001`,
+  })
+}
+
+async function emit(scheme, row) {
+  const { links } = await generateLinks(parseRows(sourceLink(scheme, row)), [CDN], gateOptions(row))
+  return links
+}
+
+// One entry, both paths. A `null` expectation means that path does not speak to
+// the field — skipped rather than guessed at, which is how `insecure` stays a
+// decoder-only assertion even though `parseVmess` would happily return ''.
+function assertEntry(entry, ctx, parsed, decoded) {
+  const expectation = entry.expect(ctx)
+  for (const path of ['parsed', 'decoded']) {
+    const want = expectation[path]
+    if (!want) continue
+    const actual = entry.read[path](path === 'parsed' ? parsed : decoded)
+    if (want.kind === EXPECT.VALUE) expect(actual).toBe(want.value)
+    else if (want.kind === EXPECT.PATTERN) expect(String(actual)).toMatch(want.pattern)
+    else expect(actual).toBeUndefined()
+  }
+}
+
+for (const scheme of SCHEMES) {
+  describe(`V19: ${scheme} links from generateLinks round-trip`, () => {
+    for (const row of GATE_ROWS) {
+      describe(row.name, () => {
+        const ctx = gateContext(scheme, row)
+        let emitted
+        let parsed
+        let decoded
+
+        beforeAll(async () => {
+          const links = await emit(scheme, row)
+          expect(links).toHaveLength(1)
+          emitted = links[0]
+          parsed = parseConfig(emitted)
+          decoded = decodeLink(emitted)
+        })
+
+        it('V19: parses back through the project parser without a null result', () => {
+          expect(parsed).not.toBeNull()
+          expect(parsed.type).toBe(scheme)
+        })
+
+        for (const entry of intendedFields(scheme)) {
+          it(`V19: ${entry.field} comes back as written — ${entry.where}`, () => {
+            assertEntry(entry, ctx, parsed, decoded)
+          })
+        }
+      })
+    }
+  })
+}
+
+// The rows above assert the map entry by entry. These state the rules those
+// entries exist to protect, in the terms the defect and the plan use.
+describe('V19: what the gate is protecting', () => {
+  it('V19: a reserved-character path does not split the query or leak a parameter', async () => {
+    for (const scheme of SCHEMES) {
+      const row = GATE_ROWS.find(r => r.name === 'a path carrying reserved characters')
+      const [link] = await emit(scheme, row)
+      expect(parseConfig(link).params.path).toBe('/ws?ed=2048')
+      expect(decodeLink(link).params.path).toBe('/ws?ed=2048')
+      expect(parseConfig(link).params.ed).toBeUndefined()
+    }
+  })
+
+  it('V19: a bare IP connect address still resolves the routing subdomain from host', async () => {
+    for (const scheme of SCHEMES) {
+      const [link] = await emit(scheme, GATE_ROWS.find(r => r.name === 'a bare IP connect address'))
+      const parsed = parseConfig(link)
+      expect(parsed.address).toBe(CDN)
+      expect(parsed.routingSubdomain).toBe(ROUTE)
+      expect(parsed.routingSubdomainRequired).toBe(false)
+    }
+  })
+
+  // V3's rule, read off the emitted link rather than off the builder: no
+  // handshake, so there is no server name to indicate and nothing to configure
+  // about certificate checking.
+  it('V19: a no-TLS link carries no sni, insecure, allowInsecure, alpn or fp', async () => {
+    for (const scheme of SCHEMES) {
+      const [link] = await emit(scheme, GATE_ROWS.find(r => r.name === 'an omitted optional parameter'))
+      const params = decodeLink(link).params
+      for (const key of ['sni', 'insecure', 'allowInsecure', 'alpn', 'fp']) {
+        expect(params[key]).toBeUndefined()
+      }
+      // Through the parser the vmess row reads the normalised empty value
+      // instead, because parseVmess materialises these keys on every result.
+      const parsedParams = parseConfig(link).params
+      const absentValue = scheme === 'vmess' ? '' : undefined
+      expect(parsedParams.sni).toBe(absentValue)
+      expect(parsedParams.alpn).toBe(absentValue)
+      expect(parsedParams.fp).toBe(absentValue)
+    }
+  })
+
+  it('V19: under random SNI the server name is a nonce rooted in the routing subdomain', async () => {
+    for (const scheme of SCHEMES) {
+      const [link] = await emit(scheme, GATE_ROWS.find(r => r.name === 'a random SNI nonce'))
+      const sni = decodeLink(link).params.sni
+      expect(sni).toMatch(randomSniPattern(ROUTE))
+      expect(sni.endsWith('.example.com.')).toBe(true)
+      expect(sni).not.toBe(ROUTE)
+    }
+  })
+
+  // The remark the gate asserts is the one numbering writes last, which is also
+  // why two configs sharing a base remark cannot come back with the same label.
+  it('V19: two configs sharing a base remark come back with distinct labels', async () => {
+    for (const scheme of SCHEMES) {
+      // The two configs must differ somewhere identity-bearing, or dedup is
+      // right to collapse them: the builder rewrites the connect address, so
+      // two configs differing only there emit the same link (V1).
+      const base = { name: 'shared', remark: 'shared-remark', address: 'origin.example.com', tls: true, alpn: 'h2', fp: 'chrome' }
+      const raw = [
+        sourceLink(scheme, { ...base, path: '/ws' }),
+        sourceLink(scheme, { ...base, path: '/ws2' }),
+      ].join('\n')
+      const { links } = await generateLinks(parseRows(raw), [CDN], gateOptions(base))
+      expect(links).toHaveLength(2)
+      const labels = links.map(link => decodeLink(link).remark)
+      expect(labels).toEqual(['shared-remark-001', 'shared-remark-002'])
+      expect(links.map(link => parseConfig(link).remark)).toEqual(labels)
+    }
+  })
+})
