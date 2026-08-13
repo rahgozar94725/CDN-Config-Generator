@@ -54,6 +54,16 @@ describe('parseVmess', () => {
   it('returns null for invalid base64', () => {
     expect(parseVmess('vmess://!!!')).toBeNull()
   })
+
+  // AE3. A hard-coded literal of the shape this generator used to write: base64
+  // of percent-encoded JSON, which decodes to a string starting `%7B` rather
+  // than an object. Building it by encoding would put the old shape back into
+  // the repo; refusing it is the point (ADR-0007).
+  it('AE3: refuses the old percent-encoded payload instead of absorbing it', () => {
+    const oldShape = 'vmess://JTdCJTIydiUyMiUzQSUyMjIlMjIlMkMlMjJwcyUyMiUzQSUyMm9uZSUyMiUyQyUyMmFkZCUyMiUzQSUyMjEuMS4xLjElMjIlMkMlMjJwb3J0JTIyJTNBNDQzJTJDJTIyaWQlMjIlM0ElMjJ1dWlkJTIyJTJDJTIybmV0JTIyJTNBJTIyd3MlMjIlMkMlMjJob3N0JTIyJTNBJTIyeC5jb20lMjIlMkMlMjJ0bHMlMjIlM0ElMjJ0bHMlMjIlN0Q='
+    expect(parseVmess(oldShape)).toBeNull()
+    expect(parseConfig(oldShape)).toBeNull()
+  })
 })
 
 describe('parseTrojan', () => {

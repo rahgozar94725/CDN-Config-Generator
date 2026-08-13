@@ -22,6 +22,13 @@ function q(link, remark) {
   return { link, remark }
 }
 
+// The payload shape this generator used to write: base64 of percent-encoded
+// JSON. Hard-coded literals rather than built by encoding, so no helper in this
+// repo can produce the old shape — these two differ only in `ps`, which is what
+// makes them the pair the dropped tolerance used to collapse (ADR-0007).
+const OLD_SHAPE_ONE = 'vmess://JTdCJTIydiUyMiUzQSUyMjIlMjIlMkMlMjJwcyUyMiUzQSUyMm9uZSUyMiUyQyUyMmFkZCUyMiUzQSUyMjEuMS4xLjElMjIlMkMlMjJwb3J0JTIyJTNBNDQzJTJDJTIyaWQlMjIlM0ElMjJ1dWlkJTIyJTJDJTIybmV0JTIyJTNBJTIyd3MlMjIlMkMlMjJob3N0JTIyJTNBJTIyeC5jb20lMjIlMkMlMjJ0bHMlMjIlM0ElMjJ0bHMlMjIlN0Q='
+const OLD_SHAPE_TWO = 'vmess://JTdCJTIydiUyMiUzQSUyMjIlMjIlMkMlMjJwcyUyMiUzQSUyMnR3byUyMiUyQyUyMmFkZCUyMiUzQSUyMjEuMS4xLjElMjIlMkMlMjJwb3J0JTIyJTNBNDQzJTJDJTIyaWQlMjIlM0ElMjJ1dWlkJTIyJTJDJTIybmV0JTIyJTNBJTIyd3MlMjIlMkMlMjJob3N0JTIyJTNBJTIyeC5jb20lMjIlMkMlMjJ0bHMlMjIlM0ElMjJ0bHMlMjIlN0Q='
+
 describe('linkIdentity', () => {
   it('is order-insensitive on query pairs', () => {
     const a = 'vless://u@1.1.1.1:443?type=ws&host=x.com&security=tls#one'
@@ -248,5 +255,38 @@ describe('dedupeAndNumber', () => {
     expect(links).toHaveLength(1)
     expect(dropped).toBe(1)
     expect(links[0]).toMatch(/#a-001$/)
+  })
+})
+
+// The read side of the clean break (ADR-0007). No vmess link this tool ever
+// emitted opened in a client, so the old shape has no working links to protect;
+// tolerating it on read only kept the broken shape alive inside the pipeline.
+describe('the old percent-encoded payload shape', () => {
+  it('states no identity, so it matches only a byte-identical twin', () => {
+    expect(linkIdentity(OLD_SHAPE_ONE)).toBe(`vmess:${OLD_SHAPE_ONE}`)
+    expect(linkIdentity(OLD_SHAPE_ONE)).toBe(linkIdentity(OLD_SHAPE_ONE))
+    expect(linkIdentity(OLD_SHAPE_ONE)).not.toBe(linkIdentity(OLD_SHAPE_TWO))
+  })
+
+  // The accepted cost of the break, asserted so it reads as deliberate: with the
+  // dual-shape tolerance gone, two old-shape links differing only in their label
+  // are two survivors instead of one.
+  it('no longer collapses two old-shape links differing only in ps', () => {
+    const { links, dropped } = dedupeAndNumber([q(OLD_SHAPE_ONE, 'cfg'), q(OLD_SHAPE_TWO, 'cfg')])
+    expect(links).toHaveLength(2)
+    expect(dropped).toBe(0)
+  })
+
+  it('keeps its label unchanged under numbering instead of throwing', () => {
+    expect(() => dedupeAndNumber([q(OLD_SHAPE_ONE, 'cfg')])).not.toThrow()
+    const { links } = dedupeAndNumber([q(OLD_SHAPE_ONE, 'cfg')])
+    expect(links[0]).toBe(OLD_SHAPE_ONE)
+  })
+
+  it('does not stop a standard-shape link in the same run from being numbered', () => {
+    const { links, dropped } = dedupeAndNumber([q(OLD_SHAPE_ONE, 'cfg'), q(vmess('cfg'), 'cfg')])
+    expect(dropped).toBe(0)
+    expect(links[0]).toBe(OLD_SHAPE_ONE)
+    expect(decodeVmess(links[1]).ps).toBe('cfg-002')
   })
 })

@@ -49,17 +49,15 @@ function queryLinkIdentity(link, randomSni) {
   return `${head.slice(0, q)}?${pairs.sort().join('&')}`
 }
 
-// vmess is base64 of a JSON object in either of two encodings: bare UTF-8 JSON
-// bytes, or percent-encoded JSON (our own generator percent-encodes before
-// base64, so it decodes to a still-encoded string). Tolerate both so a link
-// dedups against its own kind whether it was built here or pasted raw.
+// vmess is base64 of UTF-8 JSON bytes, and nothing else. This site used to also
+// accept base64 of percent-encoded JSON, because that is what our own generator
+// wrote — a shape no standard client can read, so no link in it has ever worked
+// and there is nothing to stay compatible with (ADR-0007). Refusing it here is
+// the read-side half of that clean break: an old-shape link states no identity
+// and keeps its own label, rather than being quietly absorbed and re-emitted.
+// Throws when the payload does not decode; every caller decides what that means.
 function vmessConfig(link) {
-  const raw = decodeBase64(link.replace('vmess://', ''))
-  try {
-    return JSON.parse(raw)
-  } catch {
-    return JSON.parse(decodeURIComponent(raw))
-  }
+  return JSON.parse(decodeBase64(link.replace('vmess://', '')))
 }
 
 // vmess states its identity inside a base64 JSON object rather than the URL, and
@@ -99,9 +97,20 @@ export function linkIdentity(link, options) {
 // back. This is the last writer of every vmess link the app emits, so an
 // encoding the multiplier gets right and this site gets wrong is still wrong in
 // the output the user is handed.
+//
+// A link that does not decode keeps the label it arrived with, the same posture
+// vmessIdentity takes on the identity side: numbering runs over the whole run at
+// once, so throwing on one unreadable link would cost every other link's output.
+// Nothing built by the generator reaches here undecodable — the guard exists
+// because dedupeAndNumber is exported and called directly.
 function withRemark(link, remark) {
   if (isVmess(link)) {
-    const obj = vmessConfig(link)
+    let obj
+    try {
+      obj = vmessConfig(link)
+    } catch {
+      return link
+    }
     obj.ps = remark
     return 'vmess://' + encodeBase64(JSON.stringify(obj))
   }
