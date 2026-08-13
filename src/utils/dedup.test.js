@@ -3,17 +3,19 @@ import { dedupeAndNumber, linkIdentity } from './dedup.js'
 import { parseRows } from './generation.js'
 import { generateConfigs } from './multiplier.js'
 import { encodeBase64 } from './parser.js'
+import { decodeVmessLink } from './roundtrip.js'
 
 function vmess(ps, add = '1.1.1.1') {
   const obj = { v: '2', ps, add, port: 443, id: 'uuid', net: 'ws', host: 'x.com', tls: 'tls' }
   return 'vmess://' + encodeBase64(JSON.stringify(obj))
 }
 
-// Read the payload the way a client does: one base64 step, then JSON. A second
-// decode step here would let a non-standard payload pass as correct.
+// Read the payload the way a client does: one base64 step, then JSON. The
+// round-trip module's decoder is that read, and it shares nothing with the
+// parser these links are also expected to survive, so a second decode step
+// cannot creep back in and let a non-standard payload pass as correct.
 function decodeVmess(link) {
-  const bytes = Uint8Array.from(atob(link.replace('vmess://', '')), c => c.charCodeAt(0))
-  return JSON.parse(new TextDecoder().decode(bytes))
+  return decodeVmessLink(link).params
 }
 
 // Entries carry the base remark explicitly, never guessed from the link

@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { generateConfigs } from './multiplier.js'
 import { parseRows } from './generation.js'
 import { encodeBase64 } from './parser.js'
+import { decodeVmessLink } from './roundtrip.js'
 
 // Rows, not bare parse output: generateConfigs decides what to emit from a row's
 // status, which parseRows is what assigns.
@@ -10,11 +11,11 @@ function parseAll(lines) {
 }
 
 // A generated vmess payload is base64 of UTF-8 JSON bytes, so a client reads it
-// in one step. Reading it here the same way a client does is the point: an extra
-// decode step here would make a non-standard payload look correct.
+// in one step. The round-trip module's decoder is that read, written
+// independently of the parser: an extra decode step here would make a
+// non-standard payload look correct.
 function readVmess(link) {
-  const bytes = Uint8Array.from(atob(link.replace('vmess://', '')), c => c.charCodeAt(0))
-  return JSON.parse(new TextDecoder().decode(bytes))
+  return decodeVmessLink(link).params
 }
 
 describe('multiplier', () => {

@@ -60,6 +60,18 @@ function vmessConfig(link) {
   return JSON.parse(decodeBase64(link.replace('vmess://', '')))
 }
 
+// Both sides of this module take the same posture on a link they cannot read:
+// state nothing about it and leave it as it arrived. Kept as one helper so the
+// identity side and the rewrite side cannot drift apart on what "unreadable"
+// means.
+function readableVmessConfig(link) {
+  try {
+    return vmessConfig(link)
+  } catch {
+    return null
+  }
+}
+
 // vmess states its identity inside a base64 JSON object rather than the URL, and
 // its remark is the `ps` field, so identity is the decoded config with `ps`
 // dropped. Keys are sorted for a canonical string so field order does not matter
@@ -70,12 +82,8 @@ function vmessConfig(link) {
 // bytes, so it can only equal a byte-identical twin. Returning one shared value
 // instead would collapse every unreadable link into a single survivor.
 function vmessIdentity(link, randomSni) {
-  let obj
-  try {
-    obj = vmessConfig(link)
-  } catch {
-    return link
-  }
+  const obj = readableVmessConfig(link)
+  if (!obj) return link
   delete obj.ps
   if (randomSni) delete obj.sni
   const sorted = Object.keys(obj).sort().reduce((acc, key) => {
@@ -105,12 +113,8 @@ export function linkIdentity(link, options) {
 // because dedupeAndNumber is exported and called directly.
 function withRemark(link, remark) {
   if (isVmess(link)) {
-    let obj
-    try {
-      obj = vmessConfig(link)
-    } catch {
-      return link
-    }
+    const obj = readableVmessConfig(link)
+    if (!obj) return link
     obj.ps = remark
     return 'vmess://' + encodeBase64(JSON.stringify(obj))
   }

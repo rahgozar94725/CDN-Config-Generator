@@ -132,8 +132,10 @@ export function isIpAddress(host) {
 // on anything above U+00FF, so a Persian remark or an emoji never reaches it.
 // The string is mapped to UTF-8 bytes first, byte by byte rather than spread in
 // one call, so a long payload cannot overflow the argument stack.
+const utf8Encoder = new TextEncoder()
+
 export function encodeBase64(str) {
-  const bytes = new TextEncoder().encode(str)
+  const bytes = utf8Encoder.encode(str)
   let binary = ''
   for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i])
   return btoa(binary)
