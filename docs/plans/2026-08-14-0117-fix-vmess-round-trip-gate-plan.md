@@ -13,7 +13,7 @@ execution: code
 
 ## Goal Capsule
 
-- **Objective.** Make every emitted `vmess://` link readable by a standard client, and put a round-trip gate over all four schemes so the next encoding or field-preservation break is caught before release.
+- **Objective.** Make every emitted `vmess://` link readable by a standard client, and put a round-trip gate over all four schemes so the next encoding or field-preservation break is caught by the test suite.
 - **Product authority.** Repository owner. Active scope is this defect and its gate only; the other six directions in `docs/ideation/2026-08-14-open-ideation.html` are not active scope.
 - **Open blockers.** None.
 
@@ -33,7 +33,11 @@ The project's own parser fails the same way and hides it. `parseVmess` catches t
 
 The shape has been present since the initial commit, so no `vmess` link this tool ever produced has opened in a client. Nobody reported it because the repository was never advertised and the owner uses `vless`.
 
-Two structural reasons the existing safety net missed it. Nothing in the system ever reads back what the generator writes, so there is no place the mismatch could surface. And the two tests that inspect generated `vmess` output decode it with an extra `decodeURIComponent`, which asserts the non-standard shape as the expected one. One module worked around the encoding in isolation: `src/utils/dedup.js` tolerates both shapes so dedup keeps working, with a comment naming the generator as the source of the percent-encoding. The workaround stopped there and never reached the parser.
+The payload is written twice, not once. `buildVmess` encodes it first, and then `withRemark` in `src/utils/dedup.js` re-encodes every surviving link the same non-standard way when it stamps the numbered remark. `generateLinks` routes every generated link through `dedupeAndNumber`, so dedup is the last writer of every `vmess` link the app hands the user. Fixing only `buildVmess` leaves the emitted output unchanged.
+
+Two structural reasons the existing safety net missed it. Nothing in the system ever reads back what the generator writes, so there is no place the mismatch could surface. And the tests that inspect generated `vmess` output decode it with an extra `decodeURIComponent`, which asserts the non-standard shape as the expected one. One module worked around the encoding on the read side: `src/utils/dedup.js` tolerates both shapes so dedup keeps working, with a comment naming the generator as the source of the percent-encoding. The workaround stopped there and never reached the parser.
+
+An old-shape link pasted back in is already refused today: `parseVmess` returns null, the row becomes an unparsed row, and the existing `rows.unparsedError` message renders in all four locales. What is not yet true is the second half of the clean break — dedup still tolerates the old shape on read.
 
 ```mermaid
 flowchart TB
@@ -76,20 +80,21 @@ This plan owns the `vmess` emission defect and the round-trip gate over it. The 
 
 **Emission correctness**
 
-- R1. Every `vmess://` link the generator emits is base64 of UTF-8 JSON bytes, readable by a client that base64-decodes and parses JSON with no additional decoding step.
+- R1. Every `vmess://` link the generator emits is base64 of UTF-8 JSON bytes, readable by a client that base64-decodes and parses JSON with no additional decoding step. This binds both emission sites: `buildVmess` in `src/utils/multiplier.js` and `withRemark` in `src/utils/dedup.js`.
 - R2. Non-ASCII content in any emitted field survives that encoding unchanged, including a remark carrying Persian text and astral-plane characters.
 
 **The round-trip gate**
 
-- R3. For each of `vless`, `vmess`, `trojan` and `ss`, a link produced by the generator parses back through the project's own parser without error and without a null result.
-- R4. Each scheme has a declared map of the fields the generator intends to write, and the gate asserts every field in that map returns the value the generator wrote.
-- R5. The intended-field map is derived from each scheme's client-facing grammar rather than read off the current builder, so the gate cannot ratify whatever the builder happens to do.
-- R6. The gate's input table covers non-ASCII and boundary cases alongside the ASCII happy path: a Persian remark, a remark containing an emoji, an omitted optional parameter, a bare IP address, and a domain with a trailing dot.
+- R3. For each of `vless`, `vmess`, `trojan` and `ss`, a link produced by the generator parses back through the project's own parser without error and without a null result. "The generator" here means the output of `generateLinks` — the post-dedup, post-numbering link the app actually hands the user — not the interim output of the builder.
+- R4. Each scheme has a declared map of the fields the generator intends to write, and the gate asserts every field in that map returns the value the generator wrote. For the remark field the expected value is the renumbered label dedup writes, not the builder's interim suffix.
+- R5. The intended-field map takes its field names and value semantics from each scheme's client-facing grammar rather than from the current builder's source, so the gate reads as a specification. Membership of the map is the set the builder writes today: a grammar field the builder omits or the parser drops — `serviceName`, `mode`, `seed` — is recorded as a transport-shape question, not a gate failure.
+- R5b. Each scheme's round trip is also asserted through a decode path independent of `src/utils/parser.js`, as AE1 does for `vmess`, so a parser that mirrors a builder mistake cannot make the gate pass.
+- R6. The gate's input table covers non-ASCII and boundary cases alongside the ASCII happy path: a Persian remark, a remark containing an emoji, an omitted optional parameter, a bare IP address, and a `path` value carrying reserved characters such as `/ws?ed=2048`. A trailing-dot domain is deliberately not a row: `validateRoutingSubdomain` rejects it before generation, and the builder replaces the input address with the CDN IP, so the value never reaches an emitted field.
 - R7. No test in the repository asserts a non-standard payload shape as the expected shape.
 
 **Compatibility**
 
-- R8. A `vmess://` link in the old percent-encoded shape is reported as unreadable input rather than accepted, and no read path retains tolerance for that shape.
+- R8. A `vmess://` link in the old percent-encoded shape is reported as unreadable input rather than accepted, and no read path retains tolerance for that shape. The paste path already satisfies the first clause at head. The remaining work is removing the dual-shape fallback in `vmessConfig` in `src/utils/dedup.js`.
 
 **Governance**
 
@@ -119,7 +124,8 @@ This plan owns the `vmess` emission defect and the round-trip gate over it. The 
 ### Success Criteria
 
 - One generated `vmess://` link opens in a real client. No unit test can establish this, so it is a one-time manual check and part of calling the work done.
-- The gate is green for all four schemes, and the two assertions that currently encode the non-standard shape no longer exist in any form.
+- The gate is green for all four schemes, and no test in the repository builds or decodes a `vmess` payload in the percent-encoded shape. That covers the two assertions in `src/utils/multiplier.test.js` and, in `src/utils/dedup.test.js`, its link-builder helper, its decode helper, and the assertions that read through them.
+- The gate binds where the test suite is run. It does not bind on deploy until the suite runs in the deploy workflow, which is out of scope here.
 
 ### Scope Boundaries
 
@@ -147,9 +153,36 @@ This plan owns the `vmess` emission defect and the round-trip gate over it. The 
 
 - `src/utils/multiplier.js` — `buildVmess` payload encoding and the random-SNI generator.
 - `src/utils/parser.js` — `parseVmess`, its silent null path, and `decodeBase64`.
-- `src/utils/dedup.js` — the existing dual-shape tolerance and the comment naming the generator as the source.
+- `src/utils/dedup.js` — `withRemark`, the second and final site that writes the `vmess` payload; plus the existing dual-shape read tolerance and the comment naming the generator as its source.
+- `src/utils/generation.js` — `generateLinks`, which routes every built link through dedup and numbering, making that output the app's real emission boundary.
 - `src/utils/multiplier.test.js` — the two assertions that encode the non-standard shape.
+- `src/utils/dedup.test.js` — a second file encoding the shape: its `vmess` link builder, its decode helper, and the remark assertions that read through them.
 - `docs/adr/0001-cdn-subdomain-field.md` — the blocking-beats-silent-breakage principle behind KD3.
 - `docs/adr/0003-cdn-subdomain-field-value-semantics.md` — the dependency-cost precedent weighed in KD4.
 - XTLS/Xray-core issue #91 — the closest thing to a share-link grammar, and the external reference R5 depends on.
 - `docs/ideation/2026-08-14-open-ideation.html` — the ideation run this plan came from.
+
+## Deferred / Open Questions
+
+### From 2026-08-14 review
+
+- **KD5 carries neither a settlement label nor a governed requirement** — Key Decisions (P2, coherence, confidence 100)
+
+  A reader cannot tell whether the fifth key decision — the boundary between this gate and the transport-shape question — was settled with the user or written by the author alone. The four decisions above it each carry both a session-settled provenance label and a statement of which requirement they govern; the fifth carries neither while sitting in the same numbered list. Resolving it means deciding whether the decision was in fact settled, not just editing the formatting.
+
+#### Residual concerns from the same review
+
+Reviewers raised these without filing them as findings. They are recorded so planning does not rediscover them.
+
+- **The naive fix throws on the exact input R2 requires.** `btoa` accepts only latin1 code units, so simply dropping `encodeURIComponent` from the emit side raises an exception on a Persian or emoji remark rather than producing a wrong shape. Both write sites need a deliberate UTF-8-to-binary step. The read side already handles this correctly: `decodeBase64` in `src/utils/parser.js` percent-escapes each byte of the `atob` output before decoding, so no parser change is implied.
+- **No round-trip test exists anywhere in the repository.** The parser tests read hand-written inputs and the multiplier tests inspect generated strings; nothing feeds one into the other. The gate is new surface with no in-repo precedent to copy.
+- **The fixed input table supplies only anticipated variety**, in the one defect class where unanticipated input matters most. This is a preference against KD4, which the user approved, not evidence that KD4 cannot work.
+- **KD3's cheapness rests on the assumption that no client ever opened an old-shape link.** Some clients are lenient about payload decoding. If any user does hold a working link, the clean break becomes a visible regression — the assumption is already named in Dependencies as the one to revisit.
+- **After the clean break, dedup loses a collapse case.** With the dual-shape tolerance gone, identity for an old-shape link falls back to raw link bytes, so two old-shape links differing only in remark no longer collapse into one.
+
+#### Additional questions deferred to planning
+
+- Does any requirement touch `parseVmess`'s silent `try`/`catch`? The Problem Frame names it as a structural cause, but no requirement changes it, and R8's user-visible refusal depends on it continuing to return null.
+- Once the dual-shape tolerance is removed, `withRemark` calls `vmessConfig` with no guard and will throw rather than return on an undecodable link. Whether that path stays unguarded is a planning-time call.
+- For `ss`, what does the intended-field map say about the credential segment that ADR 0005 carries verbatim, where "the value the generator wrote" and "the field the grammar names" are not the same thing?
+- Does the map assert absence as well as presence — for example that a no-TLS link carries no `sni`, `insecure`, `allowInsecure`, `alpn` or `fp`? R4 as written only asserts fields that are present.
