@@ -112,8 +112,11 @@ export function roundTripContext(input) {
   const source = input || {}
   for (const key of REQUIRED_CONTEXT) {
     // A missing fact would silently turn an assertion into `undefined` against
-    // `undefined`, which passes while proving nothing.
-    if (source[key] === undefined || source[key] === null) {
+    // `undefined`, which passes while proving nothing. The empty string is
+    // refused for the same reason: the builder drops empty query params, so an
+    // empty expectation would be compared against a field that is absent for
+    // that very reason and agree with itself.
+    if (source[key] === undefined || source[key] === null || source[key] === '') {
       throw new Error(`roundtrip: context is missing ${key}`)
     }
   }
@@ -569,7 +572,12 @@ export function decodeVmessLink(link) {
     // shape. They are NOT defaulted — a missing key must stay visibly missing.
     credential: config.id,
     address: config.add,
-    port: Number(config.port) || 443,
+    // Normalised to a number to match parseConfig's shape, but deliberately not
+    // defaulted the way parseVmess defaults it: a decoder that manufactures 443
+    // for a payload carrying no port agrees with the parser about a value
+    // neither of them read, which is the shared blind spot this path exists to
+    // avoid. A missing port reads undefined here and fails its map entry.
+    port: config.port === undefined ? undefined : Number(config.port),
     // The decoded object itself, so an entry reads a payload key literally and
     // an absent key reads `undefined`.
     params: config,

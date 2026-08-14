@@ -64,12 +64,21 @@ function vmessConfig(link) {
 // state nothing about it and leave it as it arrived. Kept as one helper so the
 // identity side and the rewrite side cannot drift apart on what "unreadable"
 // means.
+//
+// Valid JSON is not enough — the payload must be an object. A payload of `123`
+// or `"text"` parses without throwing, and writing `ps` onto it then throws a
+// TypeError in the middle of numbering, costing the whole run's output: exactly
+// the loss the callers' guards exist to prevent. An array takes the assignment
+// silently and drops it again at re-encode, losing the label instead.
 function readableVmessConfig(link) {
+  let config
   try {
-    return vmessConfig(link)
+    config = vmessConfig(link)
   } catch {
     return null
   }
+  if (!config || typeof config !== 'object' || Array.isArray(config)) return null
+  return config
 }
 
 // vmess states its identity inside a base64 JSON object rather than the URL, and

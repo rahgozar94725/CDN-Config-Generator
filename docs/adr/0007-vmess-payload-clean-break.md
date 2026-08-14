@@ -20,7 +20,7 @@ Refusal stays quiet and non-fatal. `parseVmess`'s silent `try`/`catch` is unchan
 
 With the dual-shape tolerance gone, an old-shape link states no identity, so it falls back to its own bytes and matches only a byte-identical twin. Two old-shape links differing only in their remark no longer collapse into one — a dedup case that used to work and now does not. Accepted, not mitigated, and asserted in `dedup.test.js` so the loss reads as deliberate rather than as a regression someone should fix.
 
-Deliberate refusal fixtures — the two hard-coded old-shape base64 literals in `dedup.test.js` and `parser.test.js` — are the only place the old shape appears in the repository, and they are literals rather than payloads built by encoding, so no helper here can produce it again.
+Deliberate refusal fixtures are the only place the old shape appears in the repository: four hard-coded base64 literals across three files — two in `dedup.test.js` (a pair differing only in `ps`, which is what makes them the case the dropped tolerance used to collapse), one in `parser.test.js`, and one in `roundtrip.test.js`. They are literals rather than payloads built by encoding, so no helper here can produce the old shape again.
 
 ## Why a gate came with the fix
 

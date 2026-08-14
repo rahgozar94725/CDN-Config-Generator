@@ -46,6 +46,13 @@ describe('decodeVmessLink', () => {
     expect(decoded.remark).toBe('a-001')
   })
 
+  // parseVmess defaults a missing port to 443. This decoder must not agree with
+  // it about a value neither of them read, or a port regression passes here.
+  it('does not manufacture a default port for a payload that carries none', () => {
+    expect(decodeVmessLink(vmessLink({ ps: 'a-001', add: 'x', id: 'u' })).port).toBeUndefined()
+    expect(decodeVmessLink(vmessLink({ ps: 'a-001', add: 'x', port: '443', id: 'u' })).port).toBe(443)
+  })
+
   it('leaves an absent key visibly absent instead of defaulting it', () => {
     const decoded = decodeVmessLink(vmessLink({ ps: 'a-001', add: 'x', port: '80', id: 'u', tls: 'none' }))
     expect(decoded.params.sni).toBeUndefined()
@@ -240,6 +247,16 @@ describe('roundTripContext', () => {
       expect(() => roundTripContext(partial)).toThrow()
     }
     expect(() => roundTripContext({ ...minimal, scheme: 'hysteria' })).toThrow()
+  })
+
+  // An empty required fact is a missing one wearing a value: the builder drops
+  // empty params, so an empty expectation would agree with a field that is
+  // absent for exactly that reason.
+  it('refuses an empty string as a required fact', () => {
+    for (const key of Object.keys(minimal)) {
+      if (typeof minimal[key] !== 'string') continue
+      expect(() => roundTripContext({ ...minimal, [key]: '' })).toThrow()
+    }
   })
 })
 
@@ -478,30 +495,44 @@ const CREDENTIALS = {
 // dot is not among them — `validateRoutingSubdomain` rejects it before
 // generation, and the builder replaces the connect address anyway, so no
 // emitted field can carry one.
+// The reserved-character path carries `&`, not just `?`. A `?` inside a query
+// value is not a delimiter, so both decode paths recover `/ws?ed=2048` whether
+// or not the builder percent-encoded it — the row would stay green with the
+// encoding removed. `&` is the character that actually discriminates: emitted
+// raw, it splits the query and the path comes back truncated.
 const GATE_ROWS = [
   { name: 'ASCII happy path', remark: 'my-config', address: 'origin.example.com', tls: true, path: '/ws', alpn: 'h2', fp: 'chrome' },
   { name: 'a Persian remark', remark: 'سرور تهران', address: 'origin.example.com', tls: true, path: '/ws', alpn: 'h2', fp: 'chrome' },
   { name: 'an emoji remark', remark: 'config 🚀', address: 'origin.example.com', tls: true, path: '/ws', alpn: 'h2', fp: 'chrome' },
   { name: 'an omitted optional parameter', remark: 'no-path', address: 'origin.example.com', tls: false },
   { name: 'a bare IP connect address', remark: 'bare-ip', address: '1.2.3.4', tls: true, path: '/ws', alpn: 'h2', fp: 'chrome' },
-  { name: 'a path carrying reserved characters', remark: 'reserved-path', address: 'origin.example.com', tls: true, path: '/ws?ed=2048', alpn: 'h2', fp: 'chrome' },
+  { name: 'a path carrying reserved characters', remark: 'reserved-path', address: 'origin.example.com', tls: true, path: '/ws?ed=2048&leak=1', alpn: 'h2', fp: 'chrome' },
   { name: 'a random SNI nonce', remark: 'random-sni', address: 'origin.example.com', tls: true, path: '/ws', alpn: 'h2', fp: 'chrome', randomSni: true },
+  // ALPN and fingerprint are separate options the user selects separately, so
+  // asserting them only together leaves either one free to go missing.
+  { name: 'an ALPN with no fingerprint', remark: 'alpn-only', address: 'origin.example.com', tls: true, path: '/ws', alpn: 'h2' },
+  { name: 'a fingerprint with no ALPN', remark: 'fp-only', address: 'origin.example.com', tls: true, path: '/ws', fp: 'chrome' },
+  // Every other row is `ws`. The allowlist also admits xhttp, httpupgrade and
+  // grpc, and the two builders diverge on them — buildQueryLink copies the
+  // source params through while buildVmess writes a fixed key set.
+  { name: 'a grpc transport', remark: 'grpc-cfg', address: 'origin.example.com', transport: 'grpc', tls: true, path: '/ws', alpn: 'h2', fp: 'chrome' },
 ]
 
 // The source config the user pastes. `host` is always stated, so the bare-IP row
 // still resolves a routing subdomain (V11) instead of being blocked by V10.
 function sourceLink(scheme, row) {
+  const transport = row.transport || 'ws'
   if (scheme === 'vmess') {
     const config = {
       v: '2', ps: row.remark, add: row.address, port: '443', id: CREDENTIALS.vmess,
-      aid: '0', scy: 'auto', net: 'ws', type: 'none', host: ROUTE, tls: row.tls ? 'tls' : 'none',
+      aid: '0', scy: 'auto', net: transport, type: 'none', host: ROUTE, tls: row.tls ? 'tls' : 'none',
     }
     // Omitted entirely rather than set empty, so the row exercises the parser's
     // default reaching the builder's fixed key set.
     if (row.path) config.path = row.path
     return vmessLink(config)
   }
-  const query = ['type=ws', `security=${row.tls ? 'tls' : 'none'}`, `host=${ROUTE}`]
+  const query = [`type=${transport}`, `security=${row.tls ? 'tls' : 'none'}`, `host=${ROUTE}`]
   if (row.path) query.push(`path=${encodeURIComponent(row.path)}`)
   return `${scheme}://${CREDENTIALS[scheme]}@${row.address}:443?${query.join('&')}#${encodeURIComponent(row.remark)}`
 }
@@ -527,7 +558,7 @@ function gateContext(scheme, row) {
     tls: !!row.tls,
     randomSni: !!row.randomSni,
     routingSubdomain: ROUTE,
-    transport: 'ws',
+    transport: row.transport || 'ws',
     path: row.path || '',
     alpn: row.alpn || '',
     fp: row.fp || '',
@@ -595,9 +626,44 @@ describe('V19: what the gate is protecting', () => {
     for (const scheme of SCHEMES) {
       const row = GATE_ROWS.find(r => r.name === 'a path carrying reserved characters')
       const [link] = await emit(scheme, row)
-      expect(parseConfig(link).params.path).toBe('/ws?ed=2048')
-      expect(decodeLink(link).params.path).toBe('/ws?ed=2048')
+      expect(parseConfig(link).params.path).toBe('/ws?ed=2048&leak=1')
+      expect(decodeLink(link).params.path).toBe('/ws?ed=2048&leak=1')
+      // The `&` emitted raw would end the path here and start a parameter.
+      // `leak` is a name neither builder writes and the vmess key whitelist
+      // does not carry, so its presence can only mean the path split.
       expect(parseConfig(link).params.ed).toBeUndefined()
+      expect(parseConfig(link).params.leak).toBeUndefined()
+      expect(decodeLink(link).params.leak).toBeUndefined()
+    }
+  })
+
+  // The product ships with both TLS modes enabled (SPEC C5), so the ordinary
+  // run emits more than one link per config. Every row above pins one mode on
+  // and asserts a single link, which leaves the multiplied case unread.
+  it('V19: both TLS modes on emit two links from one config, and both round-trip', async () => {
+    for (const scheme of SCHEMES) {
+      const row = { name: 'both modes', remark: 'both-modes', address: 'origin.example.com', tls: true, path: '/ws', alpn: 'h2', fp: 'chrome' }
+      const options = { ...gateOptions(row), enableNoTls: true }
+      const { links } = await generateLinks(parseRows(sourceLink(scheme, row)), [CDN], options)
+      expect(links).toHaveLength(2)
+
+      // The multiplier writes the No-TLS port first, and numbering follows the
+      // order the links were built in.
+      const postures = [
+        { link: links[0], ctx: gateContext(scheme, { ...row, tls: false, remark: 'both-modes' }) },
+        { link: links[1], ctx: gateContext(scheme, { ...row, remark: 'both-modes' }) },
+      ]
+      postures[0].ctx = roundTripContext({ ...postures[0].ctx, label: 'both-modes-001' })
+      postures[1].ctx = roundTripContext({ ...postures[1].ctx, label: 'both-modes-002' })
+
+      for (const { link, ctx } of postures) {
+        const parsed = parseConfig(link)
+        expect(parsed).not.toBeNull()
+        const decoded = decodeLink(link)
+        for (const entry of intendedFields(scheme)) {
+          assertEntry(entry, ctx, parsed, decoded)
+        }
+      }
     }
   })
 

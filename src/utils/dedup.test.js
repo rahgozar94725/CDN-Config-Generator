@@ -285,6 +285,19 @@ describe('the old percent-encoded payload shape', () => {
     expect(links[0]).toBe(OLD_SHAPE_ONE)
   })
 
+  // Valid base64 of valid JSON that is not an object. It decodes and parses
+  // without throwing, so only a shape check stops it: writing `ps` onto a
+  // number throws mid-numbering and costs the whole run, and an array takes the
+  // assignment and drops it again at re-encode, losing the label silently.
+  it('treats a payload that is not a JSON object as unreadable, not as a config', () => {
+    for (const payload of ['123', '"text"', '["a"]', 'null']) {
+      const link = 'vmess://' + encodeBase64(payload)
+      expect(() => dedupeAndNumber([q(link, 'cfg')])).not.toThrow()
+      expect(dedupeAndNumber([q(link, 'cfg')]).links[0]).toBe(link)
+      expect(linkIdentity(link)).toBe(`vmess:${link}`)
+    }
+  })
+
   it('does not stop a standard-shape link in the same run from being numbered', () => {
     const { links, dropped } = dedupeAndNumber([q(OLD_SHAPE_ONE, 'cfg'), q(vmess('cfg'), 'cfg')])
     expect(dropped).toBe(0)
