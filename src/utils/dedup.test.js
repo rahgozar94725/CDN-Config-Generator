@@ -2,14 +2,20 @@ import { describe, it, expect } from 'vitest'
 import { dedupeAndNumber, linkIdentity } from './dedup.js'
 import { parseRows } from './generation.js'
 import { generateConfigs } from './multiplier.js'
+import { encodeBase64 } from './parser.js'
+import { decodeVmessLink } from './roundtrip.js'
 
 function vmess(ps, add = '1.1.1.1') {
   const obj = { v: '2', ps, add, port: 443, id: 'uuid', net: 'ws', host: 'x.com', tls: 'tls' }
-  return 'vmess://' + btoa(encodeURIComponent(JSON.stringify(obj)))
+  return 'vmess://' + encodeBase64(JSON.stringify(obj))
 }
 
+// Read the payload the way a client does: one base64 step, then JSON. The
+// round-trip module's decoder is that read, and it shares nothing with the
+// parser these links are also expected to survive, so a second decode step
+// cannot creep back in and let a non-standard payload pass as correct.
 function decodeVmess(link) {
-  return JSON.parse(decodeURIComponent(atob(link.replace('vmess://', ''))))
+  return decodeVmessLink(link).params
 }
 
 // Entries carry the base remark explicitly, never guessed from the link
@@ -17,6 +23,13 @@ function decodeVmess(link) {
 function q(link, remark) {
   return { link, remark }
 }
+
+// The payload shape this generator used to write: base64 of percent-encoded
+// JSON. Hard-coded literals rather than built by encoding, so no helper in this
+// repo can produce the old shape — these two differ only in `ps`, which is what
+// makes them the pair the dropped tolerance used to collapse (ADR-0007).
+const OLD_SHAPE_ONE = 'vmess://JTdCJTIydiUyMiUzQSUyMjIlMjIlMkMlMjJwcyUyMiUzQSUyMm9uZSUyMiUyQyUyMmFkZCUyMiUzQSUyMjEuMS4xLjElMjIlMkMlMjJwb3J0JTIyJTNBNDQzJTJDJTIyaWQlMjIlM0ElMjJ1dWlkJTIyJTJDJTIybmV0JTIyJTNBJTIyd3MlMjIlMkMlMjJob3N0JTIyJTNBJTIyeC5jb20lMjIlMkMlMjJ0bHMlMjIlM0ElMjJ0bHMlMjIlN0Q='
+const OLD_SHAPE_TWO = 'vmess://JTdCJTIydiUyMiUzQSUyMjIlMjIlMkMlMjJwcyUyMiUzQSUyMnR3byUyMiUyQyUyMmFkZCUyMiUzQSUyMjEuMS4xLjElMjIlMkMlMjJwb3J0JTIyJTNBNDQzJTJDJTIyaWQlMjIlM0ElMjJ1dWlkJTIyJTJDJTIybmV0JTIyJTNBJTIyd3MlMjIlMkMlMjJob3N0JTIyJTNBJTIyeC5jb20lMjIlMkMlMjJ0bHMlMjIlM0ElMjJ0bHMlMjIlN0Q='
 
 describe('linkIdentity', () => {
   it('is order-insensitive on query pairs', () => {
@@ -64,9 +77,9 @@ describe('linkIdentity', () => {
   })
 
   it('ignores the vmess sni field under random SNI', () => {
-    const vm = sni => 'vmess://' + btoa(encodeURIComponent(JSON.stringify(
+    const vm = sni => 'vmess://' + encodeBase64(JSON.stringify(
       { v: '2', ps: 'a', add: '1.1.1.1', port: 443, id: 'uuid', net: 'ws', host: 'x.com', tls: 'tls', sni }
-    )))
+    ))
     expect(linkIdentity(vm('aaa.x.com.'), { randomSni: true }))
       .toBe(linkIdentity(vm('bbb.x.com.'), { randomSni: true }))
     expect(linkIdentity(vm('aaa.x.com.'))).not.toBe(linkIdentity(vm('bbb.x.com.')))
@@ -244,5 +257,51 @@ describe('dedupeAndNumber', () => {
     expect(links).toHaveLength(1)
     expect(dropped).toBe(1)
     expect(links[0]).toMatch(/#a-001$/)
+  })
+})
+
+// The read side of the clean break (ADR-0007). No vmess link this tool ever
+// emitted opened in a client, so the old shape has no working links to protect;
+// tolerating it on read only kept the broken shape alive inside the pipeline.
+describe('the old percent-encoded payload shape', () => {
+  it('states no identity, so it matches only a byte-identical twin', () => {
+    expect(linkIdentity(OLD_SHAPE_ONE)).toBe(`vmess:${OLD_SHAPE_ONE}`)
+    expect(linkIdentity(OLD_SHAPE_ONE)).toBe(linkIdentity(OLD_SHAPE_ONE))
+    expect(linkIdentity(OLD_SHAPE_ONE)).not.toBe(linkIdentity(OLD_SHAPE_TWO))
+  })
+
+  // The accepted cost of the break, asserted so it reads as deliberate: with the
+  // dual-shape tolerance gone, two old-shape links differing only in their label
+  // are two survivors instead of one.
+  it('no longer collapses two old-shape links differing only in ps', () => {
+    const { links, dropped } = dedupeAndNumber([q(OLD_SHAPE_ONE, 'cfg'), q(OLD_SHAPE_TWO, 'cfg')])
+    expect(links).toHaveLength(2)
+    expect(dropped).toBe(0)
+  })
+
+  it('keeps its label unchanged under numbering instead of throwing', () => {
+    expect(() => dedupeAndNumber([q(OLD_SHAPE_ONE, 'cfg')])).not.toThrow()
+    const { links } = dedupeAndNumber([q(OLD_SHAPE_ONE, 'cfg')])
+    expect(links[0]).toBe(OLD_SHAPE_ONE)
+  })
+
+  // Valid base64 of valid JSON that is not an object. It decodes and parses
+  // without throwing, so only a shape check stops it: writing `ps` onto a
+  // number throws mid-numbering and costs the whole run, and an array takes the
+  // assignment and drops it again at re-encode, losing the label silently.
+  it('treats a payload that is not a JSON object as unreadable, not as a config', () => {
+    for (const payload of ['123', '"text"', '["a"]', 'null']) {
+      const link = 'vmess://' + encodeBase64(payload)
+      expect(() => dedupeAndNumber([q(link, 'cfg')])).not.toThrow()
+      expect(dedupeAndNumber([q(link, 'cfg')]).links[0]).toBe(link)
+      expect(linkIdentity(link)).toBe(`vmess:${link}`)
+    }
+  })
+
+  it('does not stop a standard-shape link in the same run from being numbered', () => {
+    const { links, dropped } = dedupeAndNumber([q(OLD_SHAPE_ONE, 'cfg'), q(vmess('cfg'), 'cfg')])
+    expect(dropped).toBe(0)
+    expect(links[0]).toBe(OLD_SHAPE_ONE)
+    expect(decodeVmess(links[1]).ps).toBe('cfg-002')
   })
 })
