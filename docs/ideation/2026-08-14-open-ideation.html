@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ideation: CDN-Config-Generator — Open Run</title>
+<style>
+:root {
+  --bg: #fbfaf8;
+  --surface: #ffffff;
+  --surface-2: #f4f2ee;
+  --text: #1c1b19;
+  --text-muted: #5c5850;
+  --border: #e2ded6;
+  --border-strong: #cdc7bb;
+  --accent: #8a4b1f;
+  --accent-soft: #f6ece2;
+  --accent-text: #6d3a15;
+  --warn: #8a6d1f;
+  --warn-soft: #f7f0d9;
+  --warn-text: #6a5313;
+  --ok: #2f6b45;
+  --ok-soft: #e6f1ea;
+  --ok-text: #245536;
+  --info-soft: #e9eef5;
+  --info-text: #2b4667;
+  --mono: ui-monospace, "SFMono-Regular", "Cascadia Mono", "Liberation Mono", Menlo, monospace;
+  --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --serif: ui-serif, Georgia, "Iowan Old Style", "Times New Roman", serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #161513;
+    --surface: #1e1d1a;
+    --surface-2: #262421;
+    --text: #ece8e1;
+    --text-muted: #a49e93;
+    --border: #33302b;
+    --border-strong: #46423b;
+    --accent: #d99a63;
+    --accent-soft: #322620;
+    --accent-text: #e8b184;
+    --warn: #cbb066;
+    --warn-soft: #302b1c;
+    --warn-text: #ddc57f;
+    --ok: #74b391;
+    --ok-soft: #1c2a22;
+    --ok-text: #8ccaa8;
+    --info-soft: #1e2530;
+    --info-text: #a8c0de;
+  }
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 16px;
+  line-height: 1.65;
+}
+.page { max-width: 60rem; margin-inline: auto; padding: 3rem 1.5rem 5rem; }
+p, li { max-width: 72ch; }
+a { color: var(--accent-text); text-underline-offset: 2px; }
+code { font-family: var(--mono); font-size: 0.875em; background: var(--surface-2); padding: 0.1em 0.35em; border-radius: 3px; }
+strong { color: inherit; }
+
+.eyebrow {
+  font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase;
+  font-weight: 600; color: var(--text-muted); margin: 0 0 0.5rem;
+}
+h1 {
+  font-family: var(--serif); font-size: 2.1rem; line-height: 1.2;
+  font-weight: 600; margin: 0 0 1rem; letter-spacing: -0.01em;
+}
+h2 {
+  font-family: var(--serif); font-size: 1.5rem; font-weight: 600;
+  margin: 3.5rem 0 1rem; padding-bottom: 0.4rem; border-bottom: 1px solid var(--border-strong);
+}
+h3 { font-size: 1.15rem; font-weight: 650; margin: 0 0 0.5rem; letter-spacing: -0.005em; }
+h4 { font-size: 0.95rem; font-weight: 650; margin: 1.5rem 0 0.4rem; }
+
+.meta { display: flex; flex-wrap: wrap; gap: 0.5rem 1.75rem; margin: 0 0 1.5rem; padding: 0; list-style: none; font-size: 0.85rem; }
+.meta li { margin: 0; }
+.meta .k { color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.7rem; margin-inline-end: 0.4rem; }
+
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr)); gap: 0.75rem; margin: 2rem 0 0; padding: 0; list-style: none; }
+.stats li { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 0.85rem 1rem; margin: 0; }
+.stats .n { display: block; font-family: var(--serif); font-size: 1.6rem; line-height: 1.1; font-weight: 600; }
+.stats .l { display: block; font-size: 0.75rem; color: var(--text-muted); margin-top: 0.2rem; }
+
+.lede { font-size: 1.05rem; color: var(--text-muted); max-width: 68ch; }
+
+.jump { list-style: none; padding: 0; margin: 0 0 2.5rem; border-inline-start: 2px solid var(--border-strong); }
+.jump li { margin: 0; padding: 0.3rem 0 0.3rem 1rem; max-width: none; }
+.jump a { text-decoration: none; color: var(--text); }
+.jump a:hover { text-decoration: underline; }
+.jump .rank { font-family: var(--mono); font-size: 0.8rem; color: var(--text-muted); margin-inline-end: 0.5rem; }
+
+article.idea {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 10px; padding: 1.5rem 1.6rem; margin: 0 0 1.5rem;
+}
+.idea-head { display: flex; align-items: baseline; gap: 0.7rem; flex-wrap: wrap; margin-bottom: 0.9rem; }
+.rank-chip {
+  font-family: var(--mono); font-size: 0.78rem; font-weight: 600;
+  background: var(--accent-soft); color: var(--accent-text);
+  border: 1px solid var(--border); border-radius: 999px; padding: 0.1rem 0.6rem;
+}
+.chips { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-inline-start: auto; }
+.chip {
+  font-size: 0.72rem; font-weight: 600; border-radius: 999px;
+  border: 1px solid var(--border); padding: 0.1rem 0.6rem;
+  background: var(--surface-2); color: var(--text-muted);
+}
+.chip.hi { background: var(--ok-soft); color: var(--ok-text); }
+.chip.mid { background: var(--warn-soft); color: var(--warn-text); }
+.chip.lo { background: var(--info-soft); color: var(--info-text); }
+
+.field { margin: 1.1rem 0 0; }
+.field > .label {
+  display: block; font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase;
+  font-weight: 650; color: var(--text-muted); margin-bottom: 0.25rem;
+}
+.field p { margin: 0 0 0.6rem; }
+.field p:last-child { margin-bottom: 0; }
+.basis { background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px; padding: 0.9rem 1rem; }
+.basis .tag { font-family: var(--mono); font-size: 0.75rem; font-weight: 700; color: var(--accent-text); }
+.basis p { max-width: none; }
+
+figure { margin: 1.4rem 0 0; }
+figure svg { display: block; width: 100%; height: auto; max-width: 46rem; }
+figcaption { font-size: 0.78rem; color: var(--text-muted); margin-top: 0.5rem; max-width: 68ch; }
+
+.svg-label { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 12px; fill: var(--text); }
+.svg-label.sm { font-size: 10.5px; fill: var(--text-muted); }
+.svg-label.mono { font-family: ui-monospace, monospace; font-size: 10.5px; }
+.svg-halo { paint-order: stroke fill; stroke: var(--surface); stroke-width: 3px; stroke-linejoin: round; }
+.svg-box { fill: var(--surface-2); stroke: var(--border-strong); stroke-width: 1.2; }
+.svg-box.acc { fill: var(--accent-soft); stroke: var(--accent); }
+.svg-box.warn { fill: var(--warn-soft); stroke: var(--warn); }
+.svg-box.ok { fill: var(--ok-soft); stroke: var(--ok); }
+.svg-line { stroke: var(--border-strong); stroke-width: 1.4; fill: none; }
+.svg-line.acc { stroke: var(--accent); }
+.svg-line.warn { stroke: var(--warn); stroke-dasharray: 4 3; }
+
+table { border-collapse: collapse; width: 100%; font-size: 0.9rem; margin-top: 1rem; }
+th, td { text-align: start; padding: 0.6rem 0.75rem; border-bottom: 1px solid var(--border); vertical-align: top; }
+th { font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); border-bottom: 1px solid var(--border-strong); }
+.table-wrap { overflow-x: auto; }
+
+.callout { border: 1px solid var(--border); border-radius: 10px; padding: 1.1rem 1.3rem; margin: 1.5rem 0; }
+.callout.info { background: var(--info-soft); }
+.callout.info .eyebrow { color: var(--info-text); }
+.callout.info p { color: var(--info-text); }
+.callout.warn { background: var(--warn-soft); }
+.callout.warn .eyebrow { color: var(--warn-text); }
+.callout.warn p { color: var(--warn-text); }
+
+.grounding h4 { margin-top: 1.6rem; }
+.grounding ul { padding-inline-start: 1.2rem; }
+.grounding li { margin-bottom: 0.35rem; }
+
+footer.composition-signal {
+  margin-top: 4rem; padding-top: 1.2rem; border-top: 1px solid var(--border);
+  font-size: 0.78rem; color: var(--text-muted);
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+<p class="eyebrow">Ideation · Surprise-me run</p>
+<h1>CDN-Config-Generator — what is worth building next</h1>
+
+<ul class="meta">
+  <li><span class="k">Date</span><time datetime="2026-08-14">2026-08-14</time></li>
+  <li><span class="k">Topic</span>cdn-config-generator-open</li>
+  <li><span class="k">Focus</span>none — open-ended</li>
+  <li><span class="k">Mode</span>repo-grounded</li>
+  <li><span class="k">Head</span><code>cd3bc3f</code> on <code>master</code></li>
+</ul>
+
+<p class="lede">No subject was specified, so six ideation frames each picked their own from the repository. They converged hard on one thing and diverged usefully on the rest. An independent verifier — which never saw the ideas being written — then tried to refute every basis by reading and running the code. Two of its checks turned an idea into a confirmed shipped defect.</p>
+
+<ul class="stats">
+  <li><span class="n">48</span><span class="l">raw candidates</span></li>
+  <li><span class="n">22</span><span class="l">after dedupe</span></li>
+  <li><span class="n">7</span><span class="l">survivors</span></li>
+  <li><span class="n">2</span><span class="l">defects confirmed by execution</span></li>
+</ul>
+
+<h2 id="grounding-context">Grounding Context</h2>
+<section class="grounding">
+
+<h4>Codebase Context</h4>
+<p>A client-only Vue 3 SPA that multiplies proxy configs across CDN edge nodes: paste origin configs (<code>vless</code>/<code>vmess</code>/<code>trojan</code>/<code>ss</code>) plus a CDN host list, and it swaps the connect address per CDN host while preserving the CDN routing identity in <code>host</code>/<code>sni</code>. Audience is the Iranian Xray proxy community. Four locales (en/fa-RTL/ru/zh), deployed to GitHub Pages, no backend, and only two runtime dependencies — <code>vue</code> and <code>vue-i18n</code>.</p>
+<p>The domain lives entirely in <code>src/utils/</code> as pure JS with zero Vue imports: <code>parser.js</code> (per-scheme parsing plus routing-subdomain derivation), <code>rows.js</code> (allowlists, the compatibility gate, subdomain validation), <code>multiplier.js</code> (the CDN × port × TLS × ALPN × fingerprint cross-product and the link builders), <code>dedup.js</code> (normalized link identity and per-label numbering), and <code>generation.js</code> (the orchestrating pipeline). <code>App.vue</code> is the sole state owner with 14 refs plus a <code>reactive(new Map())</code> override store.</p>
+
+<h4>What the repository already knows about itself</h4>
+<ul>
+  <li>A real traceability chain: 18 invariants (V1–V18) in <code>SPEC.md</code> §V ↔ a 10-entry defect log (B1–B10) ↔ six ADRs ↔ test names literally prefixed <code>V1:</code>, <code>V4:</code>. Four invariants have already been rewritten by ADRs, so the set is living, not historical.</li>
+  <li>Twenty-one design directions are explicitly closed by ADRs — punycode, PSL validation, SIP002 plugin dialect, exact-string dedup identity, global remark counters, lenient IP fallback, and more. Ideation was constrained to stay outside all of them.</li>
+  <li>The governing principle, stated in ADR 0001 and applied everywhere: silently emitting broken links is worse than blocking.</li>
+  <li>Comments are load-bearing house style — nearly every non-obvious function carries a paragraph citing the ADR and the defect that produced it.</li>
+  <li>Every UI string costs four locales plus four READMEs. Four separate ADRs each paused to restate that cost.</li>
+  <li>140 tests pass locally. CI runs <code>npm ci</code> and <code>npm run build</code> and nothing else.</li>
+</ul>
+
+<h4>External context</h4>
+<ul>
+  <li>The VLESS/VMess share-link "standard" is still an unratified 2020 GitHub issue (XTLS/Xray-core #91); <code>pbk</code>/<code>sid</code>/<code>spx</code>/<code>fp</code> have no normative source at all. SIP002 is the one genuinely normative grammar in the set.</li>
+  <li>2026 interop expectation is three dialects — URI list, Clash-Mihomo YAML, sing-box JSON — and Mihomo's shape for the same node differs structurally (<code>servername</code> not <code>sni</code>, <code>ws-opts.headers.Host</code> not <code>host=</code>).</li>
+  <li>Cloudflare error 1013 is literally "HTTP hostname and TLS SNI hostname mismatch" — the exact failure a wrong <code>host=</code>/<code>sni=</code> pair produces, and research names this the #1 user failure class in the space.</li>
+  <li>Clients drift: NekoBox rejects VMess configs v2rayNG accepts; v2rayNG silently discards SIP002 plugin params; Xray-native JSON is unsupported across several popular clients.</li>
+  <li>Config diffing appears unoccupied — no tool found shows "your config versus the last one you generated" (a negative result from targeted, not exhaustive, searching).</li>
+</ul>
+
+</section>
+
+<h2 id="topic-axes">Topic Axes</h2>
+<p>Decomposition skipped — surprise-me mode. Each frame discovered its own subject instead: the user's post-generation failure loop, the seams where deleting code is the fix, the state model and the definition of ground truth, the hand-maintained knowledge asset, correctness-culture transplants from other fields, and distribution under censorship.</p>
+
+<h2 id="ranked-ideas">Ranked Ideas</h2>
+
+<ul class="jump">
+  <li><span class="rank">1</span><a href="#idea-1">The vmess round trip is broken — and the test suite bakes it in</a></li>
+  <li><span class="rank">2</span><a href="#idea-2">Seed the nonce, then diffing and probe plans become possible</a></li>
+  <li><span class="rank">3</span><a href="#idea-3">Governance CI: one job, four gates</a></li>
+  <li><span class="rank">4</span><a href="#idea-4">Four allowed transports, one link shape</a></li>
+  <li><span class="rank">5</span><a href="#idea-5">Emitter registry: split the cross-product from the dialect</a></li>
+  <li><span class="rank">6</span><a href="#idea-6">The distribution decision: one file, no trace</a></li>
+  <li><span class="rank">7</span><a href="#idea-7">Say which hop reads which field — from one control table</a></li>
+</ul>
+
+<!-- IDEA 1 -->
+<article class="idea" id="idea-1">
+  <div class="idea-head">
+    <span class="rank-chip">1</span>
+    <h3>The vmess round trip is broken — and the test suite bakes it in</h3>
+    <span class="chips">
+      <span class="chip hi">Confidence 95%</span>
+      <span class="chip">Complexity Medium</span>
+    </span>
+  </div>
+
+  <div class="field">
+    <span class="label">Description</span>
+    <p>The app cannot read its own <code>vmess://</code> output. <code>buildVmess</code> emits <code>btoa(encodeURIComponent(json))</code>; <code>decodeBase64</code> expects base64 of UTF-8 bytes, so it hands back the percent-encoded string unchanged and <code>JSON.parse</code> fails. <code>parseVmess</code> swallows that in its own <code>try</code>/<code>catch</code> and returns <code>null</code> — no throw, no message, no symptom anywhere in the app. The fix is the missing <code>unescape</code> in the canonical <code>btoa(unescape(encodeURIComponent(json)))</code> idiom, but the idea is the gate around it: assert <code>parse(build(x)) ≡ x</code> as a property, so "output must be re-readable as input" becomes an invariant instead of a discovery.</p>
+  </div>
+
+  <figure>
+    <svg viewBox="0 0 700 220" role="img" aria-label="Diagram: the build path percent-encodes before base64, the parse path expects UTF-8 bytes, so the round trip returns null">
+      <rect x="8" y="24" width="150" height="44" rx="6" class="svg-box"/>
+      <text x="83" y="42" text-anchor="middle" class="svg-label">config record</text>
+      <text x="83" y="58" text-anchor="middle" class="svg-label sm">in memory</text>
+
+      <path d="M162 46 H 208" class="svg-line acc" marker-end="url(#ar1)"/>
+      <rect x="212" y="16" width="200" height="60" rx="6" class="svg-box acc"/>
+      <text x="312" y="36" text-anchor="middle" class="svg-label">build</text>
+      <text x="312" y="54" text-anchor="middle" class="svg-label mono">btoa(encodeURIComponent(j))</text>
+      <text x="312" y="68" text-anchor="middle" class="svg-label sm">multiplier.js</text>
+
+      <path d="M416 46 H 462" class="svg-line acc" marker-end="url(#ar1)"/>
+      <rect x="466" y="24" width="150" height="44" rx="6" class="svg-box"/>
+      <text x="541" y="42" text-anchor="middle" class="svg-label mono">vmess://…</text>
+      <text x="541" y="58" text-anchor="middle" class="svg-label sm">shipped to users</text>
+
+      <path d="M541 72 V 108 H 312" class="svg-line warn" marker-end="url(#ar2)"/>
+      <text x="430" y="102" text-anchor="middle" class="svg-label sm svg-halo">nothing ever sends it back</text>
+
+      <rect x="212" y="126" width="200" height="60" rx="6" class="svg-box warn"/>
+      <text x="312" y="146" text-anchor="middle" class="svg-label">parse</text>
+      <text x="312" y="164" text-anchor="middle" class="svg-label mono">atob → expects UTF-8 bytes</text>
+      <text x="312" y="178" text-anchor="middle" class="svg-label sm">parser.js</text>
+
+      <path d="M208 156 H 162" class="svg-line warn" marker-end="url(#ar2)"/>
+      <rect x="8" y="134" width="150" height="44" rx="6" class="svg-box warn"/>
+      <text x="83" y="152" text-anchor="middle" class="svg-label mono">null</text>
+      <text x="83" y="168" text-anchor="middle" class="svg-label sm">silently</text>
+
+      <defs>
+        <marker id="ar1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M0 0 L10 5 L0 10 z" fill="var(--accent)"/>
+        </marker>
+        <marker id="ar2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M0 0 L10 5 L0 10 z" fill="var(--warn)"/>
+        </marker>
+      </defs>
+    </svg>
+    <figcaption>The loop that never closes. Because the app is write-only, the mismatch has no in-app symptom — it surfaces only when a real client rejects the link, and no bug report will ever point at it.</figcaption>
+  </figure>
+
+  <div class="field basis">
+    <span class="label">Basis</span>
+    <p><span class="tag">direct:</span> Confirmed by execution against head <code>cd3bc3f</code>. A link built through the real <code>generateConfigs</code> and fed to the real <code>parseVmess</code> returns <code>null</code> — identically for an ASCII remark and for a Persian-plus-emoji remark. <code>decodeBase64</code> percent-escapes every byte and then <code>decodeURIComponent</code>s, which round-trips the already-percent-encoded payload back to itself. <code>dedupeAndNumber</code> survives only because of the fallback at <code>dedup.js:60-62</code> — dedup patched around the double-encoding once; the parser never got the same patch. No test covers this round trip, and <code>multiplier.test.js:178</code> and <code>:205</code> assert via <code>JSON.parse(decodeURIComponent(atob(...)))</code>, encoding the bug as the expected shape.</p>
+  </div>
+
+  <div class="field">
+    <span class="label">Rationale</span>
+    <p>Eighteen invariants, ten logged defects, six ADRs and 140 green tests did not catch that a quarter of the tool's output is non-standard — because nothing in the system ever closes the loop. The repository's own governing principle is that silently emitting broken links is worse than blocking, and this is that failure committed by the tool itself. The property is what generalizes: it catches the next parameter the ecosystem invents, and — per idea 5 — every future output dialect inherits it for free.</p>
+  </div>
+
+  <div class="field">
+    <span class="label">Downsides</span>
+    <p>Not a typo fix. Two existing assertions must change, and <code>dedup.js</code>'s tolerant fallback has to stay forever so that links already distributed under the old encoding remain dedupable — that is a compatibility decision with an ADR attached. Adding <code>fast-check</code> for the property layer means a devDependency, which runs against the ADR 0003 precedent (that precedent was about runtime data files and libraries, so the argument is winnable, but it must be made rather than assumed).</p>
+  </div>
+</article>
+
+<!-- IDEA 2 -->
+<article class="idea" id="idea-2">
+  <div class="idea-head">
+    <span class="rank-chip">2</span>
+    <h3>Seed the nonce, then diffing and probe plans become possible</h3>
+    <span class="chips">
+      <span class="chip hi">Confidence 80%</span>
+      <span class="chip">Complexity Medium</span>
+    </span>
+  </div>
+
+  <div class="field">
+    <span class="label">Description</span>
+    <p>Three ideas that arrived from three different frames turn out to be one chain. <code>genRandomSni</code> calls <code>Math.random()</code> unseeded, so the same paste with the same settings never reproduces — which quietly makes the other two unbuildable. Add an optional displayed, copyable seed, and two features open up: a <strong>cross-run diff</strong> (the real loop is rotation — same forty hosts, new origin config, every few days — so what the user needs at run <em>N</em> is added / unchanged / removed, not another opaque 5,000-line blob), and a <strong>probe plan</strong> (instead of hundreds of links tried by hand on a phone over a censored connection, emit eight to fifteen ordered links, each labelled with what its failure would prove).</p>
+  </div>
+
+  <figure>
+    <svg viewBox="0 0 700 250" role="img" aria-label="Diagram: a seed unlocks cross-run diff and probe plans; on the right, the full factorial contrasted with a small covering set">
+      <rect x="8" y="14" width="180" height="46" rx="6" class="svg-box acc"/>
+      <text x="98" y="33" text-anchor="middle" class="svg-label">seeded generation</text>
+      <text x="98" y="49" text-anchor="middle" class="svg-label sm">~30 lines, a small PRNG</text>
+
+      <path d="M98 64 V 96" class="svg-line acc" marker-end="url(#ar3)"/>
+      <path d="M98 80 H 200" class="svg-line acc"/>
+      <path d="M200 80 V 96" class="svg-line acc" marker-end="url(#ar3)"/>
+
+      <rect x="8" y="100" width="180" height="46" rx="6" class="svg-box ok"/>
+      <text x="98" y="119" text-anchor="middle" class="svg-label">cross-run diff</text>
+      <text x="98" y="135" text-anchor="middle" class="svg-label sm">added / unchanged / removed</text>
+
+      <rect x="112" y="164" width="180" height="46" rx="6" class="svg-box ok"/>
+      <text x="202" y="183" text-anchor="middle" class="svg-label">probe plan</text>
+      <text x="202" y="199" text-anchor="middle" class="svg-label sm">ordered, repeatable</text>
+      <path d="M200 100 V 164" class="svg-line acc" marker-end="url(#ar3)"/>
+
+      <text x="20" y="176" class="svg-label sm">engine already</text>
+      <text x="20" y="190" class="svg-label sm">exists:</text>
+      <text x="20" y="204" class="svg-label mono">linkIdentity</text>
+
+      <line x1="330" y1="10" x2="330" y2="240" class="svg-line" stroke-dasharray="3 4"/>
+
+      <text x="360" y="28" class="svg-label">today: full factorial</text>
+      <g fill="var(--border-strong)">
+        <rect x="360" y="40" width="9" height="9" rx="1.5"/><rect x="374" y="40" width="9" height="9" rx="1.5"/><rect x="388" y="40" width="9" height="9" rx="1.5"/><rect x="402" y="40" width="9" height="9" rx="1.5"/><rect x="416" y="40" width="9" height="9" rx="1.5"/><rect x="430" y="40" width="9" height="9" rx="1.5"/><rect x="444" y="40" width="9" height="9" rx="1.5"/><rect x="458" y="40" width="9" height="9" rx="1.5"/><rect x="472" y="40" width="9" height="9" rx="1.5"/><rect x="486" y="40" width="9" height="9" rx="1.5"/><rect x="500" y="40" width="9" height="9" rx="1.5"/><rect x="514" y="40" width="9" height="9" rx="1.5"/>
+        <rect x="360" y="54" width="9" height="9" rx="1.5"/><rect x="374" y="54" width="9" height="9" rx="1.5"/><rect x="388" y="54" width="9" height="9" rx="1.5"/><rect x="402" y="54" width="9" height="9" rx="1.5"/><rect x="416" y="54" width="9" height="9" rx="1.5"/><rect x="430" y="54" width="9" height="9" rx="1.5"/><rect x="444" y="54" width="9" height="9" rx="1.5"/><rect x="458" y="54" width="9" height="9" rx="1.5"/><rect x="472" y="54" width="9" height="9" rx="1.5"/><rect x="486" y="54" width="9" height="9" rx="1.5"/><rect x="500" y="54" width="9" height="9" rx="1.5"/><rect x="514" y="54" width="9" height="9" rx="1.5"/>
+        <rect x="360" y="68" width="9" height="9" rx="1.5"/><rect x="374" y="68" width="9" height="9" rx="1.5"/><rect x="388" y="68" width="9" height="9" rx="1.5"/><rect x="402" y="68" width="9" height="9" rx="1.5"/><rect x="416" y="68" width="9" height="9" rx="1.5"/><rect x="430" y="68" width="9" height="9" rx="1.5"/><rect x="444" y="68" width="9" height="9" rx="1.5"/><rect x="458" y="68" width="9" height="9" rx="1.5"/><rect x="472" y="68" width="9" height="9" rx="1.5"/><rect x="486" y="68" width="9" height="9" rx="1.5"/><rect x="500" y="68" width="9" height="9" rx="1.5"/><rect x="514" y="68" width="9" height="9" rx="1.5"/>
+        <rect x="360" y="82" width="9" height="9" rx="1.5"/><rect x="374" y="82" width="9" height="9" rx="1.5"/><rect x="388" y="82" width="9" height="9" rx="1.5"/><rect x="402" y="82" width="9" height="9" rx="1.5"/><rect x="416" y="82" width="9" height="9" rx="1.5"/><rect x="430" y="82" width="9" height="9" rx="1.5"/><rect x="444" y="82" width="9" height="9" rx="1.5"/><rect x="458" y="82" width="9" height="9" rx="1.5"/><rect x="472" y="82" width="9" height="9" rx="1.5"/><rect x="486" y="82" width="9" height="9" rx="1.5"/><rect x="500" y="82" width="9" height="9" rx="1.5"/><rect x="514" y="82" width="9" height="9" rx="1.5"/>
+      </g>
+      <text x="360" y="108" class="svg-label sm">hundreds of links, tried by hand</text>
+
+      <text x="360" y="150" class="svg-label">probe set: every pair covered</text>
+      <g fill="var(--accent)">
+        <rect x="360" y="162" width="9" height="9" rx="1.5"/><rect x="374" y="162" width="9" height="9" rx="1.5"/><rect x="388" y="162" width="9" height="9" rx="1.5"/><rect x="402" y="162" width="9" height="9" rx="1.5"/><rect x="416" y="162" width="9" height="9" rx="1.5"/><rect x="430" y="162" width="9" height="9" rx="1.5"/>
+        <rect x="360" y="176" width="9" height="9" rx="1.5"/><rect x="374" y="176" width="9" height="9" rx="1.5"/><rect x="388" y="176" width="9" height="9" rx="1.5"/><rect x="402" y="176" width="9" height="9" rx="1.5"/><rect x="416" y="176" width="9" height="9" rx="1.5"/><rect x="430" y="176" width="9" height="9" rx="1.5"/>
+      </g>
+      <text x="360" y="204" class="svg-label sm">each failure eliminates a factor</text>
+    </svg>
+    <figcaption>The seed is the precondition nobody noticed: while every random SNI differs per run, a diff is meaningless and a probe plan is a one-shot. The right half contrasts the current full factorial with a pairwise covering set.</figcaption>
+  </figure>
+
+  <div class="field basis">
+    <span class="label">Basis</span>
+    <p><span class="tag">direct:</span> <code>genRandomSni</code> calls <code>Math.random()</code> twice unseeded (<code>multiplier.js:135,139</code>), verified. <code>generateConfigs</code> is a literal five-factor full factorial of nested loops (<code>multiplier.js:29-50</code>). <code>linkIdentity</code> (<code>dedup.js:90-94</code>) is already an exported, pure, order-insensitive, nonce-tolerant canonical identity with 24 tests — it was built for within-batch dedup and is exactly the key a cross-time diff needs. A seed does not participate in link identity, so ADR 0006 stays closed.</p>
+    <p><span class="tag">external:</span> The reproducible-builds project solved the same shape with <code>SOURCE_DATE_EPOCH</code> — declared nondeterminism made reproducible rather than removed. Combinatorial testing (NIST's work behind PICT and ACTS) is the basis for the probe set: faults are overwhelmingly triggered by one- or two-factor interactions, so a pairwise covering array finds nearly all of them in a fraction of the runs. Research flags cross-run diffing as an unoccupied gap in this space.</p>
+  </div>
+
+  <div class="field">
+    <span class="label">Rationale</span>
+    <p>Every other feature on the list means competing with subconverter and sublink-worker on their own ground. This one lands where the research found nothing, and the hard part — a canonical identity surviving query reordering and a nonce SNI — is already built, tested and ADR-justified. The reframe is that the tool acquires a memory: it stops being a one-shot generator and starts answering "what changed" and "which twelve should I try first."</p>
+  </div>
+
+  <div class="field">
+    <span class="label">Downsides</span>
+    <p>Ordering is load-bearing — build the seed first or the other two are not buildable as specified. Storing the previous run raises the same privacy question idea 6 has to settle, since a stored run is a stored set of working links. The probe plan changes what the product claims to deliver (a plan, not a list), which is a positioning call as much as a feature.</p>
+  </div>
+</article>
+
+<!-- IDEA 3 -->
+<article class="idea" id="idea-3">
+  <div class="idea-head">
+    <span class="rank-chip">3</span>
+    <h3>Governance CI: one job, four gates</h3>
+    <span class="chips">
+      <span class="chip hi">Confidence 90%</span>
+      <span class="chip">Complexity Low</span>
+    </span>
+  </div>
+
+  <div class="field">
+    <span class="label">Description</span>
+    <p>All six frames landed on this independently. CI runs <code>npm ci</code> and <code>npm run build</code>, so a red suite ships to production today. But the merely-obvious half (add <code>npm test</code>) is worth much less than the rest: parse <code>SPEC.md</code> §V and fail when any invariant has no test carrying its ID; fail when a B-number has no regression test or an ADR reference no longer resolves; assert the four locale files have identical key sets and no unused keys; and turn the two mechanically decidable Persian rules — Latin runs must be contiguous, and a Latin run must end on a Latin letter, with U+200E and U+2068/9 banned — into pure string assertions.</p>
+  </div>
+
+  <div class="field basis">
+    <span class="label">Basis</span>
+    <p><span class="tag">direct:</span> <code>.github/workflows/deploy.yml:29-30</code> is exactly <code>npm ci</code> then <code>npm run build</code>; a <code>test</code> script exists in <code>package.json</code> and CI never calls it. Only five test files exist, all under <code>src/utils/</code> — no locale, parity or bidi test anywhere. Three keys (<code>config.ports</code>, <code>common.clear</code>, <code>common.ready</code>) have zero references in <code>src/</code>, which is what unenforced parity looks like after a few passes. And the chain has already rotted at its newest link: ADR 0002 still claims the ru/zh READMEs carry a stale <code>host</code>/<code>sni</code> claim that commit <code>d018f10</code> fixed. <code>docs/agents/persian-style.md</code> states its rules as measurements and then asks the author to paste a devtools snippet and read reversed output by eye — a rule that says "verify, don't eyeball" is asking to be a test.</p>
+  </div>
+
+  <div class="field">
+    <span class="label">Rationale</span>
+    <p>The repository's distinctive asset is not its tests — it is the invariant / defect / ADR chain that made B10 ("defects of B9's own fix") legible instead of mysterious. A chain that can silently rot is decorative, and this one has already started. Mechanizing it also converts the four-locale tax — a cost four consecutive ADRs each paused to warn about — from a discipline problem into a red test, which is the difference between a rule that survives contributor number two and one that does not.</p>
+  </div>
+
+  <div class="field">
+    <span class="label">Downsides</span>
+    <p>Meta-tests that parse prose are brittle: a reformatted SPEC table breaks the build for a non-defect, and the bidi checker will need an escape hatch for legitimately unusual strings. The verifier also found that the neighbouring idea — asserting each <em>rejected</em> ADR option — is weaker than it looks, since two of them are already covered by existing tests and most closed decisions (the Persian register, "PRs are not a request surface") are not mechanically assertable at all.</p>
+  </div>
+</article>
+
+<!-- IDEA 4 -->
+<article class="idea" id="idea-4">
+  <div class="idea-head">
+    <span class="rank-chip">4</span>
+    <h3>Four allowed transports, one link shape</h3>
+    <span class="chips">
+      <span class="chip hi">Confidence 85%</span>
+      <span class="chip">Complexity Medium</span>
+    </span>
+  </div>
+
+  <div class="field">
+    <span class="label">Description</span>
+    <p>The allowlist admits <code>ws</code>, <code>xhttp</code>, <code>httpupgrade</code> and <code>grpc</code>, but the builder branches only on TLS-versus-none — never on transport. Every emitted link gets <code>host</code> set to the routing subdomain, and every TLS link additionally gets <code>insecure=0</code> and <code>allowInsecure=0</code>. For gRPC the share-link grammar is <code>serviceName</code>/<code>mode</code>, and <code>host=</code> is not part of it; XTLS issue #91 explicitly excludes <code>allowInsecure</code>. Audit what is actually emitted per transport against the real client grammars, and then either narrow the allowlist or shape the builder — settled the way ADR 0004 settled <code>flow</code>, on source evidence rather than reasoning.</p>
+  </div>
+
+  <figure>
+    <svg viewBox="0 0 700 190" role="img" aria-label="Diagram: four allowed transports all funnel through one builder that writes one link shape">
+      <rect x="8" y="12" width="118" height="30" rx="5" class="svg-box"/>
+      <text x="67" y="32" text-anchor="middle" class="svg-label mono">ws</text>
+      <rect x="8" y="50" width="118" height="30" rx="5" class="svg-box"/>
+      <text x="67" y="70" text-anchor="middle" class="svg-label mono">xhttp</text>
+      <rect x="8" y="88" width="118" height="30" rx="5" class="svg-box"/>
+      <text x="67" y="108" text-anchor="middle" class="svg-label mono">httpupgrade</text>
+      <rect x="8" y="126" width="118" height="30" rx="5" class="svg-box warn"/>
+      <text x="67" y="146" text-anchor="middle" class="svg-label mono">grpc</text>
+
+      <path d="M130 27 H 210 V 78" class="svg-line"/>
+      <path d="M130 65 H 210" class="svg-line"/>
+      <path d="M130 103 H 210 V 90" class="svg-line"/>
+      <path d="M130 141 H 210 V 90" class="svg-line warn"/>
+      <path d="M210 84 H 250" class="svg-line acc" marker-end="url(#ar4)"/>
+
+      <rect x="254" y="58" width="176" height="52" rx="6" class="svg-box acc"/>
+      <text x="342" y="80" text-anchor="middle" class="svg-label mono">buildQueryLink</text>
+      <text x="342" y="97" text-anchor="middle" class="svg-label sm">branches on TLS only</text>
+
+      <path d="M434 84 H 474" class="svg-line acc" marker-end="url(#ar4)"/>
+      <rect x="478" y="42" width="210" height="84" rx="6" class="svg-box"/>
+      <text x="583" y="62" text-anchor="middle" class="svg-label">one shape for all four</text>
+      <text x="583" y="80" text-anchor="middle" class="svg-label mono">host=&lt;routing subdomain&gt;</text>
+      <text x="583" y="96" text-anchor="middle" class="svg-label mono">insecure=0 allowInsecure=0</text>
+      <text x="583" y="114" text-anchor="middle" class="svg-label sm">no serviceName, no mode</text>
+
+      <defs>
+        <marker id="ar4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M0 0 L10 5 L0 10 z" fill="var(--accent)"/>
+        </marker>
+      </defs>
+    </svg>
+    <figcaption>Four admitted transports, one unconditional output shape. Whether the gRPC path is actually wrong is the open question; that no code path distinguishes it is verified fact.</figcaption>
+  </figure>
+
+  <div class="field basis">
+    <span class="label">Basis</span>
+    <p><span class="tag">direct:</span> All three code facts verified at head. <code>multiplier.js:81</code> is <code>p.host = config.routingSubdomain</code> with no transport branch; <code>multiplier.js:85-86</code> writes <code>insecure=0</code> and <code>allowInsecure=0</code> inside the single <code>if (security === 'tls')</code>; and <code>grpc</code> appears nowhere in <code>src/</code> except the allowlist, four locale strings, and two row tests — there is no gRPC branch in any builder and no test asserting gRPC output shape. The verifier also surfaced an asymmetry nobody had noticed: <code>parser.js:96-106</code> whitelists nine vmess keys, so <code>serviceName</code>, <code>mode</code> and <code>seed</code> are destroyed at parse time for vmess while vless, trojan and ss keep every query param. gRPC is therefore broken differently per scheme.</p>
+    <p><span class="tag">external:</span> XTLS/Xray-core issue #91 — the closest thing to a share-link standard — lists <code>serviceName</code> and <code>mode</code> as the gRPC parameters and explicitly excludes <code>allowInsecure</code>.</p>
+  </div>
+
+  <div class="field">
+    <span class="label">Rationale</span>
+    <p>ADR 0004's entire argument for allowlists was that an unrecognized value must never be silently rewritten. The allowlist honours that on the input side while the builder rewrites the output side for three of the four admitted transports with no per-transport evidence. Thirty commits of correctness work have never touched this file's transport blindness, and all 140 tests are blind to it. If the gRPC reading holds, this is the highest-severity open defect in the repository.</p>
+  </div>
+
+  <div class="field">
+    <span class="label">Downsides</span>
+    <p>The spec question is genuinely unresolved and cannot be settled from inside the repository — it needs the same source-level check ADR 0004 used for <code>flow</code>, against an unratified issue thread and real client behaviour. Narrowing the allowlist would refuse configs that work today for some users; shaping the builder per transport adds branches to the file with the most delicate history. Either answer belongs in an ADR so nobody re-asks.</p>
+  </div>
+</article>
+
+<!-- IDEA 5 -->
+<article class="idea" id="idea-5">
+  <div class="idea-head">
+    <span class="rank-chip">5</span>
+    <h3>Emitter registry: split the cross-product from the dialect</h3>
+    <span class="chips">
+      <span class="chip mid">Confidence 75%</span>
+      <span class="chip">Complexity Medium</span>
+    </span>
+  </div>
+
+  <div class="field">
+    <span class="label">Description</span>
+    <p><code>buildLink</code> is a <code>switch</code> over uniform leaf builders, wrapped in a cross-product loop that is entirely dialect-agnostic. Split them: the loop yields link <em>specs</em>, and a registry maps a target output format to an emitter. Dropping the <code>idx</code> parameter is required by the split and simultaneously deletes the dead three-digit counter that <code>generation.js</code> already documents as irrelevant. Afterwards, "also emit Clash-Mihomo YAML and sing-box JSON" becomes one emitter each instead of an edit across the cross-product, the dedup identity and the numbering — the three places that produced B9 and B10.</p>
+  </div>
+
+  <figure>
+    <svg viewBox="0 0 700 200" role="img" aria-label="Before and after: today one loop plus a switch emits URIs; after the split, the loop yields specs consumed by an emitter registry">
+      <text x="8" y="18" class="svg-label">today</text>
+      <rect x="8" y="28" width="150" height="40" rx="6" class="svg-box"/>
+      <text x="83" y="52" text-anchor="middle" class="svg-label sm">cross-product loop</text>
+      <path d="M162 48 H 196" class="svg-line" marker-end="url(#ar5)"/>
+      <rect x="200" y="28" width="130" height="40" rx="6" class="svg-box warn"/>
+      <text x="265" y="47" text-anchor="middle" class="svg-label mono">switch + idx</text>
+      <text x="265" y="61" text-anchor="middle" class="svg-label sm">dead counter</text>
+      <path d="M334 48 H 368" class="svg-line" marker-end="url(#ar5)"/>
+      <rect x="372" y="28" width="120" height="40" rx="6" class="svg-box"/>
+      <text x="432" y="52" text-anchor="middle" class="svg-label sm">URI list only</text>
+
+      <line x1="8" y1="90" x2="692" y2="90" class="svg-line" stroke-dasharray="3 4"/>
+
+      <text x="8" y="112" class="svg-label">after the split</text>
+      <rect x="8" y="122" width="150" height="40" rx="6" class="svg-box"/>
+      <text x="83" y="146" text-anchor="middle" class="svg-label sm">cross-product loop</text>
+      <path d="M162 142 H 196" class="svg-line acc" marker-end="url(#ar6)"/>
+      <rect x="200" y="122" width="130" height="40" rx="6" class="svg-box acc"/>
+      <text x="265" y="146" text-anchor="middle" class="svg-label sm">link specs</text>
+      <path d="M334 142 H 368" class="svg-line acc" marker-end="url(#ar6)"/>
+      <rect x="372" y="112" width="130" height="60" rx="6" class="svg-box acc"/>
+      <text x="437" y="136" text-anchor="middle" class="svg-label sm">emitter registry</text>
+      <text x="437" y="153" text-anchor="middle" class="svg-label sm">format → emitter</text>
+
+      <path d="M506 128 H 540" class="svg-line" marker-end="url(#ar5)"/>
+      <path d="M506 142 H 540" class="svg-line" marker-end="url(#ar5)"/>
+      <path d="M506 156 H 540" class="svg-line" marker-end="url(#ar5)"/>
+      <text x="546" y="132" class="svg-label sm">URI list</text>
+      <text x="546" y="146" class="svg-label sm">Clash-Mihomo YAML</text>
+      <text x="546" y="160" class="svg-label sm">sing-box JSON</text>
+
+      <defs>
+        <marker id="ar5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M0 0 L10 5 L0 10 z" fill="var(--border-strong)"/>
+        </marker>
+        <marker id="ar6" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M0 0 L10 5 L0 10 z" fill="var(--accent)"/>
+        </marker>
+      </defs>
+    </svg>
+    <figcaption>The refactor is justified on its own — a correct signature and a dead counter removed — and the capability gap closes as a side effect rather than as a rewrite.</figcaption>
+  </figure>
+
+  <div class="field basis">
+    <span class="label">Basis</span>
+    <p><span class="tag">direct:</span> <code>buildLink</code> is a <code>switch (config.type)</code> over uniform leaf builders. The suffix at <code>multiplier.js:56-58</code> is provably dead: <code>generation.js</code> calls the multiplier one config at a time so the counter always restarts, <code>dedup.js</code> strips and rewrites the fragment anyway, and <code>generation.js:91-92</code> already says so in a comment — two numbering implementations, one of which does nothing. Verified.</p>
+    <p><span class="tag">external:</span> The 2026 interop expectation is three dialects, and Mihomo's outbound shape for the same node differs structurally — <code>servername</code> rather than <code>sni</code>, <code>ws-opts.headers.Host</code> rather than <code>host=</code>. <code>hiddify/ray2sing</code> exists specifically because URI-to-sing-box conversion is non-trivial.</p>
+  </div>
+
+  <div class="field">
+    <span class="label">Rationale</span>
+    <p>This is the largest capability gap against subconverter and sublink-worker, and the split converts it from a rewrite into an additive change. It also compounds with idea 1: once the round-trip property exists, every new emitter inherits it instead of needing its own test family. The dead-code removal makes the refactor worth doing even if no second dialect is ever shipped.</p>
+  </div>
+
+  <div class="field">
+    <span class="label">Downsides</span>
+    <p>Refactoring the file with the most delicate defect history, on a codebase whose own log records a fix that broke itself. Each new dialect also needs its own identity normalizer for dedup, which is not free. And sing-box is a moving target — fields deprecated in 1.11 were removed in 1.13 — so an emitter is a maintenance commitment, not a one-time addition; generators in this space pin the wrong shape constantly.</p>
+  </div>
+</article>
+
+<!-- IDEA 6 -->
+<article class="idea" id="idea-6">
+  <div class="idea-head">
+    <span class="rank-chip">6</span>
+    <h3>The distribution decision: one file, no trace</h3>
+    <span class="chips">
+      <span class="chip mid">Confidence 70%</span>
+      <span class="chip">Complexity Medium</span>
+    </span>
+  </div>
+
+  <div class="field">
+    <span class="label">Description</span>
+    <p>A tool built for users behind national filtering is distributed exclusively as a URL on one blockable host. Add a single self-contained HTML build — all JS, CSS and locales inlined — attached to a GitHub release by the same workflow that already deploys Pages, so the app can be forwarded over Telegram, kept on a USB stick, and opened from <code>file://</code> with no network at all. Paired with it is the question the codebase has never asked out loud: which state is a secret. One frame proposed persisting and URL-sharing the non-secret half (host list, port and ALPN selections, fingerprint) while structurally excluding pasted configs; another argued that for this audience the forensic footprint is itself part of the threat model and the share hash should be rejected in an ADR. These are one decision with opposite answers and have to be settled together.</p>
+  </div>
+
+  <div class="field basis">
+    <span class="label">Basis</span>
+    <p><span class="tag">direct:</span> The app has no backend and two runtime dependencies, so inlining is a build-config change rather than an architecture change. <code>App.vue</code>'s 14 refs are the extraction target for anything needing persistence or URL state, and the override map is keyed on a fingerprint composed of type, UUID, address and port — credential-bearing, so the override half of any "share your setup" feature needs re-keying before it is safe. Verified. <code>OutputPanel.vue:72</code> already swallows clipboard errors with a bare <code>catch</code>.</p>
+    <p><span class="tag">external:</span> <code>vite-plugin-singlefile</code> is real and build-time only; <code>six-two/qr.html</code> is the established single-standalone-file precedent in this niche. The concrete landmine is documented: clipboard-read permission prompts fire in Chromium when a page is opened from <code>file://</code>, and copy-to-clipboard is this app's primary output affordance. On the other side, crontab.guru advertises client-side-only parsing as a feature — a privacy claim that carries unusual weight for this audience, and one every Worker-backed panel in the space structurally cannot make.</p>
+  </div>
+
+  <div class="field">
+    <span class="label">Rationale</span>
+    <p>Every design decision in the repository optimizes the correctness of the links while the availability of the generator itself rests on a single hostname. For this audience that ordering is inverted. The two halves also make each other coherent: a build that forbids runtime fetches is exactly the build that can honestly claim nothing leaves the browser, and today "we make zero network requests" is an accidental property rather than a stated one. Deciding them together produces one ADR; deciding them apart produces two features that contradict on the clipboard and persistence questions.</p>
+  </div>
+
+  <div class="field">
+    <span class="label">Downsides</span>
+    <p>An offline copy whose copy button silently fails is worse than no offline copy, so the <code>file://</code> clipboard path has to be tested rather than assumed. The single-file build costs one devDependency, which runs against the ADR 0003 precedent. And the zero-trace answer forecloses the most attractive feature request this project will ever receive — which is an argument for writing the ADR now, not later.</p>
+  </div>
+</article>
+
+<!-- IDEA 7 -->
+<article class="idea" id="idea-7">
+  <div class="idea-head">
+    <span class="rank-chip">7</span>
+    <h3>Say which hop reads which field — from one control table</h3>
+    <span class="chips">
+      <span class="chip lo">Confidence 65%</span>
+      <span class="chip">Complexity High</span>
+    </span>
+  </div>
+
+  <div class="field">
+    <span class="label">Description</span>
+    <p>The most valuable thing this tool knows is the thing it never says out loud: the client connects to a CDN edge at the address, the edge routes on the name in <code>host</code>/<code>sni</code>, and getting that pair wrong is Cloudflare error 1013. Surface it — hover or expand a generated link and see each field labelled with which hop consumes it, including the deliberate absence of <code>sni</code> when there is no TLS handshake. Underneath it, lift the refusal policy out of an ordered <code>if</code> chain into a declarative table (condition → reason key → precedence → ADR citation) that is simultaneously the implementation, the test fixture, and the rendered explanation.</p>
+  </div>
+
+  <figure>
+    <svg viewBox="0 0 700 220" role="img" aria-label="Diagram: the two-hop model showing which link field each hop reads">
+      <rect x="8" y="70" width="140" height="54" rx="6" class="svg-box"/>
+      <text x="78" y="92" text-anchor="middle" class="svg-label">client</text>
+      <text x="78" y="109" text-anchor="middle" class="svg-label sm">v2rayNG, Hiddify…</text>
+
+      <path d="M152 97 H 258" class="svg-line acc" marker-end="url(#ar7)"/>
+      <text x="205" y="86" text-anchor="middle" class="svg-label sm svg-halo">dials</text>
+      <text x="205" y="120" text-anchor="middle" class="svg-label mono svg-halo">address : port</text>
+
+      <rect x="262" y="62" width="150" height="70" rx="6" class="svg-box acc"/>
+      <text x="337" y="86" text-anchor="middle" class="svg-label">CDN edge</text>
+      <text x="337" y="104" text-anchor="middle" class="svg-label sm">routes on the name in</text>
+      <text x="337" y="120" text-anchor="middle" class="svg-label mono">host / sni</text>
+
+      <path d="M416 97 H 522" class="svg-line acc" marker-end="url(#ar7)"/>
+      <text x="469" y="86" text-anchor="middle" class="svg-label sm svg-halo">forwards to</text>
+      <text x="469" y="120" text-anchor="middle" class="svg-label mono svg-halo">your origin</text>
+
+      <rect x="526" y="70" width="150" height="54" rx="6" class="svg-box"/>
+      <text x="601" y="92" text-anchor="middle" class="svg-label">origin server</text>
+      <text x="601" y="109" text-anchor="middle" class="svg-label sm">transport, uuid, path</text>
+
+      <rect x="262" y="158" width="150" height="44" rx="6" class="svg-box warn"/>
+      <text x="337" y="177" text-anchor="middle" class="svg-label">error 1013</text>
+      <text x="337" y="193" text-anchor="middle" class="svg-label sm">host ≠ sni</text>
+      <path d="M337 136 V 154" class="svg-line warn" marker-end="url(#ar8)"/>
+
+      <defs>
+        <marker id="ar7" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M0 0 L10 5 L0 10 z" fill="var(--accent)"/>
+        </marker>
+        <marker id="ar8" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M0 0 L10 5 L0 10 z" fill="var(--warn)"/>
+        </marker>
+      </defs>
+    </svg>
+    <figcaption>The two-hop model the whole product is built around, and the failure it exists to prevent. Six ADRs guard against this mistake; the user is never told what it is.</figcaption>
+  </figure>
+
+  <div class="field basis">
+    <span class="label">Basis</span>
+    <p><span class="tag">direct:</span> <code>multiplier.js:90-91</code> carries exactly this knowledge in a comment no user sees — "No TLS handshake, so there is no server name to indicate. Writing one added a parameter the origin config did not have and nothing reads." <code>rows.js:44-46</code> carries a safety-critical ordering constraint in prose: an <code>ss</code> link in the plugin dialect states its transport inside <code>plugin</code> and so carries no <code>type</code> param at all, so checking the transport first would blame the wrong thing. Reason strings are already message keys rendered generically by the row UI, so the plumbing for typed, localized explanations exists and is currently wired only to failure. Verified.</p>
+    <p><span class="tag">external:</span> Cloudflare error 1013 is literally "HTTP hostname and TLS SNI hostname mismatch", and research names host/SNI confusion the #1 failure class in this space. regex101's explanation pane and RegExr's hover-to-highlight are the proven interaction; the domain analogue is hovering <code>sni=</code> and seeing which hop it applies to.</p>
+  </div>
+
+  <div class="field">
+    <span class="label">Rationale</span>
+    <p>Every competitor generates; none teaches. The knowledge that makes this tool correct is currently invisible to its users and duplicated four ways for its maintainers — as code comments, SPEC rows, ADR prose, and four READMEs. One extraction collapses the duplication and converts documentation debt into the feature that answers the audience's most common mistake from the inside. A user who understands the two hops can debug a dead link themselves; a user who does not can only regenerate and hope. It is also the only survivor here that changes what the product <em>is</em> rather than what it checks.</p>
+  </div>
+
+  <div class="field">
+    <span class="label">Downsides</span>
+    <p>The highest string tax on the list — four locales plus four READMEs — and annotating Latin runs inside Persian RTL text is precisely the project's signature unsolved problem. The verifier also cut this idea down: a broader version bundling the CDN-port gate and per-client profiles onto the same table was rejected as four unbuilt surfaces assumed to share one schema, and one of those four rested on a wrong premise (the port chips are a fixed set already equal to Cloudflare's proxied list, so there is nothing there to gate; the genuinely ungated knob is ALPN, where <code>h2</code> is selectable for a WebSocket config over an HTTP/1.1-only edge). Start with the table and the annotation, not with the whole ambition.</p>
+  </div>
+</article>
+
+<h2 id="rejection-summary">Rejection Summary</h2>
+
+<div class="table-wrap">
+<table>
+  <thead>
+    <tr><th>#</th><th>Idea</th><th>Reason rejected</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>1</td><td>Executable ADR-rejection suite — one test per closed decision</td><td>Two of them are already asserted in <code>rows.test.js</code>, and most closed decisions (the Persian register, "PRs are not a request surface") are not mechanically assertable — largely a rename of existing tests</td></tr>
+    <tr><td>2</td><td>Persian-first authoring discipline</td><td>A working practice with no artifact and no decision surface; ADR 0002 already settles that English is in scope during a Persian pass</td></tr>
+    <tr><td>3</td><td>Gate the CDN port axis against the proxied-port list</td><td>Premise wrong — the port chips are a fixed set already equal to Cloudflare's proxied list, with no free-text entry to gate; only the ALPN leg survives, folded into idea 7</td></tr>
+    <tr><td>4</td><td>Symptom-first differential diagnosis mode</td><td>Names no discriminating check for any symptom; the whole payload is asserted rather than derived</td></tr>
+    <tr><td>5</td><td>Publish share-link conformance test vectors</td><td>Idea 1 proves this repository's own vmess emission is non-standard and the suite bakes it in — publishing these vectors would publish the defect as the standard</td></tr>
+    <tr><td>6</td><td>One control table driving four surfaces at once</td><td>Bundles four largely unbuilt surfaces on the unevidenced assumption they share a schema; narrowed into idea 7</td></tr>
+    <tr><td>7</td><td>Per-client preflight profiles (v2rayNG / NekoBox / Hiddify / Mihomo / sing-box)</td><td>Sound, but blocked behind ideas 4 and 5 — there is no dialect layer to profile yet, and nobody has committed to testing against five real clients</td></tr>
+    <tr><td>8</td><td>Move the pipeline into a Web Worker and delete the fake async</td><td>Sound and verified — the yield is in the wrong place and the dedup pass is unyielded — but cut for count: no correctness gain, and the freeze only bites at large runs</td></tr>
+    <tr><td>9</td><td>Extract <code>buildRows</code> from <code>App.vue</code> into the pure layer</td><td>Sound, cheap and the strongest of the deferred — three of ten defects live in the one file that breaks the repository's own architecture rule; cut for count only, and worth doing alongside idea 3</td></tr>
+    <tr><td>10</td><td>Probe the CDN host list for reachability before multiplying</td><td>Conflicts head-on with idea 6's zero-trace half; the app makes zero network requests today and that cannot change before the threat-model ADR exists</td></tr>
+    <tr><td>11</td><td>CIDR fan-out with a multiplication budget meter</td><td>Depends on the deferred worker — a <code>/16</code> would freeze the tab inside the synchronous dedup pass</td></tr>
+    <tr><td>12</td><td>Undo for destructive bulk row deletion</td><td>Below the ambition floor — a real gap, but a chore rather than a decision</td></tr>
+    <tr><td>13</td><td>The <code>dedup.js</code> crash on an undecodable vmess link as a motivating example</td><td>Confirmed to throw, but unreachable through the UI; the round-trip property is the load-bearing half and moved into idea 1</td></tr>
+    <tr><td>14</td><td>Full ownership inversion — row model as state, textarea as projection</td><td>Duplicates the cheaper, safer half now carried by rejection 9; the full inversion is the highest-risk change available and no basis justified taking it first</td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="callout info">
+  <p class="eyebrow">Read the ranking this way</p>
+  <p>Ideas 1 and 4 are findings, not proposals — the code was read and run, and the facts hold at <code>cd3bc3f</code>. Idea 4's remaining uncertainty is entirely about what the ecosystem expects, not about what the repository does. Ideas 2, 5, 6 and 7 are directions with real cost attached, and 3 is the cheapest thing on the list by a wide margin.</p>
+</div>
+
+<footer class="composition-signal">
+  Composed 2026-08-14 by ce-ideate from an open-ended prompt against <code>CDN-Config-Generator</code> at <code>cd3bc3f</code>. Six ideation frames, one independent basis verifier. Repository: <a href="https://github.com/rahgozar94725/CDN-Config-Generator">github.com/rahgozar94725/CDN-Config-Generator</a>.
+</footer>
+
+</div>
+</body>
+</html>
