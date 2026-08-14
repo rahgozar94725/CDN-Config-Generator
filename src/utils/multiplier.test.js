@@ -1,11 +1,21 @@
 import { describe, it, expect } from 'vitest'
 import { generateConfigs } from './multiplier.js'
 import { parseRows } from './generation.js'
+import { encodeBase64 } from './parser.js'
+import { decodeVmessLink } from './roundtrip.js'
 
 // Rows, not bare parse output: generateConfigs decides what to emit from a row's
 // status, which parseRows is what assigns.
 function parseAll(lines) {
   return parseRows(lines)
+}
+
+// A generated vmess payload is base64 of UTF-8 JSON bytes, so a client reads it
+// in one step. The round-trip module's decoder is that read, written
+// independently of the parser: an extra decode step here would make a
+// non-standard payload look correct.
+function readVmess(link) {
+  return decodeVmessLink(link).params
 }
 
 describe('multiplier', () => {
@@ -175,9 +185,32 @@ describe('multiplier', () => {
     const configs = parseAll('vmess://' + btoa(JSON.stringify(obj)))
     const opts = { enableTls: false, enableNoTls: true, noTlsPorts: [80], alpn: [], fingerprint: [] }
     const out = generateConfigs(configs, ['9.9.9.9'], opts)
-    const decoded = JSON.parse(decodeURIComponent(atob(out[0].replace('vmess://', ''))))
+    const decoded = readVmess(out[0])
     expect(decoded.tls).toBe('none')
     expect(decoded.sni).toBeUndefined()
+  })
+
+  // The payload a client reads is base64 of UTF-8 JSON bytes. Percent-encoding
+  // the JSON before base64 — what this builder used to do — hands the client a
+  // string starting `%7B` instead of an object, and no vmess link this tool ever
+  // produced opened anywhere.
+  it('writes a vmess payload a client reads with one base64 step', () => {
+    const obj = { v: '2', ps: 'm', add: '1.2.3.4', port: 443, id: 'uuid', net: 'ws', host: 'route.example.com', tls: 'tls' }
+    const configs = parseAll('vmess://' + btoa(JSON.stringify(obj)))
+    const out = generateConfigs(configs, ['9.9.9.9'], { enableTls: false, enableNoTls: true, noTlsPorts: [80], alpn: [], fingerprint: [] })
+    const payload = atob(out[0].replace('vmess://', ''))
+    expect(payload.startsWith('{')).toBe(true)
+    expect(payload).not.toMatch(/%[0-9A-Fa-f]{2}/)
+    expect(JSON.parse(payload).add).toBe('9.9.9.9')
+  })
+
+  it('AE1: a Persian and emoji remark survives the payload encoding', () => {
+    const obj = { v: '2', ps: 'سرور تهران 🚀', add: '1.2.3.4', port: 443, id: 'uuid', net: 'ws', host: 'route.example.com', tls: 'tls' }
+    const configs = parseAll('vmess://' + encodeBase64(JSON.stringify(obj)))
+    const out = generateConfigs(configs, ['9.9.9.9'], { enableTls: false, enableNoTls: true, noTlsPorts: [80], alpn: [], fingerprint: [] })
+    const decoded = readVmess(out[0])
+    expect(decoded.ps).toBe('سرور تهران 🚀-001')
+    expect(decoded.ps).not.toMatch(/%[0-9A-Fa-f]{2}/)
   })
 
   // The remark is decoded on the way in, so it has to be encoded on the way out
@@ -202,7 +235,7 @@ describe('multiplier', () => {
     const obj = { v: '2', ps: 'm', add: '1.2.3.4', port: 443, id: 'uuid', net: 'ws', host: 'route.example.com', tls: 'tls' }
     const configs = parseAll('vmess://' + btoa(JSON.stringify(obj)))
     const out = generateConfigs(configs, ['9.9.9.9'], { enableTls: true, enableNoTls: false, tlsPorts: [443], alpn: ['h2'], fingerprint: ['chrome'] })
-    const decoded = JSON.parse(decodeURIComponent(atob(out[0].replace('vmess://', ''))))
+    const decoded = readVmess(out[0])
     expect(decoded.host).toBe('route.example.com')
     expect(decoded.sni).toBe('route.example.com')
     expect(decoded.add).toBe('9.9.9.9')

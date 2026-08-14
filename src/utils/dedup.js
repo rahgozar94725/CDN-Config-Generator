@@ -1,4 +1,4 @@
-import { decodeBase64 } from './parser.js'
+import { decodeBase64, encodeBase64 } from './parser.js'
 
 // The engine for the whole dedup + per-remark numbering ticket chain: given the
 // built origin links together with their base remark (the "routing context"
@@ -49,17 +49,36 @@ function queryLinkIdentity(link, randomSni) {
   return `${head.slice(0, q)}?${pairs.sort().join('&')}`
 }
 
-// vmess is base64 of a JSON object in either of two encodings: bare UTF-8 JSON
-// bytes, or percent-encoded JSON (our own generator percent-encodes before
-// base64, so it decodes to a still-encoded string). Tolerate both so a link
-// dedups against its own kind whether it was built here or pasted raw.
+// vmess is base64 of UTF-8 JSON bytes, and nothing else. This site used to also
+// accept base64 of percent-encoded JSON, because that is what our own generator
+// wrote — a shape no standard client can read, so no link in it has ever worked
+// and there is nothing to stay compatible with (ADR-0007). Refusing it here is
+// the read-side half of that clean break: an old-shape link states no identity
+// and keeps its own label, rather than being quietly absorbed and re-emitted.
+// Throws when the payload does not decode; every caller decides what that means.
 function vmessConfig(link) {
-  const raw = decodeBase64(link.replace('vmess://', ''))
+  return JSON.parse(decodeBase64(link.replace('vmess://', '')))
+}
+
+// Both sides of this module take the same posture on a link they cannot read:
+// state nothing about it and leave it as it arrived. Kept as one helper so the
+// identity side and the rewrite side cannot drift apart on what "unreadable"
+// means.
+//
+// Valid JSON is not enough — the payload must be an object. A payload of `123`
+// or `"text"` parses without throwing, and writing `ps` onto it then throws a
+// TypeError in the middle of numbering, costing the whole run's output: exactly
+// the loss the callers' guards exist to prevent. An array takes the assignment
+// silently and drops it again at re-encode, losing the label instead.
+function readableVmessConfig(link) {
+  let config
   try {
-    return JSON.parse(raw)
+    config = vmessConfig(link)
   } catch {
-    return JSON.parse(decodeURIComponent(raw))
+    return null
   }
+  if (!config || typeof config !== 'object' || Array.isArray(config)) return null
+  return config
 }
 
 // vmess states its identity inside a base64 JSON object rather than the URL, and
@@ -72,12 +91,8 @@ function vmessConfig(link) {
 // bytes, so it can only equal a byte-identical twin. Returning one shared value
 // instead would collapse every unreadable link into a single survivor.
 function vmessIdentity(link, randomSni) {
-  let obj
-  try {
-    obj = vmessConfig(link)
-  } catch {
-    return link
-  }
+  const obj = readableVmessConfig(link)
+  if (!obj) return link
   delete obj.ps
   if (randomSni) delete obj.sni
   const sorted = Object.keys(obj).sort().reduce((acc, key) => {
@@ -95,12 +110,22 @@ export function linkIdentity(link, options) {
 
 // Rewrites a numbered remark back into a link. vless/trojan/ss carry it as a
 // percent-encoded fragment; vmess as the `ps` field of its base64 JSON object,
-// re-encoded exactly as the multiplier builds it so it still parses back.
+// re-encoded with the same codec the multiplier builds with so it still parses
+// back. This is the last writer of every vmess link the app emits, so an
+// encoding the multiplier gets right and this site gets wrong is still wrong in
+// the output the user is handed.
+//
+// A link that does not decode keeps the label it arrived with, the same posture
+// vmessIdentity takes on the identity side: numbering runs over the whole run at
+// once, so throwing on one unreadable link would cost every other link's output.
+// Nothing built by the generator reaches here undecodable — the guard exists
+// because dedupeAndNumber is exported and called directly.
 function withRemark(link, remark) {
   if (isVmess(link)) {
-    const obj = vmessConfig(link)
+    const obj = readableVmessConfig(link)
+    if (!obj) return link
     obj.ps = remark
-    return 'vmess://' + btoa(encodeURIComponent(JSON.stringify(obj)))
+    return 'vmess://' + encodeBase64(JSON.stringify(obj))
   }
   return `${splitFragment(link).head}#${encodeURIComponent(remark)}`
 }

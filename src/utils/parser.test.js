@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { parseConfig, parseVless, parseVmess, parseTrojan, parseSs } from './parser.js'
+import { parseConfig, parseVless, parseVmess, parseTrojan, parseSs, encodeBase64, decodeBase64 } from './parser.js'
 
 describe('parseVless', () => {
   it('parses standard vless with ws+tls', () => {
@@ -53,6 +53,16 @@ describe('parseVmess', () => {
 
   it('returns null for invalid base64', () => {
     expect(parseVmess('vmess://!!!')).toBeNull()
+  })
+
+  // AE3. A hard-coded literal of the shape this generator used to write: base64
+  // of percent-encoded JSON, which decodes to a string starting `%7B` rather
+  // than an object. Building it by encoding would put the old shape back into
+  // the repo; refusing it is the point (ADR-0007).
+  it('AE3: refuses the old percent-encoded payload instead of absorbing it', () => {
+    const oldShape = 'vmess://JTdCJTIydiUyMiUzQSUyMjIlMjIlMkMlMjJwcyUyMiUzQSUyMm9uZSUyMiUyQyUyMmFkZCUyMiUzQSUyMjEuMS4xLjElMjIlMkMlMjJwb3J0JTIyJTNBNDQzJTJDJTIyaWQlMjIlM0ElMjJ1dWlkJTIyJTJDJTIybmV0JTIyJTNBJTIyd3MlMjIlMkMlMjJob3N0JTIyJTNBJTIyeC5jb20lMjIlMkMlMjJ0bHMlMjIlM0ElMjJ0bHMlMjIlN0Q='
+    expect(parseVmess(oldShape)).toBeNull()
+    expect(parseConfig(oldShape)).toBeNull()
   })
 })
 
@@ -160,6 +170,41 @@ describe('routing subdomain derivation', () => {
     const r = parseVmess('vmess://' + btoa(JSON.stringify(obj)))
     expect(r.routingSubdomain).toBe('')
     expect(r.routingSubdomainRequired).toBe(true)
+  })
+})
+
+// encodeBase64 is the write side of the same codec decodeBase64 reads, so the
+// cases that matter are the ones a bare btoa cannot express: anything above
+// latin1. A remark carrying Persian text or an emoji is ordinary user input
+// here, not an exotic edge case.
+describe('encodeBase64', () => {
+  it('matches plain btoa for ASCII, so standard readers see the standard shape', () => {
+    const json = JSON.stringify({ v: '2', ps: 'my-config', add: 'x.com' })
+    expect(encodeBase64(json)).toBe(btoa(json))
+  })
+
+  it('encodes Persian text instead of throwing on the latin1 limit', () => {
+    expect(() => encodeBase64('سرور تهران')).not.toThrow()
+    expect(decodeBase64(encodeBase64('سرور تهران'))).toBe('سرور تهران')
+  })
+
+  it('round-trips an astral-plane emoji through its surrogate pair', () => {
+    expect(decodeBase64(encodeBase64('🚀'))).toBe('🚀')
+  })
+
+  it('round-trips a string mixing ASCII, Persian and emoji', () => {
+    const mixed = 'config-سرور-🚀-001'
+    expect(decodeBase64(encodeBase64(mixed))).toBe(mixed)
+  })
+
+  it('round-trips a JSON payload with a non-ASCII remark', () => {
+    const json = JSON.stringify({ ps: 'تهران 🚀', add: 'x.com', port: '443' })
+    expect(JSON.parse(decodeBase64(encodeBase64(json))).ps).toBe('تهران 🚀')
+  })
+
+  it('round-trips the empty string', () => {
+    expect(encodeBase64('')).toBe('')
+    expect(decodeBase64(encodeBase64(''))).toBe('')
   })
 })
 
