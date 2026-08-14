@@ -85,6 +85,26 @@ _Avoid_: SS format, SIP002
 The credential segment of an `ss` link, between the scheme and the connect address. Deliberately opaque: it is carried into generated links verbatim, so its encoding is never a question the generator has to answer.
 _Avoid_: Password, credentials
 
+**Remark**:
+The human-readable name a config carries — what the user sees in their client's server list. On an origin config it is whatever the user's own link held; on a generated link it is always rewritten to a label.
+_Avoid_: Name, tag, title
+
+**Label**:
+The remark a generated link is given: a base — the origin config's remark, or a shared default where it had none — followed by a sequence number. Numbering runs per label base across the whole output, after deduplication, so no two output links share a label and a base's numbers have no holes.
+_Avoid_: Suffix, numbered remark
+
+**Payload**:
+The base64 object a `vmess` link carries in place of a query string. It is base64 of the JSON's UTF-8 bytes and nothing else: a client base64-decodes it and parses JSON with no step in between, so any additional encoding makes the link unreadable to every client.
+_Avoid_: Body, blob, config JSON
+
+**Last writer**:
+The final stage that rewrites a link before the user receives it — numbering, not the builder, because numbering runs after deduplication and rewrites every survivor's remark. For `vmess` that means decoding and re-encoding the whole payload. A correction applied only where a link is built is not applied to what the user is handed.
+_Avoid_: Final step, output stage
+
+**Round-trip gate**:
+The check that every emitted link parses back with each field the generator intended to write still intact. It reads each link through two decoders — this project's parser, and a second one written from the published link grammar that shares no code with the parser or the builder — because a reader that was ever adapted to accept our own output cannot testify about it. It asserts field preservation, not string identity: a generated link never equals its origin config, since the builder replaces the connect address, port, security and remark by design.
+_Avoid_: Round-trip test, encoding test
+
 **Link identity**:
 The set of properties that make two output links interchangeable for a client: the query key=value set (compared order-insensitively), plus address, port, security, transport, and any other link-shaping fields — excluding the remark, and excluding a random SNI, which is a nonce rather than a property of where the link goes. Two links with equal identity are one link, whatever their byte order.
 _Avoid_: Dedup key, fingerprint, equality
