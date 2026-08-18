@@ -53,7 +53,6 @@ Xray raw config (VLESS/VMESS/Trojan/Shadowsocks) × CDN IP list × port/TLS comb
 | V17 | Every non-blank input line is exactly one row carrying its source line index; deletion addresses lines by that index, so one of two identical lines can be removed | generation unit test (parseRows, removeLines) |
 | V18 | ss credential segment reaches generated links byte-for-byte as it arrived — no base64 decode, no SIP002/SIP022 distinction. `plugin=` links are excluded with their own reason, never blamed on the transport | parser + rows unit tests |
 | V19 | ∀ generated link in the output of `generateLinks`, after dedup and numbering — excluding passthrough raw lines, which are the user's own text carried bit-identical (V5) — → parses back through the project's parser *and* through a decoder written independently of it, with every field in that scheme's intended-field map returning the value the generator wrote and every field marked absent under its stated condition staying absent. The guarantee is field preservation, not string identity — the builder rewrites address, port, remark and TLS state by design. vmess payloads are base64 of UTF-8 JSON bytes; the percent-encoded shape is refused on every read path (ADR-0007) | round-trip gate (`roundtrip.test.js`, `V19:` tests) |
-| V20 | TEMPORARY probe row — no test carries a `V20:` tag; exists only so the pull-request CI log can be watched reporting the traceability gate red. Reverted immediately | none (deliberate) |
 
 ## §T
 
