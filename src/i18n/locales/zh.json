@@ -26,7 +26,6 @@
 
   "config.tlsMode": "TLS 模式",
   "config.noTlsMode": "非 TLS 模式",
-  "config.ports": "端口",
   "config.tlsAdvanced": "TLS 高级设置",
   "config.alpn": "ALPN",
   "config.fingerprint": "指纹",
@@ -40,7 +39,6 @@
   "config.includeExcluded": "在输出中包含被排除的配置",
   "config.includeExcludedHint": "关闭：仅生成的链接。开启：每个被排除行的原文将原样复制到输出中 — 适用于希望整体返回的混合订阅。",
 
-  "output.title": "生成的配置",
   "output.copyAll": "全部复制",
   "output.download": "下载 .txt",
   "output.generating": "生成中...",
@@ -60,7 +58,5 @@
   "lang.ru": "俄语",
   "lang.zh": "中文",
 
-  "common.generate": "生成",
-  "common.clear": "清除",
-  "common.ready": "就绪"
+  "common.generate": "生成"
 }
