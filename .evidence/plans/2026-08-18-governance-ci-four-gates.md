@@ -161,9 +161,17 @@ Out of scope:
   unreferenced by `src/`.
 - **Depends on:** U1
 - **Mode:** vertical slice
-- **Files:** `src/meta/locales.test.js (new)`, `src/i18n/locales/en.json`,
-  `src/i18n/locales/fa.json`, `src/i18n/locales/ru.json`,
-  `src/i18n/locales/zh.json`
+- **Files:** *(amended 2026-08-18 — see Log)*
+  - `src/meta/locales.test.js (new)` — the gate itself.
+  - `src/i18n/locales/{en,fa,ru,zh}.json` (derived) — whichever keys the gate
+    reports as orphaned or as missing from a file on its first run. The plan
+    predicts the orphan set `config.ports`, `output.title`, `common.clear`,
+    `common.ready` and a 57 → 53 key count; the gate's measured set is the
+    authority, because the prediction is an estimate and the measurement is not.
+    Permitted: deleting a key the gate reports orphaned from all four files, and
+    adding a key the gate reports missing so the four files agree.
+    Forbidden: changing any *value*, editing a `src/` file to create or remove a
+    `$t(...)` call site, or exempting a key instead of deleting it.
 - **Approach:** The files are flat maps of dotted string keys, so parity is a
   sorted key-array comparison — currently 57 keys each, so this half ships
   green as a ratchet. The orphan check is the delicate half:
@@ -193,8 +201,18 @@ Out of scope:
   a bidi control character, fails the suite.
 - **Depends on:** U1
 - **Mode:** vertical slice
-- **Files:** `src/meta/bidi.test.js (new)`, `src/i18n/locales/fa.json`,
-  `docs/agents/persian-style.md`
+- **Files:** *(amended 2026-08-18 — see Log)*
+  - `src/meta/bidi.test.js (new)` — the gate itself.
+  - `docs/agents/persian-style.md` — the note that the rule is now enforced.
+  - `src/i18n/locales/fa.json` (derived) — whichever values the gate reports
+    red on its first run. The plan predicts exactly one, `rows.flowError`; the
+    gate's measured set is the authority, because the prediction is an estimate
+    and the measurement is not.
+    Permitted: reshaping a reported Persian sentence so its Latin run is not
+    final, per the style doc's instruction to reshape rather than insert marks.
+    Forbidden: inserting a bidi control character, exempting a key, weakening an
+    assertion to accommodate a string, or editing `en.json`, `ru.json` or
+    `zh.json`.
 - **Approach:** Two assertions over `fa.json` values. First: no
   `U+200E`, `U+200F`, `U+2066`–`U+2069`, `U+202A`–`U+202E` — the style doc bans
   them by name as unreviewable in diffs. Green today. Second: every maximal
@@ -286,3 +304,12 @@ concurrently, land U3 first.
   deviation logged against U2 is closed by this amendment.
   U3 and U4 predict violation sets the same way and should be amended to the
   same shape before they run.
+- 2026-08-18 plan amended — U3's and U4's `Files` rewritten to the bounded
+  derived shape U2 received, before either unit runs. U3's predicted orphan set
+  (`config.ports`, `output.title`, `common.clear`, `common.ready`) and U4's
+  predicted single violation (`rows.flowError`) are now recorded as estimates
+  the gate's measurement overrides, with the permitted edit named and value
+  changes, exemptions and assertion weakening forbidden.
+- 2026-08-18 pull request opened — `#20` on branch `governance-ci-four-gates`,
+  base `master`. This is the observation U1 and U2 are both waiting on: neither
+  can move off `unverified` until a pull-request CI run is watched.
