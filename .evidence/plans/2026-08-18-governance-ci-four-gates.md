@@ -324,7 +324,7 @@ concurrently, land U3 first.
 - 2026-08-18 U3 done — `src/meta/locales.test.js` gates key-set parity across
   the four locale files and flags keys nothing renders; the four orphans
   (`config.ports`, `output.title`, `common.clear`, `common.ready`) are deleted,
-  57 keys to 53. Commit `<sha>`, record `.evidence/work/U3.md`. Suite 8 files /
+  57 keys to 53. Commit `61b26c4`, record `.evidence/work/U3.md`. Suite 8 files /
   989 tests green, build green. Ran inline rather than in a dispatched subagent,
   per a standing instruction in this session not to spawn agents unasked; U4 is
   unaffected. Scope as declared — the measured orphan set matched the plan's
