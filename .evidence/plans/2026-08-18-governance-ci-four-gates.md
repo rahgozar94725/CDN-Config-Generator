@@ -329,3 +329,19 @@ concurrently, land U3 first.
   per a standing instruction in this session not to spawn agents unasked; U4 is
   unaffected. Scope as declared — the measured orphan set matched the plan's
   prediction exactly, so the derived entry was never drawn on.
+- 2026-08-18 U1 and U2 closed — `done`. The outstanding half of U1's
+  Verification ("the same pull request with a broken test shows the check
+  failed") was observed by driving pull request `#20` through a full
+  green → red → green cycle: `fd74695` run `32140317879` success, `befdac8`
+  run `32141231175` **failure**, `98101af` (the revert) run `32141419201`
+  success. The red commit carried two independent breaks so one run would
+  settle both units — a failing assertion in `src/utils/ci-red-probe.test.js`
+  and a temporary `| V20 |` row in `SPEC.md` §V — and the check log names both
+  files, with U2's gate reporting `V20` by id. Both breaks are reverted; the
+  branch is back to the U3 tree plus two commits that cancel out. Records
+  `.evidence/work/U1.md` and `.evidence/work/U2.md` updated with the run ids.
+  Noted, not repaired: the V20 row failed *two* traceability tests, because
+  `src/meta/traceability.test.js:90` seeds its negative case from the live
+  invariant list rather than a fixture. It over-fires, never under-fires, so it
+  is a duplicate signal and not a hole; the one-line fix is recorded in U2's
+  record as a decision left open.
