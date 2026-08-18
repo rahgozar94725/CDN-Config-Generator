@@ -66,14 +66,22 @@ is a different diff. Reverse by cherry-picking these commits elsewhere.
 - **Depends on:** none
 - **Mode:** vertical slice
 - **Files:** none in this repository — this is a repository setting
-- **Approach:** Create a ruleset on `master` requiring a pull request and
-  requiring the status check named `test` (the job id at
-  `.github/workflows/ci.yml:15`). No agent can do this; it needs repository
-  admin. Record the result in this unit's record either way.
+- **Authority:** granted — create one repository ruleset on `master` in this
+  repository only, requiring a pull request and requiring the status check named
+  `test`. Nothing else: no other branch, no other repository, no other setting.
+  Granted by the repository owner on 2026-08-18.
+- **Approach:** Create the ruleset described in `Authority` — target `master`,
+  require a pull request before merging, require the status check named `test`
+  (the job id at `.github/workflows/ci.yml:15`). Read the ruleset back after
+  creating it rather than trusting the create call's exit code, and paste what
+  came back into the record. If the credential available to you cannot create
+  rulesets, stop and report — do not weaken the rule to something you can set.
 - **Verification:** A pull request whose CI check is red shows the merge button
   disabled.
 - **Acceptance criteria:**
   - Branch protection or a ruleset requires the `test` check on `master`.
+  - The record contains the ruleset read back from the API after creation,
+    showing `master`, the pull-request requirement and the `test` check by name.
   - The record names who set it and on what date, or names it as still open.
 
 ### R2 — Close the traceability gate's four holes
