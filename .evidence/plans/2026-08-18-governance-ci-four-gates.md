@@ -1,7 +1,7 @@
 ---
 title: A merge cannot go green while the traceability chain, the locale set or the Persian bidi rules have rotted
 date: 2026-08-18
-status: active
+status: done
 ---
 
 # Governance CI: one job, four gates
@@ -241,6 +241,13 @@ Out of scope:
 
 ## Deferred
 
+- The *leading* half of bidi rule 2 turned out to be undecidable on the same
+  grounds and was not implemented (U4). `docs/agents/persian-style.md` measures
+  `دانلود .txt` **broken** and `…هر خط یکی: VLESS…` **ok**, and both are a
+  two-character neutral stretch in front of a Latin run. What separates them is
+  whether the punctuation belongs to the Latin token or to the Persian sentence,
+  which is meaning rather than shape. Settled the same way as rule 1 below, and
+  by the same measurement run.
 - Bidi rule 1, "Latin runs must be contiguous", is not decidable as written —
   `docs/agents/persian-style.md` measures `لیست IP/دامین CDN` as **ok**, and
   that string has two Latin runs split by a Persian word, which is exactly what
@@ -345,3 +352,19 @@ concurrently, land U3 first.
   invariant list rather than a fixture. It over-fires, never under-fires, so it
   is a duplicate signal and not a hole; the one-line fix is recorded in U2's
   record as a decision left open.
+- 2026-08-18 U4 done — `src/meta/bidi.test.js` fails the suite on a `fa.json`
+  value whose Latin run ends on a trailing neutral run of two or more
+  characters, and on any bidi control character; `rows.flowError` is reshaped
+  (`…رمزنگاری VLESS. هیچ…` → `…رمزنگاری VLESS در خود پروتکل. هیچ…`) rather than
+  exempted, and `docs/agents/persian-style.md` now records which half of its own
+  rules is enforced. Commit `e50f1c9`, record `.evidence/work/U4.md`. Suite 9
+  files / 997 tests green, build green. Ran inline rather than in a dispatched
+  subagent, per the standing instruction in this session not to spawn agents
+  unasked. Scope as declared — the gate's measured violation set was exactly the
+  plan's predicted `rows.flowError`, so the derived `Files` entry was never drawn
+  on beyond it. The gate's threshold is two trailing characters, not one: that is
+  what reconciles the style doc's own verdicts, since a lone `/` reverses to
+  itself and `://` does not. Rule 1 and the *leading* half of rule 2 stay
+  unenforced and are now named in the doc as measurements, not assertions — the
+  leading half joins rule 1 in `## Deferred` for the same reason.
+- 2026-08-18 plan complete — all four units `done`. `status` moved to `done`.
