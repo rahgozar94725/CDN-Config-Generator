@@ -26,7 +26,6 @@
 
   "config.tlsMode": "حالت TLS",
   "config.noTlsMode": "حالت بدون TLS",
-  "config.ports": "پورت‌ها",
   "config.tlsAdvanced": "تنظیمات پیشرفته TLS",
   "config.alpn": "ALPN",
   "config.fingerprint": "Fingerprint",
@@ -40,7 +39,6 @@
   "config.includeExcluded": "کانفیگ‌های کنارگذاشته‌شده در خروجی بیایند",
   "config.includeExcludedHint": "خاموش: فقط لینک‌های تولیدشده. روشن: متن اصلی هر ردیف کنارگذاشته‌شده دست‌نخورده در خروجی کپی می‌شود — برای ساب‌اسکریپشن مخلوطی که می‌خواهید یکجا تحویل بگیرید.",
 
-  "output.title": "کانفیگ‌های تولیدشده",
   "output.copyAll": "کپی همه",
   "output.download": "دانلود فایل txt",
   "output.generating": "در حال تولید...",
@@ -60,7 +58,5 @@
   "lang.ru": "روسی",
   "lang.zh": "چینی",
 
-  "common.generate": "تولید",
-  "common.clear": "پاک کردن",
-  "common.ready": "آماده"
+  "common.generate": "تولید"
 }

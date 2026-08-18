@@ -313,3 +313,19 @@ concurrently, land U3 first.
 - 2026-08-18 pull request opened — `#20` on branch `governance-ci-four-gates`,
   base `master`. This is the observation U1 and U2 are both waiting on: neither
   can move off `unverified` until a pull-request CI run is watched.
+- 2026-08-18 first pull-request CI run observed — check `test` SUCCESS on
+  `#20` (run `32137646932`). That settles the *green* half of U1's Verification:
+  a pull request does produce a check that runs the suite. The red half — "the
+  same pull request with a broken test shows the check failed" — is still
+  unobserved, and needs a deliberately broken commit pushed and reverted. U1 and
+  U2 therefore stay `unverified`, with a narrower outstanding item than before.
+  Not repaired from inside U3: fixing a previous unit inside a later one hides
+  two states at once.
+- 2026-08-18 U3 done — `src/meta/locales.test.js` gates key-set parity across
+  the four locale files and flags keys nothing renders; the four orphans
+  (`config.ports`, `output.title`, `common.clear`, `common.ready`) are deleted,
+  57 keys to 53. Commit `<sha>`, record `.evidence/work/U3.md`. Suite 8 files /
+  989 tests green, build green. Ran inline rather than in a dispatched subagent,
+  per a standing instruction in this session not to spawn agents unasked; U4 is
+  unaffected. Scope as declared — the measured orphan set matched the plan's
+  prediction exactly, so the derived entry was never drawn on.

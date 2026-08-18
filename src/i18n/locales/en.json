@@ -26,7 +26,6 @@
 
   "config.tlsMode": "TLS Mode",
   "config.noTlsMode": "No-TLS Mode",
-  "config.ports": "Ports",
   "config.tlsAdvanced": "TLS Advanced",
   "config.alpn": "ALPN",
   "config.fingerprint": "Fingerprint",
@@ -40,7 +39,6 @@
   "config.includeExcluded": "Include excluded configs in the output",
   "config.includeExcludedHint": "Off: generated links only. On: each excluded row's original text is copied into the output unchanged — for a mixed subscription you want back as one list.",
 
-  "output.title": "Generated Configs",
   "output.copyAll": "Copy All",
   "output.download": "Download .txt",
   "output.generating": "Generating...",
@@ -60,7 +58,5 @@
   "lang.ru": "Russian",
   "lang.zh": "Chinese",
 
-  "common.generate": "Generate",
-  "common.clear": "Clear",
-  "common.ready": "Ready"
+  "common.generate": "Generate"
 }

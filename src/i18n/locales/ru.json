@@ -26,7 +26,6 @@
 
   "config.tlsMode": "Режим TLS",
   "config.noTlsMode": "Режим без TLS",
-  "config.ports": "Порты",
   "config.tlsAdvanced": "Расширенные настройки TLS",
   "config.alpn": "ALPN",
   "config.fingerprint": "Отпечаток",
@@ -40,7 +39,6 @@
   "config.includeExcluded": "Включать исключённые конфиги в вывод",
   "config.includeExcludedHint": "Выкл.: только сгенерированные ссылки. Вкл.: исходный текст каждой исключённой строки копируется в вывод без изменений — для смешанной подписки, которую нужно вернуть одним списком.",
 
-  "output.title": "Сгенерированные конфиги",
   "output.copyAll": "Копировать все",
   "output.download": "Скачать .txt",
   "output.generating": "Генерация...",
@@ -60,7 +58,5 @@
   "lang.ru": "Русский",
   "lang.zh": "Китайский",
 
-  "common.generate": "Сгенерировать",
-  "common.clear": "Очистить",
-  "common.ready": "Готово"
+  "common.generate": "Сгенерировать"
 }
