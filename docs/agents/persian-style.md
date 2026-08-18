@@ -55,11 +55,20 @@ Worked examples:
 
 Do **not** fix bidi with invisible characters (U+200E, U+2068/U+2069). They are unreviewable in diffs, get stripped by editors, and ride along into copied text. Reshape the string instead.
 
+Rule 2 is enforced. `src/meta/bidi.test.js` fails the suite when a `fa.json` value ends a Latin run on punctuation that reverses visibly, and when a value carries a bidi control character. The worked examples above are the gate's own fixture, so a change to a verdict here has to be a change to a measurement.
+
+Two things the gate deliberately does not judge, because neither is decidable from the shape of the string:
+
+- Rule 1. `لیست IP/دامین CDN` is measured **ok** and has two Latin runs split by a Persian word, which is what a contiguity check forbids.
+- The *leading* half of rule 2. `دانلود .txt` is measured broken and `…یکی: VLESS…` measured ok, and both are a two-character neutral stretch in front of a Latin run. What separates them is whether the punctuation belongs to the Latin token or to the Persian sentence — meaning, not shape.
+
+Both stay with the snippet below.
+
 `README.fa.md` is exempt: GitHub renders Markdown in an LTR paragraph, so Latin runs there are not at risk. These rules are about the app.
 
 ## Verifying a string before you ship it
 
-Load the app, then measure visual order rather than eyeballing a screenshot:
+The gate covers rule 2's trailing half. For the two cases above it does not judge, load the app and measure visual order rather than eyeballing a screenshot:
 
 ```js
 // paste in devtools; returns the visual left-to-right order of each string
