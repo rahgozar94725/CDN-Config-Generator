@@ -253,7 +253,7 @@ describe('multiplier', () => {
   // The validation gate rejects a trailing dot before generation, but the root
   // extraction must not rely on it: `example.com.` used to split to a trailing
   // empty label, yielding the root `com.` and an SNI of `rand.com..`.
-  it('V7: a trailing dot in the routing subdomain does not corrupt the root domain', () => {
+  it('V7, V15: a trailing dot in the routing subdomain does not corrupt the root domain', () => {
     const configs = parseAll('vless://uuid@1.2.3.4:443?type=ws&host=info.example.com.#cfg')
     const opts = { enableTls: true, enableNoTls: false, tlsPorts: [443], alpn: ['h2'], fingerprint: ['chrome'], randomSni: true }
     const out = generateConfigs(configs, ['9.9.9.9'], opts)

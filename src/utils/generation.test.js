@@ -23,7 +23,7 @@ describe('parseRows', () => {
 
   // Deletion rewrites the user's textarea, so a row must know which line it came
   // from — blank lines make row position and line number disagree.
-  it('carries the source line index through blank lines', () => {
+  it('V17: carries the source line index through blank lines', () => {
     const raw = 'vless://a@x.com:443?type=ws#a\n\n\nvless://b@y.com:443?type=ws#b'
     expect(parseRows(raw).map(r => r.line)).toEqual([0, 3])
   })
@@ -49,7 +49,7 @@ describe('removeLines', () => {
 
   // Two identical lines are two rows sharing one fingerprint; deleting one must
   // not take both.
-  it('removes one of two identical lines', () => {
+  it('V17: removes one of two identical lines', () => {
     const raw = 'vless://a@x.com:443?type=ws#a\nvless://a@x.com:443?type=ws#a'
     expect(removeLines(raw, [0])).toBe('vless://a@x.com:443?type=ws#a')
   })

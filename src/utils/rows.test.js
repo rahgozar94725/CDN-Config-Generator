@@ -52,7 +52,7 @@ describe('resolveRoutingSubdomain', () => {
 
   // Presence, not truthiness: clearing the field is a rejection of the derived
   // value, so it must not silently re-derive (ADR-0003).
-  it('an empty override wins over the derived value instead of falling back', () => {
+  it('V12: an empty override wins over the derived value instead of falling back', () => {
     const overrides = new Map([[configFingerprint(hostname), '']])
     expect(resolveRoutingSubdomain(hostname, overrides)).toBe('')
   })
@@ -92,7 +92,7 @@ describe('compatibilityReason', () => {
 
   // Allowlisted rather than blocklisted: an unrecognised value must be refused,
   // not rewritten to security=tls (ADR-0004).
-  it('refuses REALITY and any other transport security', () => {
+  it('V16: refuses REALITY and any other transport security', () => {
     expect(reason('vless://a@x.com:443?type=ws&security=reality&pbk=K#a')).toBe('security')
     expect(reason('vless://a@x.com:443?type=ws&security=xtls#a')).toBe('security')
     expect(reason('vless://a@x.com:443?type=ws&security=whatever-comes-next#a')).toBe('security')
@@ -122,7 +122,7 @@ describe('compatibilityReason', () => {
   // The plugin dialect states its transport inside `plugin`, so it carries no
   // `type` at all — blaming the transport would send the user to fix a server
   // that is not the problem (ADR-0005).
-  it('refuses the ss plugin dialect by its own reason, not by transport', () => {
+  it('V18: refuses the ss plugin dialect by its own reason, not by transport', () => {
     expect(reason('ss://YWVzOnB3@x.com:443?plugin=xray-plugin%3Bmode%3Dwebsocket%3Btls%3Bhost%3Dx.com#a')).toBe('ssPlugin')
   })
 })
@@ -137,7 +137,7 @@ describe('isCompatibleConfig', () => {
 })
 
 describe('validateRoutingSubdomain', () => {
-  it('accepts a plain two-label hostname and deeper subdomains', () => {
+  it('V14: accepts a plain two-label hostname and deeper subdomains', () => {
     expect(validateRoutingSubdomain('example.com')).toBe(null)
     expect(validateRoutingSubdomain('a.b.c.example.com')).toBe(null)
     expect(validateRoutingSubdomain('my-host.example.com')).toBe(null)
