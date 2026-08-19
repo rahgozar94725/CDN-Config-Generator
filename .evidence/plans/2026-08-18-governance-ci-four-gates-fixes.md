@@ -416,3 +416,5 @@ hand without colliding.
 - 2026-08-19 verified-through: R7 @ f3ab74b — records read, criteria evidenced,
   scaffolding removal confirmed, suite green (997 tests)
 - 2026-08-19 run-mode: budget(4 units, R8→R3) — user typed `budget 4 units`
+- 2026-08-19 R8 done — c8c0ae3 — 2/2 evidenced —
+  .evidence/work/2026-08-18-governance-ci-four-gates-fixes/R8.md
