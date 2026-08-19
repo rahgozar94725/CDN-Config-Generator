@@ -430,3 +430,14 @@ hand without colliding.
   was done and with nothing landing between.
 - 2026-08-19 verified-through: R6 @ 8e2b3ed — records read, criteria evidenced
 - 2026-08-19 run-mode: budget(4 units, R3→R9) — user typed `budget 4 units`
+- 2026-08-19 R3 done — 6d6bdaf — 4/4 evidenced (three plan criteria plus
+  Approach item 2's finding clause) —
+  .evidence/work/2026-08-18-governance-ci-four-gates-fixes/R3.md
+  Two agents ran this unit. The first implemented it and stalled before writing
+  any evidence, leaving the code on disk with an `in-progress` record; the
+  second inherited that implementation rather than rewriting it and re-took the
+  proof by mutation — each hole made real in the live tree, the real gate
+  observed going red naming the offending key, then reverted. The record says so
+  under `## Interruption`, so the quoted reds are not mistaken for the original
+  pre-fix runs. Orchestrator restored `src/i18n/locales/en.json` mid-run after a
+  scaffolding revert left it CRLF-terminated; content was byte-identical.
