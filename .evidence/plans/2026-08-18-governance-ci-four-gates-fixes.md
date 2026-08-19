@@ -546,3 +546,28 @@ are now three chains rather than two. The depth is still 2.
   the guard, which is now unit R12 carrying the granted authority. Remaining:
   R12, R10, R11.
 - 2026-08-20 run-mode: continuous(R12 → R10 → R11) — user typed `auto`
+- 2026-08-20 R12 done — c41fdb8 — 4/4 evidenced —
+  .evidence/work/2026-08-18-governance-ci-four-gates-fixes/R12.md
+  Two agents ran this unit. The first died mid-run on an unstable connection,
+  having already written the `in-progress` marker and both file changes but no
+  evidence of any kind; the orchestrator established that from disk — marker
+  present with an empty body, both files modified, focused suite already green
+  at 32 — and briefed the second agent to inherit the implementation rather than
+  rewrite it and to re-take the proof from scratch. Every red quoted in the
+  record is a mutation taken in the second run, and the record says so under
+  `## Interruption`. Both strips proved load-bearing and attributable: each
+  mutation turned exactly one test red, 1 failed / 31 passed, and neither
+  builder's assertion caught the other's mutation. One correction to the plan:
+  the `Verification` line's assertion is a query-string regex, so it goes red
+  under the `buildQueryLink` mutation only — a vmess link is base64 and needs
+  the separate vmess test to cover the second strip. Recorded rather than
+  papered over. Hazard worth carrying: `git checkout --` reverts to HEAD, not to
+  an inherited uncommitted state, and silently dropped both strips mid-run; the
+  state was reconstructed and the diff confirmed identical.
+- 2026-08-20 R5 done (was `needs-decision`) — f70dfe9 — settled by R12, which
+  carried the owner's granted authority for the guard. R5's evidence, mutation
+  table and counts are untouched; only its status, `outstanding` and a
+  `**Decided:**` bullet changed.
+- 2026-08-20 verified-through: R12 @ c41fdb8 — records read, 4/4 criteria
+  evidenced, R5's status change confirmed on disk, suite green (1011 tests),
+  tree clean
