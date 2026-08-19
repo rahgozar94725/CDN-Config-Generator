@@ -429,3 +429,4 @@ hand without colliding.
   committed it, so the green run quoted is the unit's own, taken when the work
   was done and with nothing landing between.
 - 2026-08-19 verified-through: R6 @ 8e2b3ed — records read, criteria evidenced
+- 2026-08-19 run-mode: budget(4 units, R3→R9) — user typed `budget 4 units`
