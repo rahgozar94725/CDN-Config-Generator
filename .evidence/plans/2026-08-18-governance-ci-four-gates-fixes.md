@@ -404,3 +404,14 @@ hand without colliding.
 - 2026-08-19 verified-through: R1 @ 1c06d36 — record read, ruleset 21038975
   re-read from the API by the orchestrator, criteria evidenced, suite green
   (997 tests)
+- 2026-08-19 run-mode: checkpoint (one unit, R7) — user typed neither `auto` nor
+  `budget`
+- 2026-08-19 R7 done — f3ab74b — 2/2 evidenced —
+  .evidence/work/2026-08-18-governance-ci-four-gates-fixes/R7.md
+- 2026-08-19 R1 done (was `unverified`, a status this workflow does not have) —
+  2f33953 — 3/3 evidenced plus the `Verification` line, which R7's throwaway
+  pull request #21 settled: `mergeStateStatus: BLOCKED` with
+  `mergeable: MERGEABLE` while the required `test` check was red. Capture and
+  cleanup in R7's record; R1's record updated in place.
+- 2026-08-19 verified-through: R7 @ f3ab74b — records read, criteria evidenced,
+  scaffolding removal confirmed, suite green (997 tests)
