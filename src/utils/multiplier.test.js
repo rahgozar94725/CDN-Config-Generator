@@ -263,6 +263,20 @@ describe('multiplier', () => {
     const out = generateConfigs(configs, ['9.9.9.9'], opts)
     expect(out[0]).toMatch(/sni=[a-z0-9]+\.example\.com\.(?!\.)/)
     expect(out[0]).not.toMatch(/sni=[a-z0-9]+\.com\./)
+    // V15's host clause, held by the builder rather than by the V14 gate two
+    // modules away: the dot is fed straight past that gate here and must still
+    // not reach `host`, while `sni` above keeps the one random SNI gives it.
+    expect(out[0]).toMatch(/host=info\.example\.com(?=[&#]|$)/)
+    expect(out[0]).not.toMatch(/host=[^&#]*\.(?=[&#]|$)/)
+  })
+
+  it('V15: a trailing dot in the routing subdomain never reaches a vmess host', () => {
+    const obj = { v: '2', ps: 'm', add: '1.2.3.4', port: 443, id: 'uuid', net: 'ws', host: 'info.example.com.', tls: 'tls' }
+    const configs = parseAll('vmess://' + btoa(JSON.stringify(obj)))
+    const opts = { enableTls: true, enableNoTls: false, tlsPorts: [443], alpn: ['h2'], fingerprint: ['chrome'], randomSni: true }
+    const decoded = readVmess(generateConfigs(configs, ['9.9.9.9'], opts)[0])
+    expect(decoded.host).toBe('info.example.com')
+    expect(decoded.sni).toMatch(/^[a-z0-9]+\.example\.com\.$/)
   })
 
   it('V7: a single-label routing subdomain yields no empty root', () => {
