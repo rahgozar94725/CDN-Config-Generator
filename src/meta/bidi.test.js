@@ -38,6 +38,18 @@ const BIDI_CONTROLS = /[\u200E\u200F\u202A-\u202E\u2066-\u2069]/g
 const LATIN = /[A-Za-z0-9]/
 
 /**
+ * A digit only joins the Latin run it sits in — on its own it is not one. The
+ * bidi algorithm gives a number the direction of the strong character before
+ * it, so `حداکثر 253. مقدار` has no LTR run for the period to strand, and
+ * scoring it broken is a false positive on correct Persian. That costs more
+ * than the miss it avoids: `docs/agents/persian-style.md` `## Digits` requires
+ * ASCII digits in Persian strings (ports are values the user types back), so
+ * an author escaping this gate would either reword a fine sentence or switch
+ * to Persian-Indic digits, which the same section forbids.
+ */
+const LETTER = /[A-Za-z]/
+
+/**
  * Punctuation a Latin token can own — the pieces of a URL, a version, a file
  * extension. Whitespace counts as neutral too (see `isNeutral`): the space
  * after a Latin token is a neutral like any other, and it is what turns a lone
@@ -88,7 +100,7 @@ const latinRuns = (value) => {
       break
     }
   }
-  return runs
+  return runs.filter(({ run }) => LETTER.test(run))
 }
 
 /** The offending substrings in `value` — run plus the trailing neutrals that reverse. */
@@ -106,10 +118,14 @@ const fa = JSON.parse(readFileSync(faPath, 'utf8'))
 const entries = Object.entries(fa)
 
 /**
- * The doc's own worked examples, with the verdict it measured. These six are
- * the fixture this gate is calibrated against — the verdicts come from running
- * the devtools snippet in `docs/agents/persian-style.md`, not from reading the
- * rule and agreeing with it.
+ * The doc's own worked examples, with the verdict it measured, plus one row the
+ * doc does not carry. The first six are the fixture this gate is calibrated
+ * against — those verdicts come from running the devtools snippet in
+ * `docs/agents/persian-style.md`, not from reading the rule and agreeing with
+ * it. The last row is a *gate* verdict, measured on 2026-08-19 by running
+ * `brokenRuns` against the string here (it scored `253. ` broken before
+ * `LETTER` was introduced, clean after). How a browser paints that string is
+ * unmeasured — nothing in this file renders anything.
  */
 const WORKED_EXAMPLES = [
   { text: 'دانلود فایل txt', broken: false, why: 'no trailing neutral at all' },
@@ -118,11 +134,18 @@ const WORKED_EXAMPLES = [
   { text: 'دانلود .txt', broken: false, why: 'measured broken, but by the LEADING neutral this gate does not judge' },
   { text: 'VLESS://، VMESS://، TROJAN:// را', broken: true, why: 'the Persian comma ends the run, so :// trails it' },
   { text: 'VLESS:// و VMESS:// و TROJAN', broken: true, why: 'a Persian word ends the run, so :// trails it' },
+  { text: 'حداکثر 253. مقدار', broken: false, why: 'ASCII digits alone are not a Latin run, so nothing strands the period' },
 ]
 
 describe('fa.json is free of invisible bidi fixes', () => {
   it('found the file it audits', () => {
     expect(entries.length, 'no keys read from src/i18n/locales/fa.json').toBeGreaterThan(0)
+    // Without this, a nested or numeric value reaches `controlsIn` and throws
+    // `value.match is not a function` naming neither the key nor the file.
+    expect(
+      entries.filter(([, value]) => typeof value !== 'string').map(([key]) => key),
+      'non-string values in fa.json — this gate reads every value as text'
+    ).toEqual([])
   })
 
   it('no value carries a bidi control character', () => {
@@ -160,6 +183,12 @@ describe('every Latin run in fa.json ends on a Latin character', () => {
   it('leaves a one-character interior neutral alone', () => {
     expect(brokenRuns('لیست IP/دامین CDN')).toEqual([])
     expect(brokenRuns('پورت 8-12 است')).toEqual([])
+  })
+
+  it('does not read a bare Persian numeral as a Latin run', () => {
+    expect(brokenRuns('حداکثر 253. مقدار')).toEqual([])
+    expect(brokenRuns('بین 8-12 عدد')).toEqual([])
+    expect(brokenRuns('پشتیبانی VLESS://')).toEqual(['VLESS://'])
   })
 
   it('does not read the RTL sentence punctuation as part of a Latin token', () => {
