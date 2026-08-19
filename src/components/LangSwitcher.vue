@@ -17,7 +17,7 @@
 <script setup>
 import { setLocale } from '../i18n/index.js'
 
-function onChange(e) {
+function onChange(e) { this is not valid javascript ===
   setLocale(e.target.value)
 }
 </script>
