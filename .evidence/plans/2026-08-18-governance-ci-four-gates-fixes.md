@@ -362,6 +362,49 @@ is a different diff. Reverse by cherry-picking these commits elsewhere.
 - **Acceptance criteria:**
   - Either the wording is levelled, or the unit is dropped with a reason.
 
+### R12 — Give V15's host clause a guard in the generator
+
+- **Goal:** `host` carries no trailing dot because the generator strips it, not
+  because a validation gate two modules away happens to reject one upstream.
+- **Depends on:** R5
+- **Mode:** vertical slice
+- **Files:** `src/utils/multiplier.js`, `src/utils/multiplier.test.js`
+- **Authority:** granted — change production code in `src/utils/multiplier.js`,
+  which this plan's `## Scope` did not include. One trailing-dot strip on `host`
+  in each of the two builders, at `:82` and `:119`. Nothing else: no other file,
+  no other behaviour, no change to what any gate's rule is. Granted by the
+  repository owner on 2026-08-20, after R5 surfaced the hole and put the three
+  options to them.
+- **Approach:** R5 found that `buildQueryLink` (`multiplier.js:82`) and the vmess
+  builder (`:119`) both write `p.host = config.routingSubdomain` verbatim, so
+  V15's host clause holds only because `rows.js:92` returns
+  `INVALID_TRAILING_DOT` and blocks generation for that row. The generator makes
+  the opposing argument about itself sixty lines below, at `multiplier.js:143-146`:
+  *"The validation gate rejects a trailing dot in the CDN subdomain field, but a
+  pure function should not depend on a UI gate for correctness"* — and acts on it
+  for `extractRootDomain` while leaving `p.host` unguarded. Apply the same
+  argument to `p.host`. Mirror whatever stripping idiom `extractRootDomain`
+  already uses rather than inventing a second one.
+- **Test scenarios:**
+  - happy: a routing subdomain with a trailing dot produces a link whose `host`
+    has none — and the assertion the plan originally wrote for R5,
+    `expect(out[0]).not.toMatch(/host=[^&#]*\.(?=[&#]|$)/)`, can now sit on
+    `multiplier.test.js:256`, the line R5 could not use
+  - error: removing either strip turns that assertion red, proved by mutation
+  - edge: `sni` still keeps its trailing dot under random SNI — the strip must
+    not reach it, since V15 says the dot appears there and only there
+- **Verification:** The V15 assertion the plan wrote for R5 passes at
+  `multiplier.test.js:256` against unmutated code, and goes red when either
+  strip is removed.
+- **Acceptance criteria:**
+  - Both builders strip a trailing dot from `host`, each proved by a mutation
+    that turns the V15 assertion red and little else.
+  - The random-SNI trailing dot in `sni` is unaffected, shown by a passing
+    assertion rather than by argument.
+  - R5's record and status are updated: its `outstanding` is settled by this
+    unit, and it moves from `needs-decision` to `done`.
+  - `npm run test` passes.
+
 ## Deferred
 
 - Whether "at least one tagged test" is a strong enough rule for the
@@ -380,7 +423,7 @@ is a different diff. Reverse by cherry-picking these commits elsewhere.
 
 ## Order
 
-R1, R7, R8, R2 → R6, R3, R4, R5, R9 → R10, R11
+R1, R7, R8, R2 → R6, R3, R4, R5 → R12, R9 → R10, R11
 
 Depth 2. Only two real chains exist: R6 needs R2 because both edit
 `src/meta/traceability.test.js`, and R10 needs R9 because the doc must state a
@@ -388,6 +431,10 @@ threshold somebody measured. Everything else is independent of everything else.
 This notation is descriptive — units run one at a time — but it says the eleven
 units are two deep, and it shows where a second person could pick up work by
 hand without colliding.
+
+Amended 2026-08-20: R12 was added after R5 ran and depends on it, so there
+are now three chains rather than two. The depth is still 2.
+
 
 ## Log
 
