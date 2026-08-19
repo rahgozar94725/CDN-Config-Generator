@@ -571,3 +571,15 @@ are now three chains rather than two. The depth is still 2.
 - 2026-08-20 verified-through: R12 @ c41fdb8 — records read, 4/4 criteria
   evidenced, R5's status change confirmed on disk, suite green (1011 tests),
   tree clean
+- 2026-08-20 R10 done — 13f6c28 — 2/2 evidenced —
+  .evidence/work/2026-08-18-governance-ci-four-gates-fixes/R10.md
+  Rule 2's absolute ban is replaced by the threshold R9 measured, with the
+  visual-order strings copied from R9's controls table rather than retyped from
+  reasoning. Both coverage claims narrowed: the gate is described as stricter
+  than the rendering needs, naming `VLESS. ` and `VLESS.. ` as failures that
+  render correctly and saying the error runs one way only; and the worked
+  examples are now five of six, with `دانلود .txt` carried as `broken: false`
+  with its leading-neutral reason. R9's "must not assert" was honoured and
+  checked for by searching the new text. The false claim in the gate's own
+  comment at `bidi.test.js:70-76` is not repeated in the doc — the gate itself
+  was not touched, since narrowing it is the deferred item the owner settles.
