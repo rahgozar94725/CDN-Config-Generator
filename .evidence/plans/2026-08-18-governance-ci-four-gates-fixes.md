@@ -441,3 +441,12 @@ hand without colliding.
   under `## Interruption`, so the quoted reds are not mistaken for the original
   pre-fix runs. Orchestrator restored `src/i18n/locales/en.json` mid-run after a
   scaffolding revert left it CRLF-terminated; content was byte-identical.
+- 2026-08-19 R4 done — 8294341 — 3/3 evidenced, red-then-green quoted verbatim
+  plus a live-gate mutation proof against `fa.json` —
+  .evidence/work/2026-08-18-governance-ci-four-gates-fixes/R4.md
+  The fix filters finished runs rather than narrowing the character class, so
+  `IP 253. ` and `VLESS://` are still caught while `حداکثر 253. مقدار` is clean.
+  R3's `controlsIn` TypeError was taken here rather than left upstream: the
+  canary now names non-string keys, deliberately without filtering the bad value
+  out of `entries`. Record's `commit:` corrected in 11de83f — it cited f367712,
+  the pre-amend sha, which is unreachable from any branch.
