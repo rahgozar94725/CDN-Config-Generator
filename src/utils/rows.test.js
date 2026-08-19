@@ -159,43 +159,43 @@ describe('validateRoutingSubdomain', () => {
     expect(validateRoutingSubdomain(undefined)).toBe('required')
   })
 
-  it('reports a trailing dot with its own reason so the UI can point at Random SNI', () => {
+  it('V14: reports a trailing dot with its own reason so the UI can point at Random SNI', () => {
     expect(validateRoutingSubdomain('example.com.')).toBe('trailingDot')
     expect(validateRoutingSubdomain('example.com..')).toBe('trailingDot')
   })
 
-  it('rejects a single label', () => {
+  it('V14: rejects a single label', () => {
     expect(validateRoutingSubdomain('abc')).toBe('format')
     expect(validateRoutingSubdomain('localhost')).toBe('format')
   })
 
-  it('rejects IP addresses, which the regex alone would accept', () => {
+  it('V14: rejects IP addresses, which the regex alone would accept', () => {
     expect(validateRoutingSubdomain('1.2.3.4')).toBe('format')
     expect(validateRoutingSubdomain('255.255.255.255')).toBe('format')
     expect(validateRoutingSubdomain('2001:db8::1')).toBe('format')
   })
 
-  it('rejects characters that are not letters, digits or hyphens', () => {
+  it('V14: rejects characters that are not letters, digits or hyphens', () => {
     expect(validateRoutingSubdomain('MY_Host.com')).toBe('format')
     expect(validateRoutingSubdomain('bad!!.com')).toBe('format')
     expect(validateRoutingSubdomain('a b.com')).toBe('format')
     expect(validateRoutingSubdomain('%D9%85.com')).toBe('format')
   })
 
-  it('rejects malformed labels', () => {
+  it('V14: rejects malformed labels', () => {
     expect(validateRoutingSubdomain('-lead.com')).toBe('format')
     expect(validateRoutingSubdomain('trail-.com')).toBe('format')
     expect(validateRoutingSubdomain('a..b.com')).toBe('format')
     expect(validateRoutingSubdomain(`${'a'.repeat(64)}.com`)).toBe('format')
   })
 
-  it('rejects a name longer than 253 characters', () => {
+  it('V14: rejects a name longer than 253 characters', () => {
     const long = `${Array.from({ length: 5 }, () => 'a'.repeat(50)).join('.')}.com`
     expect(long.length).toBeGreaterThan(253)
     expect(validateRoutingSubdomain(long)).toBe('format')
   })
 
-  it('rejects punycode and non-ASCII names outright', () => {
+  it('V14: rejects punycode and non-ASCII names outright', () => {
     expect(validateRoutingSubdomain('xn--mgbh0fb.xn--mgba3a4f16a')).toBe('format')
     expect(validateRoutingSubdomain('sub.xn--mgba3a4f16a')).toBe('format')
     expect(validateRoutingSubdomain('XN--MGBH0FB.com')).toBe('format')
