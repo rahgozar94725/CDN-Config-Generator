@@ -397,3 +397,4 @@ hand without colliding.
   unit (R11) carried as a droppable proposal. Every cited path confirmed to
   exist and every cited line number read, on branch `governance-ci-four-gates`
   at `4dfe00e`.
+- 2026-08-19 run-mode: checkpoint (one unit) — user typed neither `auto` nor `budget`
