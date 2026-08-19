@@ -421,6 +421,16 @@ is a different diff. Reverse by cherry-picking these commits elsewhere.
   resolvable citation. Settled by checking whether B1-B11 are individually
   testable; several are UI-state defects with no unit-level entry point.
 
+- Whether the bidi gate should stop counting whitespace and repeated
+  characters toward MIRRORS_VISIBLY. R9 measured three strings the gate calls
+  broken that render correctly, all of them period-plus-space or a repeated
+  character. Every measurement fits one rule: a trailing neutral run mirrors
+  visibly only when, whitespace removed, two or more characters remain and
+  they are not all the same. Deferred rather than fixed because the error is
+  in the safe direction — the gate is over-strict, so nothing broken ships
+  because of it — and because it needs a Files entry no unit has. Settled by
+  the repository owner deciding whether author friction is worth a unit.
+
 ## Order
 
 R1, R7, R8, R2 → R6, R3, R4, R5 → R12, R9 → R10, R11
@@ -513,3 +523,25 @@ are now three chains rather than two. The depth is still 2.
   one-line strip in both builders and amending V15's §V row is a scope crossing
   either way — `src/utils/multiplier.js` and `SPEC.md` are both outside this
   unit's Files. Put to the user.
+- 2026-08-20 R9 done — 7893dc2 — 1/1 evidenced, three verdicts measured
+  numerically in Chromium —
+  .evidence/work/2026-08-18-governance-ci-four-gates-fixes/R9.md
+  The plan assigned this unit to a person for want of a browser. One was
+  available this session, so the measurement was taken rather than deferred;
+  `Files` stayed none and no gate or production file was touched. All three
+  strings render correctly and the gate agrees on all three. Two subagents
+  stalled on it first — the second after measuring and before writing anything
+  down — so it was run inline and re-measured from scratch rather than read off
+  the screenshot the stalled run left behind. Instrument and screenshot are
+  committed beside the record so the numbers can be reproduced. Two answers for
+  R10: `TOKEN_NEUTRAL` is right to exclude the em dash, measured; and
+  `MIRRORS_VISIBLY = 2` is the right idea applied to the wrong count — the gate
+  scores `VLESS. ` broken and it renders correctly. That last one is a gate
+  defect neither R9 nor R10 is scoped to fix, so it went to `## Deferred`.
+- 2026-08-20 verified-through: R9 @ 7893dc2 — records read, criteria evidenced,
+  suite green (1010 tests), tree clean, both scratch servers stopped and
+  confirmed released
+- 2026-08-20 budget spent: budget(4 units, R3→R9) is complete. R3, R4 and R9 are
+  `done`; R5 is `needs-decision`, and the decision was taken — the owner chose
+  the guard, which is now unit R12 carrying the granted authority. Remaining:
+  R12, R10, R11.
