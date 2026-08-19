@@ -450,3 +450,19 @@ hand without colliding.
   canary now names non-string keys, deliberately without filtering the bad value
   out of `entries`. Record's `commit:` corrected in 11de83f — it cited f367712,
   the pre-amend sha, which is unreachable from any branch.
+- 2026-08-19 R5 needs-decision: V15's host clause has no production guard —
+  f70dfe9 — 2/2 evidenced, nine mutations recorded and reverted —
+  .evidence/work/2026-08-18-governance-ci-four-gates-fixes/R5.md
+  The unit's own criteria are met: V14's tag now sits on all seven reject tests,
+  each proved red by removing its own guard; V15 has an anchored `host`
+  assertion proved by mutation; both unterminated `host=info\.example\.com`
+  matches are anchored. What it could not do is put the V15 assertion at the
+  line the plan named — `multiplier.js:82` and `:119` write
+  `p.host = config.routingSubdomain` verbatim, so the plan's literal assertion
+  is red against unmutated code. V15 holds today only because `rows.js:92`
+  rejects a trailing dot upstream. `multiplier.js:143-146` already argues in its
+  own comment that a pure function should not depend on that gate, and applies
+  the argument to `extractRootDomain` but not to `p.host`. Deciding between a
+  one-line strip in both builders and amending V15's §V row is a scope crossing
+  either way — `src/utils/multiplier.js` and `SPEC.md` are both outside this
+  unit's Files. Put to the user.
