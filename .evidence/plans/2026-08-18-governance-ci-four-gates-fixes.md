@@ -1,7 +1,7 @@
 ---
 title: The four gates cannot be greened by an empty test, a missing key or a deleted file
 date: 2026-08-18
-status: active
+status: done
 branch: governance-ci-four-gates
 ---
 
@@ -583,3 +583,21 @@ are now three chains rather than two. The depth is still 2.
   checked for by searching the new text. The false claim in the gate's own
   comment at `bidi.test.js:70-76` is not repeated in the doc — the gate itself
   was not touched, since narrowing it is the deferred item the owner settles.
+- 2026-08-20 R11 done — 95164e5 — 1/1 evidenced —
+  .evidence/work/2026-08-18-governance-ci-four-gates-fixes/R11.md
+  The proposal was taken rather than dropped, by the plan's own first option:
+  the Persian is reshaped so both alternatives hang off one `نیاز دارد`, which
+  drops `در خود پروتکل` while still ending the Latin run on a Persian word.
+  `en`, `ru` and `zh` are untouched — levelling them would have been a scope
+  crossing, and `CONTEXT.md:77` already defines the term the gloss was
+  repeating. Rule 2 is shown satisfied by running the gate's own `latinRuns`
+  against old and new: every run trails on one neutral or none, and `REALITY`
+  drops from one to zero because the Persian comma is not a neutral.
+  Ran inline. The subagent died on an API error with the `fa.json` change and an
+  empty `in-progress` marker on disk and nothing else; a fourth dispatch for a
+  one-line string change on an unstable connection was not worth it. The wording
+  is inherited from that run, the evidence is not — the record says so under
+  `## Interruption`, and this is the one unit of the twelve that had no fresh
+  context of its own.
+- 2026-08-20 verified-through: R11 @ 95164e5 — all twelve units read, every
+  criterion evidenced, suite green (1011 tests), tree clean. Plan complete.
