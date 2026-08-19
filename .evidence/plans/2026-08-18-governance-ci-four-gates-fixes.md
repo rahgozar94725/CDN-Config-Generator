@@ -415,3 +415,4 @@ hand without colliding.
   cleanup in R7's record; R1's record updated in place.
 - 2026-08-19 verified-through: R7 @ f3ab74b — records read, criteria evidenced,
   scaffolding removal confirmed, suite green (997 tests)
+- 2026-08-19 run-mode: budget(4 units, R8→R3) — user typed `budget 4 units`
