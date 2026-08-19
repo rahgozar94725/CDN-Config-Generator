@@ -421,3 +421,11 @@ hand without colliding.
 - 2026-08-19 R2 done — 8f7f762 — 2/2 evidenced, all four holes red-before and
   green-after with quoted output —
   .evidence/work/2026-08-18-governance-ci-four-gates-fixes/R2.md
+- 2026-08-19 R6 done — 8e2b3ed — 3/3 evidenced, red-then-green mutation proof
+  quoted — .evidence/work/2026-08-18-governance-ci-four-gates-fixes/R6.md
+  Committed late: the run that produced this unit stopped before committing it
+  and reported it as never started. The record and the two files it names were
+  already on disk; the suite was not re-run at commit time from the machine that
+  committed it, so the green run quoted is the unit's own, taken when the work
+  was done and with nothing landing between.
+- 2026-08-19 verified-through: R6 @ 8e2b3ed — records read, criteria evidenced
