@@ -1,7 +1,7 @@
 ---
 title: The four gates cannot be greened by an empty test, a missing key or a deleted file
 date: 2026-08-18
-status: draft
+status: active
 branch: governance-ci-four-gates
 ---
 
@@ -398,3 +398,9 @@ hand without colliding.
   exist and every cited line number read, on branch `governance-ci-four-gates`
   at `4dfe00e`.
 - 2026-08-19 run-mode: checkpoint (one unit) — user typed neither `auto` nor `budget`
+- 2026-08-19 R1 unverified: ruleset created, active and read back, but no red
+  check has been watched blocking a merge — 1c06d36 — 3/3 evidenced —
+  .evidence/work/2026-08-18-governance-ci-four-gates-fixes/R1.md
+- 2026-08-19 verified-through: R1 @ 1c06d36 — record read, ruleset 21038975
+  re-read from the API by the orchestrator, criteria evidenced, suite green
+  (997 tests)
