@@ -545,3 +545,4 @@ are now three chains rather than two. The depth is still 2.
   `done`; R5 is `needs-decision`, and the decision was taken — the owner chose
   the guard, which is now unit R12 carrying the granted authority. Remaining:
   R12, R10, R11.
+- 2026-08-20 run-mode: continuous(R12 → R10 → R11) — user typed `auto`
