@@ -418,3 +418,6 @@ hand without colliding.
 - 2026-08-19 run-mode: budget(4 units, R8→R3) — user typed `budget 4 units`
 - 2026-08-19 R8 done — c8c0ae3 — 2/2 evidenced —
   .evidence/work/2026-08-18-governance-ci-four-gates-fixes/R8.md
+- 2026-08-19 R2 done — 8f7f762 — 2/2 evidenced, all four holes red-before and
+  green-after with quoted output —
+  .evidence/work/2026-08-18-governance-ci-four-gates-fixes/R2.md
