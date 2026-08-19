@@ -176,3 +176,19 @@ describe('ADR citations resolve to a file', () => {
     expect(adrNumbers('see ADR-' + '0099').filter(adrIsMissing)).toEqual(['0099'])
   })
 })
+
+describe('the gates themselves are still on disk', () => {
+  // A gate that is deleted takes its own assertions with it, so nothing inside
+  // it can report its own absence. This list is the only check that outlives
+  // one of them. It does not survive all three going at once, and it cannot
+  // see a gate that is still on disk but no longer collected by the runner —
+  // hence the explicit `test.include` in vite.config.js.
+  it('src/meta/ holds all three gate files', () => {
+    const present = readdirSync(join(root, 'src', 'meta'))
+    const gates = ['bidi.test.js', 'locales.test.js', 'traceability.test.js']
+    expect(
+      gates.filter((name) => !present.includes(name)),
+      'gate files missing from src/meta/ — restore them, or delete this list on purpose'
+    ).toEqual([])
+  })
+})
