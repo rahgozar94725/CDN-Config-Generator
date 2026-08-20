@@ -122,7 +122,7 @@ describe('routing subdomain derivation', () => {
     expect(r.routingSubdomainRequired).toBe(false)
   })
 
-  it('explicit host param wins over differing hostname address', () => {
+  it('V11: explicit host param wins over differing hostname address', () => {
     const r = parseVless('vless://uuid@connect.example.com:443?type=ws&host=routing.example.com#cfg')
     expect(r.routingSubdomain).toBe('routing.example.com')
     expect(r.routingSubdomainRequired).toBe(false)
@@ -140,7 +140,7 @@ describe('routing subdomain derivation', () => {
     expect(r.routingSubdomainRequired).toBe(true)
   })
 
-  it('input sni param never consulted for derivation', () => {
+  it('V11: input sni param never consulted for derivation', () => {
     const r = parseVless('vless://uuid@connect.example.com:443?type=ws&sni=bypass.foo#cfg')
     expect(r.routingSubdomain).toBe('connect.example.com')
     expect(r.routingSubdomainRequired).toBe(false)

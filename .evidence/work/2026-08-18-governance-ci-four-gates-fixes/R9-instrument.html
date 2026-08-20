@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>R9 bidi measurement</title>
+<style>
+  /* Tailwind's default sans stack — the app sets no custom font-family,
+     and src/i18n/index.js:33 puts dir="rtl" on <html> for fa. */
+  body {
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+                 "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+    font-size: 24px;
+    line-height: 2;
+    margin: 24px;
+    background: #fff;
+    color: #111;
+  }
+  .row { border: 1px solid #ccc; padding: 8px 12px; margin: 10px 0; }
+  .lbl { font-family: monospace; font-size: 12px; color: #666; direction: ltr; text-align: left; }
+</style>
+</head>
+<body>
+<div id="out"></div>
+<script>
+// The three strings the plan names, plus controls the doc already has a verdict
+// for, so the instrument can be checked against a known answer.
+const CASES = [
+  { id: "1-single-trailing-neutral-at-end", s: "از VLESS." },
+  { id: "2-single-neutral-no-following-space", s: "متن VLESS.مهم است" },
+  { id: "3-rows.transportError-live", s: "\u0627\u06cc\u0646 \u062a\u0631\u0646\u0633\u067e\u0648\u0631\u062a \u0627\u0632 CDN \u0631\u062f \u0646\u0645\u06cc\u200c\u0634\u0648\u062f. \u0641\u0642\u0637 \u0627\u06cc\u0646\u200c\u0647\u0627 \u0631\u062f \u0645\u06cc\u200c\u0634\u0648\u0646\u062f: ws xhttp grpc httpupgrade \u2014 \u062a\u0631\u0646\u0633\u067e\u0648\u0631\u062a \u0631\u0627 \u0631\u0648\u06cc \u0633\u0631\u0648\u0631 \u0639\u0648\u0636 \u06a9\u0646\u06cc\u062f \u06cc\u0627 \u0627\u06cc\u0646 \u0631\u062f\u06cc\u0641 \u0631\u0627 \u062d\u0630\u0641 \u06a9\u0646\u06cc\u062f." },
+  // controls
+  { id: "C1-scheme-doc-says-broken", s: "پشتیبانی VLESS://" },
+  { id: "C2-dot-then-space-gate-says-broken", s: "یا رمزنگاری VLESS. هیچ" },
+  { id: "C3-pure-persian-no-latin", s: "این یک جمله فارسی است." },
+];
+
+const out = document.getElementById("out");
+const nodes = [];
+for (const c of CASES) {
+  const lbl = document.createElement("div");
+  lbl.className = "lbl";
+  lbl.textContent = c.id;
+  const row = document.createElement("div");
+  row.className = "row";
+  row.textContent = c.s;
+  out.appendChild(lbl);
+  out.appendChild(row);
+  nodes.push({ c, row });
+}
+
+// Per-character horizontal position, measured with a Range over the text node.
+// A number, not a look: the visual order is whatever sorting by x says it is.
+function measure(row, s) {
+  const tn = row.firstChild;
+  const chars = [];
+  for (let i = 0; i < s.length; i++) {
+    const r = document.createRange();
+    r.setStart(tn, i);
+    r.setEnd(tn, i + 1);
+    const rect = r.getBoundingClientRect();
+    chars.push({
+      i,
+      ch: s[i],
+      cp: "U+" + s.codePointAt(i).toString(16).toUpperCase().padStart(4, "0"),
+      x: Math.round(rect.left * 100) / 100,
+      right: Math.round(rect.right * 100) / 100,
+      y: Math.round(rect.top),
+      w: Math.round(rect.width * 100) / 100,
+    });
+  }
+  return chars;
+}
+
+window.__R9 = nodes.map(({ c, row }) => {
+  const s = c.s;
+  const chars = measure(row, s);
+  // Visual order: top line first, then left-to-right within a line.
+  const visual = chars
+    .filter((k) => k.w > 0)
+    .slice()
+    .sort((a, b) => (a.y - b.y) || (a.x - b.x));
+  return {
+    id: c.id,
+    logical: s,
+    logicalCodepoints: chars.map((k) => k.cp),
+    visualString: visual.map((k) => k.ch).join(""),
+    visualCodepoints: visual.map((k) => k.cp),
+    lines: [...new Set(chars.map((k) => k.y))].length,
+    chars,
+  };
+});
+</script>
+</body>
+</html>

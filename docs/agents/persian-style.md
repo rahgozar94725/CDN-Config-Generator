@@ -40,7 +40,7 @@ Not a style preference: ports are values the user types back into a field, and `
 `dir="rtl"` is set document-wide for `fa` (`src/i18n/index.js`). Persian strings are an RTL paragraph with Latin runs embedded, so **a correct translation can still render wrong**. Two rules, both measured (see below):
 
 1. **Latin runs must be contiguous.** Separating Latin tokens with a Persian word or `،` reverses their visual order, and breaks the `://` on *every* separated token — not just the last.
-2. **A Latin run must end on a Latin letter**, never on `://`, `.`, or other punctuation. A trailing neutral run mirrors (`://` → `//:`) and relocates to the opposite edge of the line. End-of-string does not save it.
+2. **A Latin run must end on a Latin letter**, never on `://`, `.`, or other punctuation. Measured in Chromium on 2026-08-20: a trailing neutral stretch mirrors visibly when, whitespace removed, two or more characters remain **and they are not all the same character**. `پشتیبانی VLESS://` renders `//:VLESS ینابیتشپ` and `متن VLESS:/ ادامه` renders `همادا /:VLESS نتم` — end-of-string does not save `://`. Below that threshold nothing moves: `از VLESS.` and `متن VLESS.مهم است` both render correctly, and so does `متن VLESS.. ادامه`, because reversing identical characters yields the same characters. Write to the rule anyway: the gate is stricter than the rendering (below), and a run ending on punctuation is one reworded sentence away from not doing so.
 
 Worked examples:
 
@@ -55,11 +55,22 @@ Worked examples:
 
 Do **not** fix bidi with invisible characters (U+200E, U+2068/U+2069). They are unreviewable in diffs, get stripped by editors, and ride along into copied text. Reshape the string instead.
 
+Rule 2 is enforced, in a stricter form than the rendering needs. `src/meta/bidi.test.js` fails the suite when a `fa.json` value ends a Latin run — a run carrying at least one `A-Za-z` — on two or more trailing neutrals, and when a value carries a bidi control character. It counts whitespace and repeats toward those two, so it also fails `VLESS. ` and `VLESS.. `, which render correctly. The error runs one way only: no string that renders wrongly has scored clean, so the gate costs an author a reworded sentence, never a garbled screen.
+
+Five of the six worked examples above are the gate's own fixture, and a change to one of those verdicts has to be a change to a measurement. The sixth, `دانلود .txt`, is in the fixture as **not** broken with its reason attached — it is measured broken by its *leading* neutral, which the gate does not judge.
+
+Two things the gate deliberately does not judge, because neither is decidable from the shape of the string:
+
+- Rule 1. `لیست IP/دامین CDN` is measured **ok** and has two Latin runs split by a Persian word, which is what a contiguity check forbids.
+- The *leading* half of rule 2. `دانلود .txt` is measured broken and `…یکی: VLESS…` measured ok, and both are a two-character neutral stretch in front of a Latin run. What separates them is whether the punctuation belongs to the Latin token or to the Persian sentence — meaning, not shape.
+
+Both stay with the snippet below.
+
 `README.fa.md` is exempt: GitHub renders Markdown in an LTR paragraph, so Latin runs there are not at risk. These rules are about the app.
 
 ## Verifying a string before you ship it
 
-Load the app, then measure visual order rather than eyeballing a screenshot:
+The gate covers rule 2's trailing half from two trailing neutrals up, and over-covers it there. What it never judges is a run trailed by one neutral or none, the leading neutrals, and rule 1. For those, load the app and measure visual order rather than eyeballing a screenshot:
 
 ```js
 // paste in devtools; returns the visual left-to-right order of each string

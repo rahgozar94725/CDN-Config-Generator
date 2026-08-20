@@ -134,14 +134,18 @@ describe('multiplier', () => {
     expect(out[2]).toMatch(/fp=chrome/)
   })
 
-  it('V7: random SNI strips subdomain, uses root domain only', () => {
+  it('V7, V15: random SNI strips subdomain, uses root domain only', () => {
     const configs = parseAll('vless://uuid@info.example.com:443?type=ws#cfg')
     const cdnList = ['1.1.1.1']
     const opts = { enableTls: true, enableNoTls: false, tlsPorts: [443], alpn: ['h2'], fingerprint: ['chrome'], randomSni: true }
     const out = generateConfigs(configs, cdnList, opts)
     expect(out[0]).toMatch(/sni=[a-z0-9]+\.example\.com\./)
     expect(out[0]).not.toMatch(/sni=[a-z0-9]+\.info\.example/)
-    expect(out[0]).toMatch(/host=info\.example\.com/)
+    // Anchored: the unterminated form matched `host=info.example.com.` too, so it
+    // could not see the trailing dot V15 forbids. The negative states the
+    // invariant directly — under random SNI the dot belongs to `sni` alone.
+    expect(out[0]).toMatch(/host=info\.example\.com(?=[&#]|$)/)
+    expect(out[0]).not.toMatch(/host=[^&#]*\.(?=[&#]|$)/)
   })
 
   it('V8: TLS mode requires at least one ALPN and one fingerprint', () => {
@@ -247,18 +251,32 @@ describe('multiplier', () => {
     const out = generateConfigs(configs, ['9.9.9.9'], opts)
     expect(out[0]).toMatch(/sni=[a-z0-9]+\.example\.com\./)
     expect(out[0]).not.toMatch(/sni=[a-z0-9]+\.info\.example/)
-    expect(out[0]).toMatch(/host=info\.example\.com/)
+    expect(out[0]).toMatch(/host=info\.example\.com(?=[&#]|$)/)
   })
 
   // The validation gate rejects a trailing dot before generation, but the root
   // extraction must not rely on it: `example.com.` used to split to a trailing
   // empty label, yielding the root `com.` and an SNI of `rand.com..`.
-  it('V7: a trailing dot in the routing subdomain does not corrupt the root domain', () => {
+  it('V7, V15: a trailing dot in the routing subdomain does not corrupt the root domain', () => {
     const configs = parseAll('vless://uuid@1.2.3.4:443?type=ws&host=info.example.com.#cfg')
     const opts = { enableTls: true, enableNoTls: false, tlsPorts: [443], alpn: ['h2'], fingerprint: ['chrome'], randomSni: true }
     const out = generateConfigs(configs, ['9.9.9.9'], opts)
     expect(out[0]).toMatch(/sni=[a-z0-9]+\.example\.com\.(?!\.)/)
     expect(out[0]).not.toMatch(/sni=[a-z0-9]+\.com\./)
+    // V15's host clause, held by the builder rather than by the V14 gate two
+    // modules away: the dot is fed straight past that gate here and must still
+    // not reach `host`, while `sni` above keeps the one random SNI gives it.
+    expect(out[0]).toMatch(/host=info\.example\.com(?=[&#]|$)/)
+    expect(out[0]).not.toMatch(/host=[^&#]*\.(?=[&#]|$)/)
+  })
+
+  it('V15: a trailing dot in the routing subdomain never reaches a vmess host', () => {
+    const obj = { v: '2', ps: 'm', add: '1.2.3.4', port: 443, id: 'uuid', net: 'ws', host: 'info.example.com.', tls: 'tls' }
+    const configs = parseAll('vmess://' + btoa(JSON.stringify(obj)))
+    const opts = { enableTls: true, enableNoTls: false, tlsPorts: [443], alpn: ['h2'], fingerprint: ['chrome'], randomSni: true }
+    const decoded = readVmess(generateConfigs(configs, ['9.9.9.9'], opts)[0])
+    expect(decoded.host).toBe('info.example.com')
+    expect(decoded.sni).toMatch(/^[a-z0-9]+\.example\.com\.$/)
   })
 
   it('V7: a single-label routing subdomain yields no empty root', () => {

@@ -79,7 +79,10 @@ function buildLink(config, newAddr, newPort, security, extra, randomSni, idx) {
 function buildQueryLink(config, newAddr, newPort, security, sniValue, remark, extra) {
   const p = { ...config.params }
   p.type = p.type || config.transport
-  p.host = config.routingSubdomain
+  // V15: `host` carries no trailing dot. Stripped here, not left to the V14 gate
+  // two modules away — the same argument this file already makes for the root
+  // domain below, applied to the other field the routing subdomain feeds.
+  p.host = config.routingSubdomain.replace(/\.+$/, '')
   p.security = security
   if (security === 'tls') {
     p.sni = sniValue
@@ -116,7 +119,7 @@ function buildVmess(config, newAddr, newPort, security, sniValue, remark, extra)
     scy: config.params.scy || 'auto',
     net: config.transport,
     type: config.params.headerType || 'none',
-    host: config.routingSubdomain,
+    host: config.routingSubdomain.replace(/\.+$/, ''), // V15, as in buildQueryLink
     path: config.params.path || '',
     tls: security === 'tls' ? 'tls' : 'none',
   }

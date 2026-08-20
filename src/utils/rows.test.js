@@ -52,7 +52,7 @@ describe('resolveRoutingSubdomain', () => {
 
   // Presence, not truthiness: clearing the field is a rejection of the derived
   // value, so it must not silently re-derive (ADR-0003).
-  it('an empty override wins over the derived value instead of falling back', () => {
+  it('V12: an empty override wins over the derived value instead of falling back', () => {
     const overrides = new Map([[configFingerprint(hostname), '']])
     expect(resolveRoutingSubdomain(hostname, overrides)).toBe('')
   })
@@ -92,7 +92,7 @@ describe('compatibilityReason', () => {
 
   // Allowlisted rather than blocklisted: an unrecognised value must be refused,
   // not rewritten to security=tls (ADR-0004).
-  it('refuses REALITY and any other transport security', () => {
+  it('V16: refuses REALITY and any other transport security', () => {
     expect(reason('vless://a@x.com:443?type=ws&security=reality&pbk=K#a')).toBe('security')
     expect(reason('vless://a@x.com:443?type=ws&security=xtls#a')).toBe('security')
     expect(reason('vless://a@x.com:443?type=ws&security=whatever-comes-next#a')).toBe('security')
@@ -122,7 +122,7 @@ describe('compatibilityReason', () => {
   // The plugin dialect states its transport inside `plugin`, so it carries no
   // `type` at all — blaming the transport would send the user to fix a server
   // that is not the problem (ADR-0005).
-  it('refuses the ss plugin dialect by its own reason, not by transport', () => {
+  it('V18: refuses the ss plugin dialect by its own reason, not by transport', () => {
     expect(reason('ss://YWVzOnB3@x.com:443?plugin=xray-plugin%3Bmode%3Dwebsocket%3Btls%3Bhost%3Dx.com#a')).toBe('ssPlugin')
   })
 })
@@ -137,7 +137,7 @@ describe('isCompatibleConfig', () => {
 })
 
 describe('validateRoutingSubdomain', () => {
-  it('accepts a plain two-label hostname and deeper subdomains', () => {
+  it('V14: accepts a plain two-label hostname and deeper subdomains', () => {
     expect(validateRoutingSubdomain('example.com')).toBe(null)
     expect(validateRoutingSubdomain('a.b.c.example.com')).toBe(null)
     expect(validateRoutingSubdomain('my-host.example.com')).toBe(null)
@@ -159,43 +159,43 @@ describe('validateRoutingSubdomain', () => {
     expect(validateRoutingSubdomain(undefined)).toBe('required')
   })
 
-  it('reports a trailing dot with its own reason so the UI can point at Random SNI', () => {
+  it('V14: reports a trailing dot with its own reason so the UI can point at Random SNI', () => {
     expect(validateRoutingSubdomain('example.com.')).toBe('trailingDot')
     expect(validateRoutingSubdomain('example.com..')).toBe('trailingDot')
   })
 
-  it('rejects a single label', () => {
+  it('V14: rejects a single label', () => {
     expect(validateRoutingSubdomain('abc')).toBe('format')
     expect(validateRoutingSubdomain('localhost')).toBe('format')
   })
 
-  it('rejects IP addresses, which the regex alone would accept', () => {
+  it('V14: rejects IP addresses, which the regex alone would accept', () => {
     expect(validateRoutingSubdomain('1.2.3.4')).toBe('format')
     expect(validateRoutingSubdomain('255.255.255.255')).toBe('format')
     expect(validateRoutingSubdomain('2001:db8::1')).toBe('format')
   })
 
-  it('rejects characters that are not letters, digits or hyphens', () => {
+  it('V14: rejects characters that are not letters, digits or hyphens', () => {
     expect(validateRoutingSubdomain('MY_Host.com')).toBe('format')
     expect(validateRoutingSubdomain('bad!!.com')).toBe('format')
     expect(validateRoutingSubdomain('a b.com')).toBe('format')
     expect(validateRoutingSubdomain('%D9%85.com')).toBe('format')
   })
 
-  it('rejects malformed labels', () => {
+  it('V14: rejects malformed labels', () => {
     expect(validateRoutingSubdomain('-lead.com')).toBe('format')
     expect(validateRoutingSubdomain('trail-.com')).toBe('format')
     expect(validateRoutingSubdomain('a..b.com')).toBe('format')
     expect(validateRoutingSubdomain(`${'a'.repeat(64)}.com`)).toBe('format')
   })
 
-  it('rejects a name longer than 253 characters', () => {
+  it('V14: rejects a name longer than 253 characters', () => {
     const long = `${Array.from({ length: 5 }, () => 'a'.repeat(50)).join('.')}.com`
     expect(long.length).toBeGreaterThan(253)
     expect(validateRoutingSubdomain(long)).toBe('format')
   })
 
-  it('rejects punycode and non-ASCII names outright', () => {
+  it('V14: rejects punycode and non-ASCII names outright', () => {
     expect(validateRoutingSubdomain('xn--mgbh0fb.xn--mgba3a4f16a')).toBe('format')
     expect(validateRoutingSubdomain('sub.xn--mgba3a4f16a')).toBe('format')
     expect(validateRoutingSubdomain('XN--MGBH0FB.com')).toBe('format')

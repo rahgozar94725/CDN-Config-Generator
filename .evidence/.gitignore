@@ -1,0 +1,19 @@
+# Written by ev-ground. What is listed here is regenerable or short-lived;
+# everything else under .evidence/ is meant to be committed, because it is the
+# evidence behind commits that were already made.
+#
+# Committed on purpose: shapes/  plans/  work/  ship/  learnings/  CONCEPTS.md
+# work/ especially: ev-work reads those records to verify a plan's Log before
+# resuming, so a clone without them cannot check its own history.
+
+# Regenerated from the tree in seconds. A committed copy goes stale silently
+# and is then read as current.
+ground.md
+
+# One session's working notes. What is worth keeping gets distilled into
+# learnings/ instead.
+test-log.md
+debug-log.md
+
+# Tied to a base ref that moves; dead once the merge it examined has landed.
+reviews/
