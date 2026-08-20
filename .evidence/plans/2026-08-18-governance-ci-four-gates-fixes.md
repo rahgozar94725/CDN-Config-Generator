@@ -8,7 +8,7 @@ branch: governance-ci-four-gates
 # Governance gate fixes, from the 2026-08-18 review
 
 Generated from the triage in
-`.evidence/reviews/2026-08-18-4dfe00e/report.md`. That report is regenerated per
+`.evidence/reviews/2026-08-18-2b9f9c9/report.md`. That report is regenerated per
 run and is not committed, so every unit below carries the finding's substance
 rather than its id. The ids are kept only so the two documents can be lined up
 while the report still exists.
@@ -55,7 +55,7 @@ plan a fix plan rather than a second feature.
 ## Assumptions
 
 Chose to fix forward on this branch rather than open a second one, because the
-findings are about the diff between `5d43b23` and `4dfe00e` and any other branch
+findings are about the diff between `f511f35` and `2b9f9c9` and any other branch
 is a different diff. Reverse by cherry-picking these commits elsewhere.
 
 ## Units
@@ -449,45 +449,45 @@ are now three chains rather than two. The depth is still 2.
 ## Log
 
 - 2026-08-18 plan written from the triage in
-  `.evidence/reviews/2026-08-18-4dfe00e/report.md`. Seventeen findings clustered
+  `.evidence/reviews/2026-08-18-2b9f9c9/report.md`. Seventeen findings clustered
   into eleven units; three items sent to `## Deferred` rather than executed; one
   unit (R11) carried as a droppable proposal. Every cited path confirmed to
   exist and every cited line number read, on branch `governance-ci-four-gates`
-  at `4dfe00e`.
+  at `2b9f9c9`.
 - 2026-08-19 run-mode: checkpoint (one unit) — user typed neither `auto` nor `budget`
 - 2026-08-19 R1 unverified: ruleset created, active and read back, but no red
-  check has been watched blocking a merge — 1c06d36 — 3/3 evidenced —
+  check has been watched blocking a merge — c91938d — 3/3 evidenced —
   .evidence/work/2026-08-18-governance-ci-four-gates-fixes/R1.md
-- 2026-08-19 verified-through: R1 @ 1c06d36 — record read, ruleset 21038975
+- 2026-08-19 verified-through: R1 @ c91938d — record read, ruleset 21038975
   re-read from the API by the orchestrator, criteria evidenced, suite green
   (997 tests)
 - 2026-08-19 run-mode: checkpoint (one unit, R7) — user typed neither `auto` nor
   `budget`
-- 2026-08-19 R7 done — f3ab74b — 2/2 evidenced —
+- 2026-08-19 R7 done — 2872477 — 2/2 evidenced —
   .evidence/work/2026-08-18-governance-ci-four-gates-fixes/R7.md
 - 2026-08-19 R1 done (was `unverified`, a status this workflow does not have) —
-  2f33953 — 3/3 evidenced plus the `Verification` line, which R7's throwaway
+  8dabea3 — 3/3 evidenced plus the `Verification` line, which R7's throwaway
   pull request #21 settled: `mergeStateStatus: BLOCKED` with
   `mergeable: MERGEABLE` while the required `test` check was red. Capture and
   cleanup in R7's record; R1's record updated in place.
-- 2026-08-19 verified-through: R7 @ f3ab74b — records read, criteria evidenced,
+- 2026-08-19 verified-through: R7 @ 2872477 — records read, criteria evidenced,
   scaffolding removal confirmed, suite green (997 tests)
 - 2026-08-19 run-mode: budget(4 units, R8→R3) — user typed `budget 4 units`
-- 2026-08-19 R8 done — c8c0ae3 — 2/2 evidenced —
+- 2026-08-19 R8 done — 4742878 — 2/2 evidenced —
   .evidence/work/2026-08-18-governance-ci-four-gates-fixes/R8.md
-- 2026-08-19 R2 done — 8f7f762 — 2/2 evidenced, all four holes red-before and
+- 2026-08-19 R2 done — 50292a4 — 2/2 evidenced, all four holes red-before and
   green-after with quoted output —
   .evidence/work/2026-08-18-governance-ci-four-gates-fixes/R2.md
-- 2026-08-19 R6 done — 8e2b3ed — 3/3 evidenced, red-then-green mutation proof
+- 2026-08-19 R6 done — dd9b09b — 3/3 evidenced, red-then-green mutation proof
   quoted — .evidence/work/2026-08-18-governance-ci-four-gates-fixes/R6.md
   Committed late: the run that produced this unit stopped before committing it
   and reported it as never started. The record and the two files it names were
   already on disk; the suite was not re-run at commit time from the machine that
   committed it, so the green run quoted is the unit's own, taken when the work
   was done and with nothing landing between.
-- 2026-08-19 verified-through: R6 @ 8e2b3ed — records read, criteria evidenced
+- 2026-08-19 verified-through: R6 @ dd9b09b — records read, criteria evidenced
 - 2026-08-19 run-mode: budget(4 units, R3→R9) — user typed `budget 4 units`
-- 2026-08-19 R3 done — 6d6bdaf — 4/4 evidenced (three plan criteria plus
+- 2026-08-19 R3 done — 4097031 — 4/4 evidenced (three plan criteria plus
   Approach item 2's finding clause) —
   .evidence/work/2026-08-18-governance-ci-four-gates-fixes/R3.md
   Two agents ran this unit. The first implemented it and stalled before writing
@@ -498,17 +498,17 @@ are now three chains rather than two. The depth is still 2.
   under `## Interruption`, so the quoted reds are not mistaken for the original
   pre-fix runs. Orchestrator restored `src/i18n/locales/en.json` mid-run after a
   scaffolding revert left it CRLF-terminated; content was byte-identical.
-- 2026-08-19 R4 done — 8294341 — 3/3 evidenced, red-then-green quoted verbatim
+- 2026-08-19 R4 done — 83f236f — 3/3 evidenced, red-then-green quoted verbatim
   plus a live-gate mutation proof against `fa.json` —
   .evidence/work/2026-08-18-governance-ci-four-gates-fixes/R4.md
   The fix filters finished runs rather than narrowing the character class, so
   `IP 253. ` and `VLESS://` are still caught while `حداکثر 253. مقدار` is clean.
   R3's `controlsIn` TypeError was taken here rather than left upstream: the
   canary now names non-string keys, deliberately without filtering the bad value
-  out of `entries`. Record's `commit:` corrected in 11de83f — it cited f367712,
+  out of `entries`. Record's `commit:` corrected in 4b2608f — it cited f367712,
   the pre-amend sha, which is unreachable from any branch.
 - 2026-08-19 R5 needs-decision: V15's host clause has no production guard —
-  f70dfe9 — 2/2 evidenced, nine mutations recorded and reverted —
+  c94254a — 2/2 evidenced, nine mutations recorded and reverted —
   .evidence/work/2026-08-18-governance-ci-four-gates-fixes/R5.md
   The unit's own criteria are met: V14's tag now sits on all seven reject tests,
   each proved red by removing its own guard; V15 has an anchored `host`
@@ -523,7 +523,7 @@ are now three chains rather than two. The depth is still 2.
   one-line strip in both builders and amending V15's §V row is a scope crossing
   either way — `src/utils/multiplier.js` and `SPEC.md` are both outside this
   unit's Files. Put to the user.
-- 2026-08-20 R9 done — 7893dc2 — 1/1 evidenced, three verdicts measured
+- 2026-08-20 R9 done — b7b0e70 — 1/1 evidenced, three verdicts measured
   numerically in Chromium —
   .evidence/work/2026-08-18-governance-ci-four-gates-fixes/R9.md
   The plan assigned this unit to a person for want of a browser. One was
@@ -538,7 +538,7 @@ are now three chains rather than two. The depth is still 2.
   `MIRRORS_VISIBLY = 2` is the right idea applied to the wrong count — the gate
   scores `VLESS. ` broken and it renders correctly. That last one is a gate
   defect neither R9 nor R10 is scoped to fix, so it went to `## Deferred`.
-- 2026-08-20 verified-through: R9 @ 7893dc2 — records read, criteria evidenced,
+- 2026-08-20 verified-through: R9 @ b7b0e70 — records read, criteria evidenced,
   suite green (1010 tests), tree clean, both scratch servers stopped and
   confirmed released
 - 2026-08-20 budget spent: budget(4 units, R3→R9) is complete. R3, R4 and R9 are
@@ -546,7 +546,7 @@ are now three chains rather than two. The depth is still 2.
   the guard, which is now unit R12 carrying the granted authority. Remaining:
   R12, R10, R11.
 - 2026-08-20 run-mode: continuous(R12 → R10 → R11) — user typed `auto`
-- 2026-08-20 R12 done — c41fdb8 — 4/4 evidenced —
+- 2026-08-20 R12 done — 7844519 — 4/4 evidenced —
   .evidence/work/2026-08-18-governance-ci-four-gates-fixes/R12.md
   Two agents ran this unit. The first died mid-run on an unstable connection,
   having already written the `in-progress` marker and both file changes but no
@@ -564,14 +564,14 @@ are now three chains rather than two. The depth is still 2.
   papered over. Hazard worth carrying: `git checkout --` reverts to HEAD, not to
   an inherited uncommitted state, and silently dropped both strips mid-run; the
   state was reconstructed and the diff confirmed identical.
-- 2026-08-20 R5 done (was `needs-decision`) — f70dfe9 — settled by R12, which
+- 2026-08-20 R5 done (was `needs-decision`) — c94254a — settled by R12, which
   carried the owner's granted authority for the guard. R5's evidence, mutation
   table and counts are untouched; only its status, `outstanding` and a
   `**Decided:**` bullet changed.
-- 2026-08-20 verified-through: R12 @ c41fdb8 — records read, 4/4 criteria
+- 2026-08-20 verified-through: R12 @ 7844519 — records read, 4/4 criteria
   evidenced, R5's status change confirmed on disk, suite green (1011 tests),
   tree clean
-- 2026-08-20 R10 done — 13f6c28 — 2/2 evidenced —
+- 2026-08-20 R10 done — d7c1dc8 — 2/2 evidenced —
   .evidence/work/2026-08-18-governance-ci-four-gates-fixes/R10.md
   Rule 2's absolute ban is replaced by the threshold R9 measured, with the
   visual-order strings copied from R9's controls table rather than retyped from
@@ -583,7 +583,7 @@ are now three chains rather than two. The depth is still 2.
   checked for by searching the new text. The false claim in the gate's own
   comment at `bidi.test.js:70-76` is not repeated in the doc — the gate itself
   was not touched, since narrowing it is the deferred item the owner settles.
-- 2026-08-20 R11 done — 95164e5 — 1/1 evidenced —
+- 2026-08-20 R11 done — 08fdc73 — 1/1 evidenced —
   .evidence/work/2026-08-18-governance-ci-four-gates-fixes/R11.md
   The proposal was taken rather than dropped, by the plan's own first option:
   the Persian is reshaped so both alternatives hang off one `نیاز دارد`, which
@@ -599,5 +599,5 @@ are now three chains rather than two. The depth is still 2.
   is inherited from that run, the evidence is not — the record says so under
   `## Interruption`, and this is the one unit of the twelve that had no fresh
   context of its own.
-- 2026-08-20 verified-through: R11 @ 95164e5 — all twelve units read, every
+- 2026-08-20 verified-through: R11 @ 08fdc73 — all twelve units read, every
   criterion evidenced, suite green (1011 tests), tree clean. Plan complete.

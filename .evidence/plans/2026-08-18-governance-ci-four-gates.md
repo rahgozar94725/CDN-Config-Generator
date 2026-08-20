@@ -282,17 +282,17 @@ concurrently, land U3 first.
 
 ## Log
 
-- 2026-08-18 plan written — grounded at head 5d43b23 on master, suite green
+- 2026-08-18 plan written — grounded at head f511f35 on master, suite green
   (973 tests, 6 files).
 - 2026-08-18 U1 unverified — `.github/workflows/ci.yml` runs the suite on
-  `pull_request` and on `push` to master; commit `11ef1ad`, record
+  `pull_request` and on `push` to master; commit `23fb116`, record
   `.evidence/work/2026-08-18-governance-ci-four-gates/U1.md`. Run branch is `governance-ci-four-gates`. Ran inline
   rather than in a dispatched subagent (the subagent stalled with no progress);
   U2–U4 are unaffected. The pull-request half of U1's Verification is pending a
   push, which was left to the user; status corrected from `done` to
   `unverified` on 2026-08-18 for that reason.
 - 2026-08-18 U2 unverified — `src/meta/traceability.test.js` gates §V tags, §B
-  citations and ADR resolution; commit `3a5087e`, record `.evidence/work/2026-08-18-governance-ci-four-gates/U2.md`.
+  citations and ADR resolution; commit `b47b18f`, record `.evidence/work/2026-08-18-governance-ci-four-gates/U2.md`.
   Ran in a dispatched subagent. Outstanding: the record's own closing claim is
   that `.github/workflows/ci.yml:24` runs `npm run test`, "so the gate fails the
   PR build". The gate was observed going red locally, but no pull request has
@@ -332,7 +332,7 @@ concurrently, land U3 first.
 - 2026-08-18 U3 done — `src/meta/locales.test.js` gates key-set parity across
   the four locale files and flags keys nothing renders; the four orphans
   (`config.ports`, `output.title`, `common.clear`, `common.ready`) are deleted,
-  57 keys to 53. Commit `61b26c4`, record `.evidence/work/2026-08-18-governance-ci-four-gates/U3.md`. Suite 8 files /
+  57 keys to 53. Commit `1878a77`, record `.evidence/work/2026-08-18-governance-ci-four-gates/U3.md`. Suite 8 files /
   989 tests green, build green. Ran inline rather than in a dispatched subagent,
   per a standing instruction in this session not to spawn agents unasked; U4 is
   unaffected. Scope as declared — the measured orphan set matched the plan's
@@ -340,8 +340,8 @@ concurrently, land U3 first.
 - 2026-08-18 U1 and U2 closed — `done`. The outstanding half of U1's
   Verification ("the same pull request with a broken test shows the check
   failed") was observed by driving pull request `#20` through a full
-  green → red → green cycle: `fd74695` run `32140317879` success, `befdac8`
-  run `32141231175` **failure**, `98101af` (the revert) run `32141419201`
+  green → red → green cycle: `8284443` run `32140317879` success, `ba49a8e`
+  run `32141231175` **failure**, `1f3d0f0` (the revert) run `32141419201`
   success. The red commit carried two independent breaks so one run would
   settle both units — a failing assertion in `src/utils/ci-red-probe.test.js`
   and a temporary `| V20 |` row in `SPEC.md` §V — and the check log names both
@@ -358,7 +358,7 @@ concurrently, land U3 first.
   characters, and on any bidi control character; `rows.flowError` is reshaped
   (`…رمزنگاری VLESS. هیچ…` → `…رمزنگاری VLESS در خود پروتکل. هیچ…`) rather than
   exempted, and `docs/agents/persian-style.md` now records which half of its own
-  rules is enforced. Commit `e50f1c9`, record `.evidence/work/2026-08-18-governance-ci-four-gates/U4.md`. Suite 9
+  rules is enforced. Commit `0a50584`, record `.evidence/work/2026-08-18-governance-ci-four-gates/U4.md`. Suite 9
   files / 997 tests green, build green. Ran inline rather than in a dispatched
   subagent, per the standing instruction in this session not to spawn agents
   unasked. Scope as declared — the gate's measured violation set was exactly the
