@@ -30,10 +30,30 @@ const quotedStrings = (source) => [...source.matchAll(/['"`]([\w.]+)['"`]/g)].ma
  * Prefixes of a key built at runtime: the literal half of `t('theme.' + x)` or
  * of ``t(`theme.${x}`)``. A key starting with one of these never appears whole
  * in the source, so the gate has to compose the live set itself.
+ *
+ * The `(?<![\w$])` keeps `t(` from matching the tail of an ordinary call:
+ * without it `format('x' + y)`, `expect('a.b' + c)`, `parseInt('' + n)` and
+ * `split('.' + sep)` all end in `t(` and each donated a phantom prefix. A
+ * member call still matches — `.` and `(` are outside the excluded class, so
+ * `i18n.t(` and `this.$t(` are read as what they are, real call sites.
+ *
+ * The capture stays `*` rather than `+` on purpose. With the boundary in place
+ * an empty prefix can only come from a real `t('' + k)`, i.e. a key composed
+ * entirely at runtime, and that is a finding the tripwire below should report
+ * rather than noise to discard.
+ *
+ * Being a scan over file text taken from a call's first argument, it is blind
+ * to: a composed call whose literal half is not first (`t(prefix + '.' + name)`,
+ * `t(KEYS.theme + x)`); a key composed before the call (`const k = 'theme.' + x`);
+ * an i18n helper not named exactly `t` or `$t` (`$tc(`, `te(`, a renamed
+ * binding — none exist here today); anything that only exists at runtime; and
+ * calls in the files the scan excludes, `*.test.js` and `src/i18n/locales/`.
+ * Whether the composed keys exist at all is `composedThemeKeys` + `orphans`,
+ * not this.
  */
 const dynamicPrefixes = (source) => [
-  ...[...source.matchAll(/\$?t\(\s*['"`]([\w.]*)['"`]\s*\+/g)].map((m) => m[1]),
-  ...[...source.matchAll(/\$?t\(\s*`([\w.]*)\$\{/g)].map((m) => m[1]),
+  ...[...source.matchAll(/(?<![\w$])\$?t\(\s*['"`]([\w.]*)['"`]\s*\+/g)].map((m) => m[1]),
+  ...[...source.matchAll(/(?<![\w$])\$?t\(\s*`([\w.]*)\$\{/g)].map((m) => m[1]),
 ]
 
 /** The names in `const themes = [...]`, read from `src/theme/index.js`. */
@@ -202,6 +222,25 @@ describe('every locale key is rendered somewhere', () => {
 
   it('names a key that is in every file and rendered by none', () => {
     expect(orphans(['a.used', 'a.unused'], ['a.used'])).toEqual(['a.unused'])
+  })
+
+  it('records the literal half of a composed i18n call', () => {
+    expect(dynamicPrefixes("$t('theme.' + t)")).toEqual(['theme.'])
+    expect(dynamicPrefixes('t(`theme.${t}`)')).toEqual(['theme.'])
+  })
+
+  it('records nothing for an ordinary call whose name merely ends in t', () => {
+    const source = ["format('x' + y)", "expect('a.b' + c)", "parseInt('' + n)", "split('.' + sep)"].join('\n')
+    expect(dynamicPrefixes(source), 'a non-i18n call must not compose a phantom prefix').toEqual([])
+  })
+
+  it('records a prefix for a member call, which is a real call site', () => {
+    expect(dynamicPrefixes("i18n.t('theme.' + x)")).toEqual(['theme.'])
+    expect(dynamicPrefixes("this.$t('theme.' + x)")).toEqual(['theme.'])
+  })
+
+  it('records the empty prefix of a fully dynamic key rather than dropping it', () => {
+    expect(dynamicPrefixes("t('' + k)")).toEqual([''])
   })
 })
 
