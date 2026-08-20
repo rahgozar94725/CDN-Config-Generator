@@ -1,7 +1,7 @@
 ---
 title: The locale gate's composed-prefix scan matches any identifier ending in `t`
 date: 2026-08-20
-status: ready
+status: done
 branch: governance-ci-four-gates
 ---
 
@@ -242,3 +242,7 @@ Open on purpose; do not close either by guessing.
 ## Log
 
 - 2026-08-20 run-mode: checkpoint — no mode word in the request; the plan is one unit, so the checkpoint is the end
+- 2026-08-20 U1 done — 1086c93 — 3/3 evidenced — .evidence/work/2026-08-20-locales-gate-prefix-regex/U1.md
+- 2026-08-20 verified-through: U1 @ 1086c93 — record read, criteria evidenced, suite green (9 files, 1015 tests)
+- 2026-08-20 plan closed: every unit done. The frontmatter `status: ready` did its job — ev-work picked the plan up and named the word — and now moves to `done` rather than `draft`, the run being over.
+- 2026-08-20 correction to the prose above: `## Problem frame` and U1 say six phantom prefixes; the fixture named in `Test scenarios` has four calls, so the observed red was four (`x`, `a.b`, `""`, `.`). Six was the count over the eight-call synthetic set in `## Grounding`. The defect and the fix are unchanged.
